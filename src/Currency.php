@@ -6,7 +6,7 @@
  * including conversions, formatting, and basic calculations. It supports operations such as
  * converting to cents, formatting values with currency symbols, and applying discounts or tax.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.2.0

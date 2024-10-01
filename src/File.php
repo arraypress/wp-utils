@@ -7,7 +7,7 @@
  * and verifying file permissions and existence. It also supports conversions for file sizes
  * and human-readable formatting of bytes.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.2.0

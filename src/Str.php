@@ -6,7 +6,7 @@
  * It includes methods for checking substrings, converting cases, generating random strings,
  * handling names, and performing general string operations like trimming, padding, and truncating.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

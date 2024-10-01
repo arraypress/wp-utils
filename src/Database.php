@@ -7,10 +7,10 @@
  * custom SQL queries, handling placeholders, and sanitizing input. The class simplifies constructing SQL queries
  * and executing them safely within WordPress's $wpdb environment.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
- * @version       0.2.0
+ * @version       1.0.0
  * @author        David Sherlock
  */
 

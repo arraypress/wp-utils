@@ -5,7 +5,7 @@
  * This class provides a set of utility methods for extracting specific data
  * from strings, such as mentions, hashtags, URLs, amounts, emails, and more.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

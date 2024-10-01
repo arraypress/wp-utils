@@ -2,7 +2,7 @@
 /**
  * Posts Utilities for WordPress.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @version       1.2.0
  */
 

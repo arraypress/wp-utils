@@ -7,7 +7,7 @@
  * attachment details such as type, dimensions, file size, alt text, and dominant color.
  * It also handles different content types like images, audio, and video attachments.
  *
- * @package       ArrayPress/Utils/WordPress
+ * @package       ArrayPress/WP-Utils/WordPress
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

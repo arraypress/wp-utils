@@ -7,7 +7,7 @@
  * area, time, fuel efficiency, energy, pressure, angles, power, frequency, and more.
  * The class is designed to be easy to use and extend with additional conversion types.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

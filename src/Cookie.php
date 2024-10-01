@@ -5,7 +5,7 @@
  * This class provides a set of methods for handling cookies in WordPress,
  * including setting, getting, checking, and deleting cookies.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

@@ -13,7 +13,7 @@
  * - Term merging and bulk operations
  * - Term field extraction and manipulation
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0
@@ -313,6 +313,101 @@ if ( ! class_exists( 'Terms' ) ) :
 			}
 
 			return count( array_unique( $taxonomies ) ) === 1;
+		}
+
+		/**
+		 * Get terms for an object and a taxonomy
+		 *
+		 * @param mixed  $object   Object or object ID
+		 * @param string $taxonomy Taxonomy name
+		 *
+		 * @return array|false Array of term objects or false on failure
+		 */
+		public static function get_for_object( $object, string $taxonomy ) {
+			$object_id = is_object( $object ) && ! empty( $object->ID )
+				? $object->ID
+				: absint( $object );
+
+			if ( empty( $object_id ) ) {
+				return false;
+			}
+
+			return wp_get_object_terms( $object_id, $taxonomy, [
+				'fields' => 'all_with_object_id'
+			] );
+		}
+
+		/**
+		 * Set taxonomy terms for a specific object
+		 *
+		 * @param mixed  $object   Object or object ID
+		 * @param string $taxonomy Taxonomy name
+		 * @param array  $terms    Array of term IDs or names
+		 * @param bool   $append   Whether to append new terms to existing terms
+		 *
+		 * @return array|bool Array of term taxonomy IDs or false on failure
+		 */
+		public static function set_for_object( $object, string $taxonomy, array $terms = [], bool $append = true ) {
+			$object_id = is_object( $object ) && ! empty( $object->ID )
+				? $object->ID
+				: absint( $object );
+
+			if ( empty( $object_id ) ) {
+				return false;
+			}
+
+			if ( empty( $terms ) ) {
+				wp_delete_object_term_relationships( $object_id, $taxonomy );
+
+				return true;
+			} else {
+				$result = wp_set_object_terms( $object_id, $terms, $taxonomy, $append );
+				clean_object_term_cache( $object_id, $taxonomy );
+
+				return $result;
+			}
+		}
+
+		/**
+		 * Get term IDs for an object and a taxonomy
+		 *
+		 * @param mixed  $object   Object or object ID
+		 * @param string $taxonomy Taxonomy name
+		 *
+		 * @return array|false Array of term IDs or false on failure
+		 */
+		public static function get_term_ids_for_object( $object, string $taxonomy ) {
+			$terms = self::get_for_object( $object, $taxonomy );
+
+			if ( empty( $terms ) ) {
+				return false;
+			}
+
+			return wp_list_pluck( $terms, 'term_id' );
+		}
+
+		/**
+		 * Delete all terms for a specific object across multiple taxonomies
+		 *
+		 * @param mixed $object     Object or object ID
+		 * @param array $taxonomies Array of taxonomy names
+		 *
+		 * @return bool True on success, false on failure
+		 */
+		public static function delete_all_object_terms( $object, array $taxonomies ): bool {
+			$object_id = is_object( $object ) && ! empty( $object->ID )
+				? $object->ID
+				: absint( $object );
+
+			if ( empty( $object_id ) ) {
+				return false;
+			}
+
+			foreach ( $taxonomies as $taxonomy ) {
+				self::set_for_object( $object_id, $taxonomy, [] );
+			}
+
+			return true;
 		}
 
 	}

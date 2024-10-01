@@ -9,7 +9,7 @@
  * modify and add custom prefixes and suffixes, as well as general utility functions for
  * converting arrays and formatting values.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

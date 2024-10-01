@@ -7,7 +7,7 @@
  * PHP version, MySQL version, web server software, and more, offering an easy way to
  * gather essential details about the server environment.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       0.5.0

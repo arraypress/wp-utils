@@ -7,7 +7,7 @@
  * buttons, divs, spans, lists, images, and other common HTML elements
  * while ensuring attributes are properly escaped and following best practices.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

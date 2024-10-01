@@ -5,7 +5,7 @@
  * This class provides a set of utility functions for working with individual WordPress blocks.
  * It includes methods for manipulating, analyzing, and transforming single blocks.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @version       1.0.0
  */
 

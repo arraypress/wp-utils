@@ -7,7 +7,7 @@
  * domains or file extensions, and handling URL transformations such as relative and
  * absolute conversions. It also includes support for oEmbed and query parameter operations.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       0.3.1

@@ -7,7 +7,7 @@
  * plugin statuses, and other editor-specific operations. This class focuses on
  * Gutenberg as a whole, rather than specific block operations.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @version       1.0.0
  */
 

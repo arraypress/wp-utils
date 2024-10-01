@@ -7,7 +7,7 @@
  * and valid data handling across a variety of scenarios. Each function is designed to sanitize its
  * input based on context, such as text fields, filenames, slugs, and more.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       0.3.0

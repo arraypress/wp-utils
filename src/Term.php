@@ -12,7 +12,7 @@
  * - Term path and depth calculation
  * - Utility methods for term validation and information retrieval
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

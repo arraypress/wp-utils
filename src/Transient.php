@@ -7,7 +7,7 @@
  * It includes functionality for working with expiration times, patterns, and
  * managing transients by prefix, suffix, or substring.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

@@ -7,7 +7,7 @@
  * It includes functionality for type casting, working with arrays, and deleting options
  * by patterns, prefixes, or suffixes.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

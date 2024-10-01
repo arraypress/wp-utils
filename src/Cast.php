@@ -7,7 +7,7 @@
  * It offers flexible type conversions, including string manipulation, boolean handling, and
  * numeric conversions, ensuring robust handling of various input types.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

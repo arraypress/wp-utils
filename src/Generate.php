@@ -7,7 +7,7 @@
  * filenames, UUIDs, and hashes, as well as creating random color codes. These utilities
  * ensure flexibility and ease of use across a variety of WordPress applications.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

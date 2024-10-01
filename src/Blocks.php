@@ -6,7 +6,7 @@
  * It includes methods for retrieving, filtering, and manipulating multiple blocks, as well as
  * handling block-related operations at a higher level.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @version       1.0.0
  */
 

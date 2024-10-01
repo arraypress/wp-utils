@@ -5,7 +5,7 @@
  * This class provides utility methods for handling and manipulating email addresses,
  * including validation, anonymization, domain extraction, and generation of test emails.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

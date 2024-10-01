@@ -6,7 +6,7 @@
  * It provides a set of static methods encapsulated in the Site class to handle various
  * site-specific tasks and retrieve site information.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0

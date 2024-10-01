@@ -5,7 +5,7 @@
  * This class provides utility functions for handling date and time operations,
  * including conversions, formatting, and specific date/time component retrieval.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       2.1.0

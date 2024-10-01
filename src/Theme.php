@@ -6,7 +6,7 @@
  * It provides a set of static methods encapsulated in the Theme class to handle various
  * theme-specific tasks and retrieve theme information.
  *
- * @package       ArrayPress/Utils
+ * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later
  * @version       1.0.0
