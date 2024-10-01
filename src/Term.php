@@ -23,10 +23,10 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils;
 
-// Prevent direct file access
 use WP_Term;
 use WP_Error;
 
+// Prevent direct file access
 defined( 'ABSPATH' ) || exit;
 
 /**
