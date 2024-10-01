@@ -29,71 +29,86 @@ if ( ! class_exists( 'Extract' ) ) :
 	class Extract {
 
 		/**
-		 * Extract mentions (@username) from a string.
+		 * Extract unique mentions (@username) from a string.
 		 *
 		 * @param string $string The input string.
 		 *
-		 * @return array An array of extracted mentions.
+		 * @return array An array of unique extracted mentions.
 		 */
 		public static function mentions( string $string ): array {
 			preg_match_all( '/@(\w+)/', $string, $matches );
 
-			return $matches[1];
+			return ! empty( $matches[1] ) ? array_unique( $matches[1] ) : [];
 		}
 
 		/**
-		 * Extract hashtags (#hashtag) from a string.
+		 * Extract unique hashtags (#hashtag) from a string.
 		 *
 		 * @param string $string The input string.
 		 *
-		 * @return array An array of extracted hashtags.
+		 * @return array An array of unique extracted hashtags.
 		 */
 		public static function hashtags( string $string ): array {
 			preg_match_all( '/#(\w+)/', $string, $matches );
 
-			return $matches[1];
+			return ! empty( $matches[1] ) ? array_unique( $matches[1] ) : [];
 		}
 
 		/**
-		 * Extract URLs from a string.
+		 * Extract unique and valid URLs from a string.
 		 *
 		 * @param string $string The input string.
 		 *
-		 * @return array An array of extracted URLs.
+		 * @return array An array of unique, validated URLs.
 		 */
 		public static function urls( string $string ): array {
+			// Extract URLs using WordPress function
 			$urls = wp_extract_urls( $string );
 
-			return array_filter( $urls, function ( $url ) {
-				return wp_http_validate_url( $url ) !== false;
-			} );
+			// Validate URLs and remove duplicates
+			$valid_urls = array_unique( array_filter( $urls, function ( $url ) {
+				return filter_var( $url, FILTER_VALIDATE_URL ) !== false;
+			} ) );
+
+			// Reindex the array
+			return array_values( $valid_urls );
 		}
 
 		/**
-		 * Extract email addresses from a string.
+		 * Extract unique email addresses from a string.
 		 *
 		 * @param string $string The input string.
 		 *
-		 * @return array An array of extracted email addresses.
+		 * @return array An array of unique extracted email addresses.
 		 */
 		public static function emails( string $string ): array {
 			$words  = str_word_count( $string, 1, '.@+-_' );
 			$emails = array_filter( $words, 'is_email' );
 
-			return array_values( $emails );
+			// Remove duplicates and reindex the array
+			return array_values( array_unique( $emails ) );
 		}
 
 		/**
 		 * Extract monetary amounts from a string.
 		 *
-		 * @param string $string The input string.
+		 * @param string $string           The input string.
+		 * @param bool   $include_negative Whether to include negative amounts (default false).
 		 *
 		 * @return array An array of extracted monetary amounts.
 		 */
-		public static function amounts( string $string ): array {
-			preg_match_all( '/\$?\s?([0-9,]+(\.[0-9]{2})?)/', $string, $matches );
+		public static function amounts( string $string, bool $include_negative = false ): array {
+			$pattern = $include_negative
+				? '/(-?\$?\s?[0-9,]+(\.[0-9]{2})?)/u'
+				: '/(\$?\s?[0-9,]+(\.[0-9]{2})?)/u';
 
-			return array_map( 'floatval', str_replace( ',', '', $matches[1] ) );
+			preg_match_all( $pattern, $string, $matches );
+
+			return array_map( function ( $amount ) {
+				$amount = str_replace( [ ',', '$', ' ' ], '', $amount );
+
+				return floatval( $amount );
+			}, $matches[1] );
 		}
 
 		/**
@@ -108,21 +123,22 @@ if ( ! class_exists( 'Extract' ) ) :
 			$ip_addresses = array_filter( $words, 'rest_is_ip_address' );
 
 			// Re-index the array to remove gaps in keys
-			return array_values( $ip_addresses );
+			return array_values( array_unique( $ip_addresses ) );
 		}
 
 		/**
-		 * Extract phone numbers from a string.
+		 * Extract unique phone numbers from a string.
 		 *
 		 * @param string $string The input string.
 		 *
-		 * @return array An array of extracted phone numbers.
+		 * @return array An array of unique extracted phone numbers.
 		 */
 		public static function phone_numbers( string $string ): array {
 			$pattern = '/\+?([0-9]{1,4})?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/';
 			preg_match_all( $pattern, $string, $matches );
 
-			return array_map( 'trim', $matches[0] );
+			// Remove duplicates and reindex the array
+			return array_values( array_unique( array_map( 'trim', $matches[0] ) ) );
 		}
 
 		/**
@@ -349,7 +365,7 @@ if ( ! class_exists( 'Extract' ) ) :
 				return Validate::is_hex_color( $word );
 			} );
 
-			return array_values( $hex_colors );
+			return array_values( array_unique( $hex_colors ) );
 		}
 
 		/**

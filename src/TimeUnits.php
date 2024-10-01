@@ -16,7 +16,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\i18n;
+namespace ArrayPress\Utils;
 
 /**
  * Check if the class `TimeUnits` is defined, and if not, define it.
