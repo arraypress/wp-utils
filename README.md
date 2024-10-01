@@ -1,6 +1,6 @@
 # WordPress Utility Library
 
-The WordPress Utility Library is a comprehensive collection of helper functions and utilities designed to enhance WordPress development. This library provides a wide range of tools to simplify common tasks and extend WordPress functionality across various domains, including block management, data manipulation, database operations, and more.
+A comprehensive collection of helper functions and utilities designed to enhance WordPress plugin and theme development. This library provides a wide range of tools to simplify common tasks and extend WordPress functionality across various domains, including block management, data manipulation, database operations, and more.
 
 ## Installation
 
