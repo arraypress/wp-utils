@@ -216,10 +216,12 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 		/**
 		 * Get an array of date formats.
 		 *
+		 * @param string|null $context Optional. The context in which the date formats are being retrieved.
+		 *
 		 * @return array An array of date formats in label/value format.
 		 */
-		public static function get_date_formats(): array {
-			return [
+		public static function get_date_formats( ?string $context = null ): array {
+			$formats = [
 				[
 					'value' => 'Y-m-d',
 					'label' => esc_html__( 'YYYY-MM-DD', 'arraypress' ),
@@ -241,15 +243,25 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 					'label' => esc_html__( 'MM-DD-YYYY', 'arraypress' ),
 				],
 			];
+
+			/**
+			 * Filters the date formats.
+			 *
+			 * @param array       $formats The default date formats.
+			 * @param string|null $context The context in which the date formats are being retrieved.
+			 */
+			return apply_filters( 'arraypress_date_formats', $formats, $context );
 		}
 
 		/**
 		 * Get an array of time formats.
 		 *
+		 * @param string|null $context Optional. The context in which the time formats are being retrieved.
+		 *
 		 * @return array An array of time formats in label/value format.
 		 */
-		public static function get_time_formats(): array {
-			return [
+		public static function get_time_formats( ?string $context = null ): array {
+			$formats = [
 				[
 					'value' => 'H:i',
 					'label' => esc_html__( 'HH:MM (24-hour)', 'arraypress' ),
@@ -267,6 +279,14 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 					'label' => esc_html__( 'hh:MM:SS AM/PM (12-hour)', 'arraypress' ),
 				],
 			];
+
+			/**
+			 * Filters the time formats.
+			 *
+			 * @param array       $formats The default time formats.
+			 * @param string|null $context The context in which the time formats are being retrieved.
+			 */
+			return apply_filters( 'arraypress_time_formats', $formats, $context );
 		}
 
 		/**
