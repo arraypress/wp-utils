@@ -178,6 +178,7 @@ if ( ! class_exists( 'Date' ) ) :
 		 * @param string $unit  Unit of time (years, months, days, hours, minutes, seconds).
 		 *
 		 * @return int The difference in the specified unit.
+		 * @throws \DateMalformedStringException
 		 */
 		public static function diff( $date1, $date2, string $unit = 'days' ): int {
 			$datetime1 = new \DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date1 ) ) );
@@ -208,6 +209,7 @@ if ( ! class_exists( 'Date' ) ) :
 		 * @param string $unit   The unit (years, months, days, hours, minutes, seconds).
 		 *
 		 * @return string The new date after adding the interval.
+		 * @throws \DateMalformedStringException
 		 */
 		public static function add( $date, int $amount, string $unit ): string {
 			$datetime = new \DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date ) ) );
@@ -223,6 +225,7 @@ if ( ! class_exists( 'Date' ) ) :
 		 * @param int $year        Optional. The year. Default is current year.
 		 *
 		 * @return array Associative array with 'start' and 'end' timestamps.
+		 * @throws \DateMalformedStringException
 		 */
 		public static function week_range( int $week_number, int $year = 0 ): array {
 			$year       = $year ?: date( 'Y' );
@@ -296,6 +299,62 @@ if ( ! class_exists( 'Date' ) ) :
 			];
 
 			return ( $seconds_map[ strtolower( $period ) ] ?? 0 ) * $count;
+		}
+
+		/**
+		 * Check if a date is a weekend.
+		 *
+		 * @param string $date Date string.
+		 *
+		 * @return bool True if weekend, false otherwise.
+		 */
+		public static function is_weekend( string $date ): bool {
+			return in_array( date( 'N', strtotime( $date ) ), array( 6, 7 ) );
+		}
+
+		/**
+		 * Check if a given date is a weekday.
+		 *
+		 * @param string $date Date string.
+		 *
+		 * @return bool True if weekday, false if weekend.
+		 */
+		public static function is_weekday( string $date ): bool {
+			return ! self::is_weekend( $date );
+		}
+
+		/**
+		 * Get the number of days in a given month and year.
+		 *
+		 * @param int $month Month number (1-12).
+		 * @param int $year  Year (4 digits).
+		 *
+		 * @return int Number of days in the month.
+		 */
+		public static function days_in_month( int $month, int $year ): int {
+			return cal_days_in_month( CAL_GREGORIAN, $month, $year );
+		}
+
+		/**
+		 * Get an array of dates between two dates.
+		 *
+		 * @param string $start_date Start date.
+		 * @param string $end_date   End date.
+		 * @param string $format     Output date format.
+		 *
+		 * @return array Array of dates.
+		 */
+		public static function get_date_range( string $start_date, string $end_date, string $format = 'Y-m-d' ): array {
+			$dates   = array();
+			$current = strtotime( $start_date );
+			$end     = strtotime( $end_date );
+
+			while ( $current <= $end ) {
+				$dates[] = date( $format, $current );
+				$current = strtotime( '+1 day', $current );
+			}
+
+			return $dates;
 		}
 
 		/**
