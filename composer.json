@@ -1,19 +1,15 @@
 {
   "name": "arraypress/wp-utils",
   "description": "A comprehensive utility library for WordPress plugin development, offering a rich set of helper classes and methods for efficient handling of posts, terms, users, and other WordPress elements.",
-  "homepage": "https://github.com/arraypress/wp-utils/",
   "type": "library",
   "license": "GPL-2.0-or-later",
+  "homepage": "https://github.com/arraypress/wp-utils/",
   "authors": [
     {
       "name": "David Sherlock",
       "homepage": "https://arraypress.com/"
     }
   ],
-  "config": {
-    "optimize-autoloader": true,
-    "sort-packages": true
-  },
   "require": {
     "php": "^7.4 || ^8.0"
   },
@@ -22,6 +18,20 @@
       "ArrayPress\\Utils\\": "src/"
     }
   },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "support": {
+    "issues": "https://github.com/arraypress/wp-utils/issues",
+    "source": "https://github.com/arraypress/wp-utils"
+  },
+  "keywords": [
+    "wordpress",
+    "utilities",
+    "plugin-development",
+    "helper-classes"
+  ]
 }
