@@ -37,11 +37,12 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 		/**
 		 * Get available time units.
 		 *
-		 * @param bool $include_times Optional. Whether to include time-based durations (hour, minute, second). Default false.
+		 * @param bool        $include_times Optional. Whether to include time-based durations (hour, minute, second). Default false.
+		 * @param string|null $context       Optional. The context in which the time units are being retrieved.
 		 *
 		 * @return array An array of available time units.
 		 */
-		public static function get_time_units( bool $include_times = false ): array {
+		public static function get_time_units( bool $include_times = false, ?string $context = null ): array {
 			$durations = [
 				[
 					'value' => 'day',
@@ -78,7 +79,14 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 				] );
 			}
 
-			return $durations;
+			/**
+			 * Filters the available time units.
+			 *
+			 * @param array       $durations     The array of time units.
+			 * @param bool        $include_times Whether time-based durations are included.
+			 * @param string|null $context       The context in which the time units are being retrieved.
+			 */
+			return apply_filters( 'arraypress_time_units', $durations, $include_times, $context );
 		}
 
 
@@ -262,6 +270,59 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 		}
 
 		/**
+		 * Get period labels for singular and plural forms.
+		 *
+		 * @return array An array of period labels.
+		 */
+		public static function get_period_labels(): array {
+			$labels = [
+				'day'       => [
+					'singular' => _x( 'day', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'days', 'time period plural', 'arraypress' ),
+				],
+				'week'      => [
+					'singular' => _x( 'week', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'weeks', 'time period plural', 'arraypress' ),
+				],
+				'month'     => [
+					'singular' => _x( 'month', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'months', 'time period plural', 'arraypress' ),
+				],
+				'quarter'   => [
+					'singular' => _x( 'quarter', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'quarters', 'time period plural', 'arraypress' ),
+				],
+				'semi-year' => [
+					'singular' => _x( 'six months', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'six months', 'time period plural', 'arraypress' ),
+				],
+				'year'      => [
+					'singular' => _x( 'year', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'years', 'time period plural', 'arraypress' ),
+				],
+				'hour'      => [
+					'singular' => _x( 'hour', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'hours', 'time period plural', 'arraypress' ),
+				],
+				'minute'    => [
+					'singular' => _x( 'minute', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'minutes', 'time period plural', 'arraypress' ),
+				],
+				'second'    => [
+					'singular' => _x( 'second', 'time period singular', 'arraypress' ),
+					'plural'   => _x( 'seconds', 'time period plural', 'arraypress' ),
+				],
+			];
+
+			/**
+			 * Filters the period labels.
+			 *
+			 * @param array $labels The default period labels.
+			 */
+			return apply_filters( 'arraypress_period_labels', $labels );
+		}
+
+		/**
 		 * Gets the localized label for a time period.
 		 *
 		 * @param string $period The period type (e.g., 'day', 'week', 'month', etc.).
@@ -271,34 +332,80 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 		 */
 		public static function get_period_label( string $period, int $count = 1 ): string {
 			$period = strtolower( $period );
+			$labels = self::get_period_labels();
 
-			$labels = [
-				'day'       => _nx( 'day', 'days', $count, 'time period', 'arraypress' ),
-				'week'      => _nx( 'week', 'weeks', $count, 'time period', 'arraypress' ),
-				'month'     => _nx( 'month', 'months', $count, 'time period', 'arraypress' ),
-				'quarter'   => _x( 'quarter', 'time period', 'arraypress' ),
-				'semi-year' => _x( 'six months', 'time period', 'arraypress' ),
-				'year'      => _nx( 'year', 'years', $count, 'time period', 'arraypress' ),
-				'hour'      => _nx( 'hour', 'hours', $count, 'time period', 'arraypress' ),
-				'minute'    => _nx( 'minute', 'minutes', $count, 'time period', 'arraypress' ),
-				'second'    => _nx( 'second', 'seconds', $count, 'time period', 'arraypress' ),
-			];
+			if ( isset( $labels[ $period ] ) ) {
+				return $count === 1 ? $labels[ $period ]['singular'] : $labels[ $period ]['plural'];
+			}
 
-			return $labels[ $period ] ?? $period;
+			return $period;
 		}
 
 		/**
 		 * Formats a time period with its count.
 		 *
-		 * @param string $period The period type.
-		 * @param int    $count  The count of the periods.
+		 * @param string      $period  The period type.
+		 * @param int         $count   The count of the periods.
+		 * @param string|null $context Optional. The context in which the period is being formatted.
 		 *
 		 * @return string The formatted time period string.
 		 */
-		public static function format_period( string $period, int $count ): string {
+		public static function format_period( string $period, int $count, ?string $context = null ): string {
 			$label = self::get_period_label( $period, $count );
 
-			return sprintf( _n( '%d %s', '%d %s', $count, 'arraypress' ), $count, $label );
+			/**
+			 * Filters the formatted period string.
+			 *
+			 * @param string      $formatted The default formatted string.
+			 * @param string      $period    The period type.
+			 * @param int         $count     The count of periods.
+			 * @param string      $label     The localized period label.
+			 * @param string|null $context   The context in which the period is being formatted.
+			 */
+			return apply_filters(
+				'arraypress_formatted_period',
+				sprintf( _n( '%d %s', '%d %s', $count, 'arraypress' ), $count, $label ),
+				$period,
+				$count,
+				$label,
+				$context
+			);
+		}
+
+		/**
+		 * Get available recurring periods.
+		 *
+		 * @return array An array of recurring periods with their labels.
+		 */
+		public static function get_recurring_periods( ?string $context = null ): array {
+			$periods = [
+				'day'     => __( 'Per Day', 'arraypress' ),
+				'week'    => __( 'Per Week', 'arraypress' ),
+				'month'   => __( 'Per Month', 'arraypress' ),
+				'quarter' => __( 'Per Quarter', 'arraypress' ),
+				'year'    => __( 'Per Year', 'arraypress' )
+			];
+
+			/**
+			 * Filters the recurring periods.
+			 *
+			 * @param array       $periods The default recurring periods.
+			 * @param string|null $context The context in which the periods are being retrieved.
+			 */
+			return apply_filters( 'arraypress_recurring_periods', $periods, $context );
+		}
+
+		/**
+		 * Get the label for a specific recurring period.
+		 *
+		 * @param string $period The period key.
+		 *
+		 * @return string|null The label for the period, or null if not found.
+		 */
+		public static function get_recurring_period_label( string $period ): ?string {
+			$periods = self::get_recurring_periods();
+
+			return $periods[ $period ] ?? null;
 		}
 
 	}
