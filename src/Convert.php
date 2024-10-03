@@ -77,7 +77,7 @@ if ( ! class_exists( 'Convert' ) ) :
 		 *
 		 * @return array An array containing 'prefix', 'first_name', 'middle_name', 'last_name', and 'suffix'.
 		 */
-		public static function split_full_name( string $full_name ): array {
+		public static function split_name( string $full_name ): array {
 			$name_parts = preg_split( '/\s+/', trim( $full_name ) );
 			$result     = [
 				'prefix'      => '',
@@ -199,33 +199,6 @@ if ( ! class_exists( 'Convert' ) ) :
 		 */
 		public static function prettify_version( string $version ): string {
 			return preg_replace( '/(\d+\.\d+)\.0+$/', '$1', $version );
-		}
-
-		/**
-		 * Convert a value-label array to a key-value array.
-		 *
-		 * This function takes an array of associative arrays with 'value' and 'label' keys
-		 * and converts it to a simple key-value array where 'value' becomes the key.
-		 * It returns an empty array if the input is empty.
-		 *
-		 * @param array $input The input array in value-label format.
-		 *
-		 * @return array The converted key-value array.
-		 */
-		public static function to_key_value( array $input ): array {
-			if ( empty( $input ) ) {
-				return [];
-			}
-
-			$output = [];
-
-			foreach ( $input as $item ) {
-				if ( isset( $item['value'] ) && isset( $item['label'] ) ) {
-					$output[ $item['value'] ] = $item['label'];
-				}
-			}
-
-			return $output;
 		}
 
 		/**
