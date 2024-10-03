@@ -35,6 +35,39 @@ if ( ! class_exists( 'SQL' ) ) :
 	class SQL {
 
 		/**
+		 * Safely check if a row exists in a specified table.
+		 *
+		 * @param string $table  The name of the table to check (without prefix).
+		 * @param string $column The column to check against.
+		 * @param mixed  $value  The value to look for.
+		 *
+		 * @return bool True if the row exists, false otherwise.
+		 */
+		public static function row_exists( string $table, string $column, ?int $value ): bool {
+			global $wpdb;
+
+			// Validate input
+			if ( empty( $table ) || empty( $column ) || $value === null ) {
+				return false;
+			}
+
+			// Sanitize table and column names
+			$table  = sanitize_key( $table );
+			$column = sanitize_key( $column );
+
+			// Construct the query
+			$sql = $wpdb->prepare(
+				"SELECT EXISTS(SELECT 1 FROM {$wpdb->prefix}{$table} WHERE {$column} = %d LIMIT 1) AS result",
+				$value
+			);
+
+			// Execute the query
+			$exists = $wpdb->get_var( $sql );
+
+			return $exists === '1';
+		}
+
+		/**
 		 * Generate a SQL LIKE pattern based on a given pattern and match type.
 		 *
 		 * @param string $pattern The pattern to match against.
