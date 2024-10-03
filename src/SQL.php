@@ -68,6 +68,84 @@ if ( ! class_exists( 'SQL' ) ) :
 		}
 
 		/**
+		 * Check if a table exists in the database.
+		 *
+		 * @param string $table The name of the table to check (without prefix).
+		 *
+		 * @return bool True if the table exists, false otherwise.
+		 */
+		public static function table_exists( string $table ): bool {
+			global $wpdb;
+
+			$table = sanitize_key( $table );
+			$query = $wpdb->prepare(
+				"SHOW TABLES LIKE %s",
+				$wpdb->prefix . $table
+			);
+
+			return (bool) $wpdb->get_var( $query );
+		}
+
+		/**
+		 * Check if a column exists in a specified table.
+		 *
+		 * @param string $table  The name of the table to check (without prefix).
+		 * @param string $column The name of the column to check.
+		 *
+		 * @return bool True if the column exists, false otherwise.
+		 */
+		public static function column_exists( string $table, string $column ): bool {
+			global $wpdb;
+
+			$table  = sanitize_key( $table );
+			$column = sanitize_key( $column );
+
+			$query = $wpdb->prepare(
+				"SHOW COLUMNS FROM {$wpdb->prefix}{$table} LIKE %s",
+				$column
+			);
+
+			return (bool) $wpdb->get_var( $query );
+		}
+
+		/**
+		 * Get the schema (structure) of a specified table.
+		 *
+		 * @param string $table The name of the table (without prefix).
+		 *
+		 * @return array|false An array of column information, or false if the table doesn't exist.
+		 */
+		public static function get_schema( string $table ) {
+			global $wpdb;
+
+			$table = sanitize_key( $table );
+
+			if ( ! self::table_exists( $table ) ) {
+				return false;
+			}
+
+			$query   = "DESCRIBE {$wpdb->prefix}{$table}";
+			$results = $wpdb->get_results( $query, ARRAY_A );
+
+			if ( ! $results ) {
+				return false;
+			}
+
+			$schema = [];
+			foreach ( $results as $row ) {
+				$schema[ $row['Field'] ] = [
+					'type'    => $row['Type'],
+					'null'    => $row['Null'],
+					'key'     => $row['Key'],
+					'default' => $row['Default'],
+					'extra'   => $row['Extra'],
+				];
+			}
+
+			return $schema;
+		}
+
+		/**
 		 * Generate a SQL LIKE pattern based on a given pattern and match type.
 		 *
 		 * @param string $pattern The pattern to match against.
