@@ -154,43 +154,6 @@ if ( ! class_exists( 'Server' ) ) :
 		}
 
 		/**
-		 * Checks if the current connection is secure (SSL).
-		 *
-		 * This method checks for SSL connection using various methods:
-		 * 1. WordPress core is_ssl() function
-		 * 2. WordPress HTTPS plugin (if installed)
-		 * 3. Cloudflare SSL indicator
-		 *
-		 * @return bool True if the connection is secure (SSL), false otherwise.
-		 */
-		public static function is_ssl(): bool {
-			// Check WordPress core function first
-			if ( is_ssl() ) {
-				return true;
-			}
-
-			// Check WordPress HTTPS plugin if available
-			global $wordpress_https;
-			if ( class_exists( 'WordPressHTTPS' ) && isset( $wordpress_https ) ) {
-				if ( method_exists( $wordpress_https, 'is_ssl' ) ) {
-					return $wordpress_https->is_ssl();
-				} elseif ( method_exists( $wordpress_https, 'isSsl' ) ) {
-					return $wordpress_https->isSsl();
-				}
-			}
-
-			// Check Cloudflare SSL indicator
-			if ( isset( $_SERVER['HTTP_CF_VISITOR'] ) ) {
-				$cf_visitor = json_decode( $_SERVER['HTTP_CF_VISITOR'] );
-				if ( isset( $cf_visitor->scheme ) && $cf_visitor->scheme === 'https' ) {
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		/**
 		 * Checks for localhost environment.
 		 *
 		 * @return bool
@@ -241,41 +204,11 @@ if ( ! class_exists( 'Server' ) ) :
 		}
 
 		/**
-		 * Retrieves and sanitizes the HTTP_USER_AGENT from $_SERVER.
-		 *
-		 * This function retrieves the value of HTTP_USER_AGENT from the $_SERVER superglobal,
-		 * sanitizes it using wp_strip_all_tags(), and returns the sanitized user agent.
-		 *
-		 * @return string The sanitized HTTP_USER_AGENT or an empty string if not set.
-		 */
-		public static function get_user_agent(): string {
-			$user_agent = wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' );
-
-			return wp_strip_all_tags( $user_agent );
-		}
-
-		/**
-		 * Retrieves and sanitizes the HTTP_ACCEPT_LANGUAGE from $_SERVER.
-		 *
-		 * This function retrieves the value of HTTP_ACCEPT_LANGUAGE from the $_SERVER superglobal,
-		 * sanitizes it using wp_strip_all_tags(), and returns the sanitized accept language string.
-		 *
-		 * @param string $default The default value to return if HTTP_ACCEPT_LANGUAGE is not set.
-		 *
-		 * @return string The sanitized HTTP_ACCEPT_LANGUAGE or the provided default value.
-		 */
-		public static function get_accept_language( string $default = '' ): string {
-			$accept_language = wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '' );
-
-			return $accept_language ? wp_strip_all_tags( $accept_language ) : $default;
-		}
-
-		/**
 		 * Checks if the current PHP environment is an Apache web server that supports .htaccess files.
 		 *
 		 * @return bool True if running on an Apache web server with .htaccess support, false otherwise.
 		 */
-		public static function is_htaccess_supported(): bool {
+		public static function has_apache_mod_rewrite(): bool {
 			if ( function_exists( 'apache_get_modules' ) ) {
 				return in_array( 'mod_rewrite', apache_get_modules(), true );
 			}
@@ -373,15 +306,6 @@ if ( ! class_exists( 'Server' ) ) :
 		}
 
 		/**
-		 * Checks if the server is running in CLI mode.
-		 *
-		 * @return bool True if running in CLI mode, false otherwise.
-		 */
-		public static function is_cli(): bool {
-			return ( php_sapi_name() === 'cli' || defined( 'STDIN' ) );
-		}
-
-		/**
 		 * Retrieves the server's current load average.
 		 *
 		 * @return array|null An array containing load averages (1 min, 5 min, 15 min) or null if not available.
@@ -456,33 +380,6 @@ if ( ! class_exists( 'Server' ) ) :
 		}
 
 		/**
-		 * Returns the sanitized version of the `$_REQUEST` super-global array.
-		 *
-		 * @param bool $refresh Whether to refresh the cache.
-		 *
-		 * @return array The sanitized version of the `$_REQUEST` super-global.
-		 */
-		public static function get_request_vars( bool $refresh = false ): array {
-			static $cache = null;
-
-			if ( null !== $cache && ! $refresh ) {
-				return $cache;
-			}
-
-			$cache = array();
-			foreach ( $_REQUEST as $key => $value ) {
-				$sanitized_key = sanitize_key( $key );
-				if ( is_array( $value ) ) {
-					$cache[ $sanitized_key ] = array_map( 'sanitize_text_field', $value );
-				} else {
-					$cache[ $sanitized_key ] = sanitize_text_field( $value );
-				}
-			}
-
-			return $cache;
-		}
-
-		/**
 		 * Converts a string representation of file size to bytes.
 		 *
 		 * @param string $size The size string (e.g., '2M', '1G').
@@ -533,24 +430,6 @@ if ( ! class_exists( 'Server' ) ) :
 			}
 
 			return false;
-		}
-
-		/**
-		 * Checks if the current request is an AJAX request.
-		 *
-		 * @return bool True if it's an AJAX request, false otherwise.
-		 */
-		public static function is_ajax_request(): bool {
-			return defined( 'DOING_AJAX' ) && DOING_AJAX;
-		}
-
-		/**
-		 * Checks if the current request is a REST API request.
-		 *
-		 * @return bool True if it's a REST API request, false otherwise.
-		 */
-		public static function is_rest_request(): bool {
-			return defined( 'REST_REQUEST' ) && REST_REQUEST;
 		}
 
 		/**
