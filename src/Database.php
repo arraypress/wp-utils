@@ -34,6 +34,117 @@ if ( ! class_exists( 'Database' ) ) :
 	class Database {
 
 		/**
+		 * Safely check if a row exists in a specified table.
+		 *
+		 * @param string $table  The name of the table to check (without prefix).
+		 * @param string $column The column to check against.
+		 * @param mixed  $value  The value to look for.
+		 *
+		 * @return bool True if the row exists, false otherwise.
+		 */
+		public static function row_exists( string $table, string $column, ?int $value ): bool {
+			global $wpdb;
+
+			// Validate input
+			if ( empty( $table ) || empty( $column ) || $value === null ) {
+				return false;
+			}
+
+			// Sanitize table and column names
+			$table  = sanitize_key( $table );
+			$column = sanitize_key( $column );
+
+			// Construct the query
+			$sql = $wpdb->prepare(
+				"SELECT EXISTS(SELECT 1 FROM {$wpdb->prefix}{$table} WHERE {$column} = %d LIMIT 1) AS result",
+				$value
+			);
+
+			// Execute the query
+			$exists = $wpdb->get_var( $sql );
+
+			return $exists === '1';
+		}
+
+		/**
+		 * Check if a table exists in the database.
+		 *
+		 * @param string $table The name of the table to check (without prefix).
+		 *
+		 * @return bool True if the table exists, false otherwise.
+		 */
+		public static function table_exists( string $table ): bool {
+			global $wpdb;
+
+			$table = sanitize_key( $table );
+			$query = $wpdb->prepare(
+				"SHOW TABLES LIKE %s",
+				$wpdb->prefix . $table
+			);
+
+			return (bool) $wpdb->get_var( $query );
+		}
+
+		/**
+		 * Check if a column exists in a specified table.
+		 *
+		 * @param string $table  The name of the table to check (without prefix).
+		 * @param string $column The name of the column to check.
+		 *
+		 * @return bool True if the column exists, false otherwise.
+		 */
+		public static function column_exists( string $table, string $column ): bool {
+			global $wpdb;
+
+			$table  = sanitize_key( $table );
+			$column = sanitize_key( $column );
+
+			$query = $wpdb->prepare(
+				"SHOW COLUMNS FROM {$wpdb->prefix}{$table} LIKE %s",
+				$column
+			);
+
+			return (bool) $wpdb->get_var( $query );
+		}
+
+		/**
+		 * Get the schema (structure) of a specified table.
+		 *
+		 * @param string $table The name of the table (without prefix).
+		 *
+		 * @return array|false An array of column information, or false if the table doesn't exist.
+		 */
+		public static function get_schema( string $table ) {
+			global $wpdb;
+
+			$table = sanitize_key( $table );
+
+			if ( ! self::table_exists( $table ) ) {
+				return false;
+			}
+
+			$query   = "DESCRIBE {$wpdb->prefix}{$table}";
+			$results = $wpdb->get_results( $query, ARRAY_A );
+
+			if ( ! $results ) {
+				return false;
+			}
+
+			$schema = [];
+			foreach ( $results as $row ) {
+				$schema[ $row['Field'] ] = [
+					'type'    => $row['Type'],
+					'null'    => $row['Null'],
+					'key'     => $row['Key'],
+					'default' => $row['Default'],
+					'extra'   => $row['Extra'],
+				];
+			}
+
+			return $schema;
+		}
+
+		/**
 		 * Retrieves the MySQL server version.
 		 *
 		 * @return array Version information.
@@ -59,51 +170,102 @@ if ( ! class_exists( 'Database' ) ) :
 		/**
 		 * Get the table name for a given object type.
 		 *
-		 * @param string $object_type The type of object (e.g., 'post', 'user', 'term', 'comment').
+		 * @param string $object_type The type of object (e.g., 'post', 'user', 'term', 'comment', 'product', 'order').
 		 *
-		 * @return string The table name.
-		 * @throws \InvalidArgumentException If an invalid object type is provided.
+		 * @return string|null The table name. Null on failure.
 		 */
-		public static function get_table_name( string $object_type ): string {
+		public static function get_table_name( string $object_type ): ?string {
 			global $wpdb;
 
-			switch ( $object_type ) {
-				case 'post':
-					return $wpdb->posts;
-				case 'user':
-					return $wpdb->users;
-				case 'term':
-					return $wpdb->terms;
-				case 'comment':
-					return $wpdb->comments;
-				default:
-					throw new \InvalidArgumentException( "Invalid object type: $object_type" );
+			// Check for standard WordPress tables
+			$standard_tables = [
+				'post'    => $wpdb->posts,
+				'user'    => $wpdb->users,
+				'term'    => $wpdb->terms,
+				'comment' => $wpdb->comments,
+			];
+
+			if ( isset( $standard_tables[ $object_type ] ) ) {
+				return $standard_tables[ $object_type ];
 			}
+
+			// Array of possible variations to check
+			$variations = [
+				$object_type,
+				rtrim( $object_type, 's' ),
+				$object_type . 's',
+				$object_type . 'es',
+				substr( $object_type, 0, - 1 ) . 'ies', // For plurals like "category" -> "categories"
+			];
+
+			// Check for custom registered tables
+			foreach ( $variations as $variation ) {
+				if ( isset( $wpdb->$variation ) ) {
+					return $wpdb->$variation;
+				}
+			}
+
+			// If no table is found, check if there's a constant defined for this table
+			$constant_name = strtoupper( $wpdb->prefix . $object_type );
+			if ( defined( $constant_name ) ) {
+				return constant( $constant_name );
+			}
+
+			return null;
 		}
 
 		/**
 		 * Get the name of the metadata table for a given object type.
 		 *
-		 * @param string $meta_type The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param string $meta_type The type of object metadata is for (e.g., 'post', 'user', 'term', 'comment').
 		 *
-		 * @return string The name of the metadata table.
-		 * @throws \InvalidArgumentException If an invalid meta type is provided.
+		 * @return string The name of the metadata table. Null on failure.
 		 */
-		public static function get_meta_table_name( string $meta_type ): string {
+		public static function get_meta_table_name( string $meta_type ): ?string {
 			global $wpdb;
 
-			switch ( $meta_type ) {
-				case 'post':
-					return $wpdb->postmeta;
-				case 'user':
-					return $wpdb->usermeta;
-				case 'term':
-					return $wpdb->termmeta;
-				case 'comment':
-					return $wpdb->commentmeta;
-				default:
-					throw new \InvalidArgumentException( "Invalid meta type: $meta_type" );
+			// Check for standard WordPress metadata tables
+			$standard_meta_tables = [
+				'post'    => $wpdb->postmeta,
+				'user'    => $wpdb->usermeta,
+				'term'    => $wpdb->termmeta,
+				'comment' => $wpdb->commentmeta,
+			];
+
+			if ( isset( $standard_meta_tables[ $meta_type ] ) ) {
+				return $standard_meta_tables[ $meta_type ];
 			}
+
+			// Array of possible variations to check for custom meta tables
+			$variations = [
+				$meta_type . 'meta',
+				$meta_type . '_meta',
+				rtrim( $meta_type, 's' ) . 'meta',
+				rtrim( $meta_type, 's' ) . '_meta',
+			];
+
+			// Check for custom registered meta tables
+			foreach ( $variations as $variation ) {
+				if ( isset( $wpdb->$variation ) ) {
+					return $wpdb->$variation;
+				}
+			}
+
+			// If no table is found, check if there's a constant defined for this meta table
+			$constant_name = strtoupper( $wpdb->prefix . $meta_type . '_META' );
+			if ( defined( $constant_name ) ) {
+				return constant( $constant_name );
+			}
+
+			// If still no table is found, use WordPress's get_metadata_table() function if available
+			if ( function_exists( 'get_metadata_table' ) ) {
+				$table_name = get_metadata_table( $meta_type );
+				if ( $table_name ) {
+					return $table_name;
+				}
+			}
+
+			return null;
 		}
 
 		/**
@@ -111,35 +273,33 @@ if ( ! class_exists( 'Database' ) ) :
 		 *
 		 * @param string $object_type The type of object (e.g., 'post', 'user', 'term', 'comment').
 		 *
-		 * @return string The primary key column name.
-		 * @throws \InvalidArgumentException If an invalid object type is provided.
+		 * @return string|null The primary key column name, or null if not found.
 		 */
-		public static function get_primary_key_column( string $object_type ): string {
-			switch ( $object_type ) {
-				case 'user':
-				case 'post':
-					return 'ID';
-				case 'term':
-					return 'term_id';
-				case 'comment':
-					return 'comment_ID';
-				default:
-					throw new \InvalidArgumentException( "Invalid object type: $object_type" );
+		public static function get_primary_key_column( string $object_type ): ?string {
+			$standard_keys = [
+				'user'    => 'ID',
+				'post'    => 'ID',
+				'term'    => 'term_id',
+				'comment' => 'comment_ID',
+			];
+
+			if ( isset( $standard_keys[ $object_type ] ) ) {
+				return $standard_keys[ $object_type ];
 			}
-		}
 
-		/**
-		 * Check if a table exists in the database.
-		 *
-		 * @param string $table_name The name of the table to check.
-		 *
-		 * @return bool True if the table exists, false otherwise.
-		 */
-		public static function table_exists( string $table_name ): bool {
-			global $wpdb;
-			$result = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table_name ) );
+			// Check for custom object types
+			$custom_key = $object_type . '_id';
+			if ( self::column_exists( self::get_table_name( $object_type ), $custom_key ) ) {
+				return $custom_key;
+			}
 
-			return $result === $table_name;
+			// Check for 'id' column
+			if ( self::column_exists( self::get_table_name( $object_type ), 'id' ) ) {
+				return 'id';
+			}
+
+			// If no primary key is found, return null
+			return null;
 		}
 
 		/**
@@ -162,24 +322,6 @@ if ( ! class_exists( 'Database' ) ) :
 			global $wpdb;
 
 			return $wpdb->prefix;
-		}
-
-		/**
-		 * Check if a column exists in a table.
-		 *
-		 * @param string $table_name  The name of the table.
-		 * @param string $column_name The name of the column.
-		 *
-		 * @return bool True if the column exists, false otherwise.
-		 */
-		public static function column_exists( string $table_name, string $column_name ): bool {
-			global $wpdb;
-			$result = $wpdb->get_results( $wpdb->prepare(
-				"SHOW COLUMNS FROM `$table_name` LIKE %s",
-				$column_name
-			) );
-
-			return ! empty( $result );
 		}
 
 		/**
@@ -222,18 +364,9 @@ if ( ! class_exists( 'Database' ) ) :
 			return $wpdb->get_blog_prefix( $blog_id );
 		}
 
-		/**
-		 * Convert a database error to a WP_Error object.
-		 *
-		 * @param string $error The database error message.
-		 *
-		 * @return \WP_Error The WP_Error object.
-		 */
-		public static function db_error_to_wp_error( string $error ): \WP_Error {
-			return new \WP_Error( 'database_error', $error );
-		}
-
-
-
 	}
+
+	// Create an alias 'DB' for the Database class
+	class_alias( 'ArrayPress\Utils\Database', 'ArrayPress\Utils\DB' );
+
 endif;

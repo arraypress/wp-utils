@@ -372,5 +372,44 @@ if ( ! class_exists( 'Compare' ) ) :
 			return self::numeric( $operator, $relative_timestamp, $date_timestamp );
 		}
 
+		/**
+		 * Get comparison timestamps for a given value.
+		 *
+		 * @param string $value          The value in the format '7day', '8minutes', etc.
+		 * @param string $reference_date The reference date to compare against.
+		 *
+		 * @return array An array with 'reference_timestamp' and 'compare_timestamp'.
+		 */
+		public static function get_comparison_timestamps( string $value, string $reference_date ): array {
+			$unit_value = Str::to_unit_value( $value );
+			$number     = $unit_value['number'];
+			$period     = $unit_value['period'];
+
+			// Check if the number is valid
+			if ( $number === 0 ) {
+				return [
+					'reference_timestamp' => 0,
+					'compare_timestamp'   => 0,
+				];
+			}
+
+			// Build the strtotime-compatible string
+			$time_string = "+$number $period";
+
+			// Get the current time in the WordPress timezone
+			$current_time = current_time( 'timestamp' );
+
+			// Get the timestamp of the reference date
+			$reference_timestamp = strtotime( $reference_date );
+
+			// Get the timestamp of the comparison date
+			$compare_timestamp = strtotime( $time_string, $current_time );
+
+			return [
+				'reference_timestamp' => $reference_timestamp,
+				'compare_timestamp'   => $compare_timestamp,
+			];
+		}
+
 	}
 endif;

@@ -97,5 +97,32 @@ if ( ! class_exists( 'Operators' ) ) :
 				'not_contains' => esc_html__( 'Contains None', 'arraypress' ),
 			];
 		}
+
+		/**
+		 * Convert a human-readable comparison operator to a symbol
+		 *
+		 * @param string $operator The human-readable comparison operator.
+		 *
+		 * @return string|null The symbol comparison operator, or null if the operator is not recognized.
+		 */
+		public static function operator_to_symbol( string $operator ): ?string {
+			switch ( strtolower( $operator ) ) {
+				case 'more_than':
+					return '>';
+				case 'less_than':
+					return '<';
+				case 'at_least':
+					return '>=';
+				case 'at_most':
+					return '<=';
+				case 'equal_to':
+					return '==';
+				case 'not_equal_to':
+					return '!=';
+				default:
+					return null;
+			}
+		}
+
 	}
 endif;

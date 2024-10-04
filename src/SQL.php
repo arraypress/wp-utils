@@ -1,11 +1,10 @@
 <?php
 /**
- * Meta Utilities for WordPress
+ * SQL Utilities for WordPress
  *
- * This class provides utility functions for managing WordPress metadata. It includes
- * methods for splitting key-value pairs, bulk updating meta values, retrieving meta data with defaults,
- * incrementing and decrementing numeric meta values, and managing array-based meta data.
- * Additionally, it offers functionality for deleting meta data based on patterns, prefixes, or suffixes.
+ * This class provides utility functions for generating SQL query components and executing
+ * safe SQL queries within WordPress. It focuses on creating various SQL clauses and
+ * handling placeholders for prepared statements.
  *
  * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
@@ -24,126 +23,12 @@ namespace ArrayPress\Utils;
 if ( ! class_exists( 'SQL' ) ) :
 
 	/**
-	 * Meta Utilities
+	 * SQL Utilities
 	 *
-	 * Provides utility functions for working with WordPress metadata, such as
-	 * splitting key-value pairs, retrieving meta with defaults, incrementing and
-	 * decrementing numeric values, managing array-based meta data, and bulk updating.
-	 * It also includes functions for deleting meta entries based on patterns, prefixes,
-	 * suffixes, or substrings.
+	 * Provides utility functions for generating SQL query components and executing
+	 * safe SQL queries within WordPress.
 	 */
 	class SQL {
-
-		/**
-		 * Safely check if a row exists in a specified table.
-		 *
-		 * @param string $table  The name of the table to check (without prefix).
-		 * @param string $column The column to check against.
-		 * @param mixed  $value  The value to look for.
-		 *
-		 * @return bool True if the row exists, false otherwise.
-		 */
-		public static function row_exists( string $table, string $column, ?int $value ): bool {
-			global $wpdb;
-
-			// Validate input
-			if ( empty( $table ) || empty( $column ) || $value === null ) {
-				return false;
-			}
-
-			// Sanitize table and column names
-			$table  = sanitize_key( $table );
-			$column = sanitize_key( $column );
-
-			// Construct the query
-			$sql = $wpdb->prepare(
-				"SELECT EXISTS(SELECT 1 FROM {$wpdb->prefix}{$table} WHERE {$column} = %d LIMIT 1) AS result",
-				$value
-			);
-
-			// Execute the query
-			$exists = $wpdb->get_var( $sql );
-
-			return $exists === '1';
-		}
-
-		/**
-		 * Check if a table exists in the database.
-		 *
-		 * @param string $table The name of the table to check (without prefix).
-		 *
-		 * @return bool True if the table exists, false otherwise.
-		 */
-		public static function table_exists( string $table ): bool {
-			global $wpdb;
-
-			$table = sanitize_key( $table );
-			$query = $wpdb->prepare(
-				"SHOW TABLES LIKE %s",
-				$wpdb->prefix . $table
-			);
-
-			return (bool) $wpdb->get_var( $query );
-		}
-
-		/**
-		 * Check if a column exists in a specified table.
-		 *
-		 * @param string $table  The name of the table to check (without prefix).
-		 * @param string $column The name of the column to check.
-		 *
-		 * @return bool True if the column exists, false otherwise.
-		 */
-		public static function column_exists( string $table, string $column ): bool {
-			global $wpdb;
-
-			$table  = sanitize_key( $table );
-			$column = sanitize_key( $column );
-
-			$query = $wpdb->prepare(
-				"SHOW COLUMNS FROM {$wpdb->prefix}{$table} LIKE %s",
-				$column
-			);
-
-			return (bool) $wpdb->get_var( $query );
-		}
-
-		/**
-		 * Get the schema (structure) of a specified table.
-		 *
-		 * @param string $table The name of the table (without prefix).
-		 *
-		 * @return array|false An array of column information, or false if the table doesn't exist.
-		 */
-		public static function get_schema( string $table ) {
-			global $wpdb;
-
-			$table = sanitize_key( $table );
-
-			if ( ! self::table_exists( $table ) ) {
-				return false;
-			}
-
-			$query   = "DESCRIBE {$wpdb->prefix}{$table}";
-			$results = $wpdb->get_results( $query, ARRAY_A );
-
-			if ( ! $results ) {
-				return false;
-			}
-
-			$schema = [];
-			foreach ( $results as $row ) {
-				$schema[ $row['Field'] ] = [
-					'type'    => $row['Type'],
-					'null'    => $row['Null'],
-					'key'     => $row['Key'],
-					'default' => $row['Default'],
-					'extra'   => $row['Extra'],
-				];
-			}
-
-			return $schema;
-		}
 
 		/**
 		 * Generate a SQL LIKE pattern based on a given pattern and match type.
@@ -171,20 +56,6 @@ if ( ! class_exists( 'SQL' ) ) :
 		}
 
 		/**
-		 * Prepare an IN clause for a SQL query.
-		 *
-		 * @param array $items An array of items to include in the IN clause.
-		 *
-		 * @return string The prepared IN clause.
-		 */
-		public static function prepare_in_clause( array $items ): string {
-			global $wpdb;
-			$placeholders = array_fill( 0, count( $items ), '%s' );
-
-			return $wpdb->prepare( implode( ',', $placeholders ), $items );
-		}
-
-		/**
 		 * Generate placeholders for a prepared statement based on an array of values.
 		 *
 		 * @param array $values The array of values to generate placeholders for.
@@ -192,115 +63,29 @@ if ( ! class_exists( 'SQL' ) ) :
 		 * @return string The generated placeholders for the prepared statement.
 		 */
 		public static function generate_placeholders( array $values ): string {
-			$sanitized_values = array_map( 'sanitize_text_field', $values );
-
-			$placeholders = array_map( function ( $value ) {
-				return is_numeric( $value ) ? '%d' : '%s';
-			}, $sanitized_values );
-
-			return implode( ', ', $placeholders );
+			return implode( ', ', array_fill( 0, count( $values ), '%s' ) );
 		}
 
 		/**
-		 * Generate an SQL query condition based on a column and query variable.
-		 *
-		 * @param string $column The column name.
-		 * @param mixed  $value  The value to compare.
-		 * @param string $type   The type of the value ('numeric' or 'string').
-		 *
-		 * @return string The generated SQL query condition.
-		 */
-		public static function generate_query_condition( string $column, $value, string $type = 'numeric' ): string {
-			global $wpdb;
-
-			if ( is_null( $value ) ) {
-				return '';
-			}
-
-			if ( $type === 'numeric' && is_numeric( $value ) ) {
-				return $wpdb->prepare( "AND `$column` = %d", $value );
-			} elseif ( $type === 'string' ) {
-				return $wpdb->prepare( "AND `$column` = %s", sanitize_text_field( $value ) );
-			}
-
-			return '';
-		}
-
-		/**
-		 * Generate SQL WHERE clause for comparing amounts.
-		 *
-		 * @param string $column     The column name to compare.
-		 * @param mixed  $amount     The amount to compare against.
-		 * @param string $compare    The comparison operator (e.g., '=', '>', '<', '>=', '<=', '!=').
-		 * @param array  $query_vars The query variables (contains min and max for range comparison).
-		 *
-		 * @return string The generated SQL WHERE clause.
-		 */
-		public static function generate_amount_query_sql( string $column, $amount, string $compare = '=', array $query_vars = [] ): string {
-			global $wpdb;
-
-			$where = '';
-
-			// Validate the comparison operator
-			$valid_operators = [ '=', '!=', '>', '>=', '<', '<=' ];
-			if ( ! in_array( $compare, $valid_operators, true ) ) {
-				$compare = '=';
-			}
-
-			// Amount.
-			if ( ! empty( $amount ) ) {
-				if ( is_array( $amount ) && ! empty( $amount['min'] ) && ! empty( $amount['max'] ) ) {
-					$minimum = absint( $amount['min'] );
-					$maximum = absint( $amount['max'] );
-
-					$where = $wpdb->prepare( "AND `$column` BETWEEN %d AND %d", $minimum, $maximum );
-				} else {
-					$amount = absint( $amount );
-					$where  = $wpdb->prepare( "AND `$column` $compare %d", $amount );
-				}
-			}
-
-			return $where;
-		}
-
-		/**
-		 * Generate an SQL IN clause for a given array of values.
+		 * Generate an SQL IN or NOT IN clause for a given array of values.
 		 *
 		 * @param string $column The column name.
 		 * @param array  $values The array of values.
+		 * @param bool   $not    Whether to generate a NOT IN clause instead of IN.
 		 *
-		 * @return string The generated SQL IN clause.
+		 * @return string The generated SQL IN or NOT IN clause.
 		 */
-		public static function generate_in_clause( string $column, array $values ): string {
+		public static function generate_in_clause( string $column, array $values, bool $not = false ): string {
 			global $wpdb;
 
 			if ( empty( $values ) ) {
-				return '1=0'; // Return a condition that will always be false
+				return $not ? '1=1' : '1=0';
 			}
 
 			$placeholders = self::generate_placeholders( $values );
+			$operator     = $not ? 'NOT IN' : 'IN';
 
-			return $wpdb->prepare( "$column IN ($placeholders)", ...$values );
-		}
-
-		/**
-		 * Generate an SQL NOT IN clause for a given array of values.
-		 *
-		 * @param string $column The column name.
-		 * @param array  $values The array of values.
-		 *
-		 * @return string The generated SQL NOT IN clause.
-		 */
-		public static function generate_not_in_clause( string $column, array $values ): string {
-			global $wpdb;
-
-			if ( empty( $values ) ) {
-				return '1=1'; // Return a condition that will always be true
-			}
-
-			$placeholders = self::generate_placeholders( $values );
-
-			return $wpdb->prepare( "$column NOT IN ($placeholders)", ...$values );
+			return $wpdb->prepare( "$column $operator ($placeholders)", $values );
 		}
 
 		/**
@@ -314,22 +99,7 @@ if ( ! class_exists( 'SQL' ) ) :
 		public static function generate_like_clause( string $column, string $value ): string {
 			global $wpdb;
 
-			$wildcard_value = self::generate_wildcard( $value );
-
-			return $wpdb->prepare( "$column LIKE %s", $wildcard_value );
-		}
-
-		/**
-		 * Execute a custom SQL query and return the results.
-		 *
-		 * @param string $query The SQL query to execute.
-		 *
-		 * @return array The query results.
-		 */
-		public static function get_results_by_query( string $query ): array {
-			global $wpdb;
-
-			return $wpdb->get_results( $query, ARRAY_A );
+			return $wpdb->prepare( "$column LIKE %s", '%' . $wpdb->esc_like( $value ) . '%' );
 		}
 
 		/**
@@ -338,86 +108,13 @@ if ( ! class_exists( 'SQL' ) ) :
 		 * @param string $column The column name.
 		 * @param mixed  $min    The minimum value for the range.
 		 * @param mixed  $max    The maximum value for the range.
-		 * @param string $type   The type of the values ('numeric' or 'string').
 		 *
 		 * @return string The generated SQL range condition.
 		 */
-		public static function generate_range_query_condition( string $column, $min, $max, string $type = 'numeric' ): string {
+		public static function generate_range_condition( string $column, $min, $max ): string {
 			global $wpdb;
 
-			if ( is_null( $min ) || is_null( $max ) ) {
-				return '';
-			}
-
-			if ( $type === 'numeric' && is_numeric( $min ) && is_numeric( $max ) ) {
-				return $wpdb->prepare( "AND `$column` BETWEEN %d AND %d", $min, $max );
-			} elseif ( $type === 'string' ) {
-				return $wpdb->prepare( "AND `$column` BETWEEN %s AND %s", sanitize_text_field( $min ), sanitize_text_field( $max ) );
-			}
-
-			return '';
-		}
-
-		/**
-		 * Execute a custom SQL query and return a single column of results.
-		 *
-		 * @param string $query The SQL query to execute.
-		 *
-		 * @return array The single column of query results.
-		 */
-		public static function get_single_column_results( string $query ): array {
-			global $wpdb;
-
-			return $wpdb->get_col( $query );
-		}
-
-		/**
-		 * Execute a custom SQL query and return a single row of results.
-		 *
-		 * @param string $query The SQL query to execute.
-		 *
-		 * @return array|null The single row of query results, or null if no result.
-		 */
-		public static function get_single_row_result( string $query ): ?array {
-			global $wpdb;
-
-			return $wpdb->get_row( $query, ARRAY_A );
-		}
-
-		/**
-		 * Escape and sanitize an array of values.
-		 *
-		 * @param array $values The array of values to escape and sanitize.
-		 *
-		 * @return array The escaped and sanitized array of values.
-		 */
-		public static function escape_and_sanitize_values( array $values ): array {
-			global $wpdb;
-
-			return array_map( function ( $value ) use ( $wpdb ) {
-				return is_numeric( $value ) ? intval( $value ) : $wpdb->_escape( sanitize_text_field( $value ) );
-			}, $values );
-		}
-
-		/**
-		 * Count the number of format placeholders in a string.
-		 *
-		 * This method counts the number of format placeholders in a given string.
-		 * Format placeholders are used in sprintf-style formatting and include
-		 * types like %s, %d, and %f, as well as positional placeholders like %1$s.
-		 *
-		 * @param string $string The string to count placeholders in.
-		 *
-		 * @return int The number of format placeholders in the string.
-		 */
-		public static function count_placeholders( string $string ): int {
-			// Regular expression to match format placeholders (e.g., %s, %d, %f, %1$s)
-			$pattern = '/%(?:[0-9]+\$)?[dfs]/';
-
-			// Count the number of matches
-			preg_match_all( $pattern, $string, $matches );
-
-			return count( $matches[0] );
+			return $wpdb->prepare( "$column BETWEEN %s AND %s", $min, $max );
 		}
 
 		/**
@@ -507,13 +204,61 @@ if ( ! class_exists( 'SQL' ) ) :
 		}
 
 		/**
+		 * Generate SQL WHERE clause for comparing amounts.
+		 *
+		 * @param string $column  The column name to compare.
+		 * @param mixed  $amount  The amount to compare against. Can be a single value or an array with 'min' and 'max'.
+		 * @param string $compare The comparison operator (e.g., '=', '>', '<', '>=', '<=', '!=').
+		 *
+		 * @return string The generated SQL WHERE clause.
+		 */
+		public static function generate_amount_query( string $column, $amount, string $compare = '=' ): string {
+			global $wpdb;
+
+			// Validate the comparison operator
+			$valid_operators = [ '=', '!=', '>', '>=', '<', '<=' ];
+			if ( ! in_array( $compare, $valid_operators, true ) ) {
+				$compare = '=';
+			}
+
+			// Handle different amount formats
+			if ( is_array( $amount ) && isset( $amount['min'] ) && isset( $amount['max'] ) ) {
+				$minimum = self::sanitize_numeric( $amount['min'] );
+				$maximum = self::sanitize_numeric( $amount['max'] );
+
+				return $wpdb->prepare( "AND `$column` BETWEEN %f AND %f", $minimum, $maximum );
+			} elseif ( ! empty( $amount ) ) {
+				$sanitized_amount = self::sanitize_numeric( $amount );
+
+				return $wpdb->prepare( "AND `$column` $compare %f", $sanitized_amount );
+			}
+
+			return '';
+		}
+
+		/**
+		 * Sanitize a numeric value, preserving float precision.
+		 *
+		 * @param mixed $value The value to sanitize.
+		 *
+		 * @return float|int The sanitized numeric value.
+		 */
+		private static function sanitize_numeric( $value ) {
+			if ( is_numeric( $value ) ) {
+				return $value + 0; // This preserves float or int type
+			}
+
+			return 0; // Default to 0 if not numeric
+		}
+
+		/**
 		 * Execute a query safely and handle errors.
 		 *
 		 * @param string $query The SQL query to execute.
 		 *
 		 * @return array|null The query results or null on error.
 		 */
-		public static function safe_query( string $query ) {
+		public static function safe_query( string $query ): ?array {
 			global $wpdb;
 			$result = $wpdb->get_results( $query, ARRAY_A );
 			if ( $wpdb->last_error ) {
@@ -537,29 +282,6 @@ if ( ! class_exists( 'SQL' ) ) :
 			return "($subquery) AS $alias";
 		}
 
-		/**
-		 * Sanitize a table or column name.
-		 *
-		 * @param string $name The name to sanitize.
-		 *
-		 * @return string The sanitized name.
-		 */
-		public static function sanitize_sql_name( string $name ): string {
-			return preg_replace( '/[^a-zA-Z0-9_]/', '', $name );
-		}
-
-		/**
-		 * Generate a wildcard string for LIKE clauses.
-		 *
-		 * @param string $value The value to generate a wildcard for.
-		 *
-		 * @return string The wildcard string.
-		 */
-		private static function generate_wildcard( string $value ): string {
-			global $wpdb;
-
-			return '%' . $wpdb->esc_like( $value ) . '%';
-		}
-
 	}
+
 endif;

@@ -326,6 +326,20 @@ if ( ! class_exists( 'Math' ) ) :
 			return round( $nps, $precision );
 		}
 
+		/**
+		 * Get the ordinal suffix for a number (st, nd, rd, th).
+		 *
+		 * @param int $number The number to get the suffix for.
+		 *
+		 * @return string The ordinal suffix.
+		 */
+		public static function ordinal_suffix( int $number ): string {
+			$suffixes = [ 'th', 'st', 'nd', 'rd' ];
+			$mod100   = $number % 100;
+
+			return $number . ( $mod100 >= 11 && $mod100 <= 13 ? 'th' : $suffixes[ $number % 10 ] ?? 'th' );
+		}
+
 	}
 
 endif;

@@ -407,6 +407,26 @@ if ( ! class_exists( 'Validate' ) ) :
 		}
 
 		/**
+		 * Check if a value is in a list of allowed values.
+		 *
+		 * @param mixed $value          The value to check.
+		 * @param array $allowed_values The list of allowed values.
+		 * @param bool  $case_sensitive Whether the comparison should be case-sensitive (default: false).
+		 *
+		 * @return bool Whether the value is in the list of allowed values.
+		 */
+		public static function is_valid_option( $value, array $allowed_values, bool $case_sensitive = false ): bool {
+			$value = Sanitize::clean( $value );
+
+			if ( ! $case_sensitive ) {
+				$value          = strtolower( $value );
+				$allowed_values = array_map( 'strtolower', $allowed_values );
+			}
+
+			return in_array( $value, $allowed_values );
+		}
+
+		/**
 		 * Validate if a string matches a given regular expression pattern.
 		 *
 		 * @param string $string  The string to validate.

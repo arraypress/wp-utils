@@ -32,6 +32,7 @@ if ( ! class_exists( 'Sanitize' ) ) :
 	 * safe and secure data handling within WordPress.
 	 */
 	class Sanitize {
+
 		/**
 		 * Sanitize value based on type.
 		 *
@@ -49,22 +50,11 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
-		 * Sanitize, validate, and deduplicate an array of object IDs.
-		 *
-		 * @param array $object_ids An array of object IDs.
-		 *
-		 * @return array An array of unique, sanitized, and positive object IDs.
-		 */
-		public static function object_ids( array $object_ids ): array {
-			return array_values( array_unique( array_filter( array_map( 'absint', $object_ids ) ) ) );
-		}
-
-		/**
 		 * Clean variables using sanitize_text_field. Arrays are cleaned recursively.
 		 *
 		 * @param mixed $value Data to sanitize.
 		 *
-		 * @return mixed Sanitized data.
+		 * @return array|string Sanitized data.
 		 */
 		public static function clean( $value ) {
 			if ( is_array( $value ) ) {
@@ -72,6 +62,21 @@ if ( ! class_exists( 'Sanitize' ) ) :
 			}
 
 			return sanitize_text_field( $value );
+		}
+
+		/**
+		 * Sanitize, validate, and deduplicate an array of object IDs.
+		 *
+		 * @param array $object_ids An array of object IDs.
+		 *
+		 * @return array An array of unique, sanitized, and positive object IDs.
+		 */
+		public static function object_ids( array $object_ids ): array {
+			$sanitized_ids = array_map( 'absint', $object_ids );
+			$filtered_ids  = array_filter( $sanitized_ids );
+			$unique_ids    = array_unique( $filtered_ids );
+
+			return array_values( $unique_ids );
 		}
 
 		/**
@@ -136,21 +141,6 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
-		 * Check for invalid UTF-8 characters in a string or array.
-		 *
-		 * @param mixed $var Data to sanitize.
-		 *
-		 * @return mixed Sanitized data.
-		 */
-		public static function check_invalid_utf8( $var ) {
-			if ( is_array( $var ) ) {
-				return array_map( [ __CLASS__, 'check_invalid_utf8' ], $var );
-			}
-
-			return wp_check_invalid_utf8( $var ) ?: $var;
-		}
-
-		/**
 		 * Clean a textarea input, maintaining line breaks.
 		 *
 		 * @param string $var Data to sanitize.
@@ -205,17 +195,6 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
-		 * Sanitize a slug.
-		 *
-		 * @param string $slug The slug to sanitize.
-		 *
-		 * @return string The sanitized slug.
-		 */
-		public static function slug( string $slug ): string {
-			return sanitize_title( $slug );
-		}
-
-		/**
 		 * Sanitize a file path.
 		 *
 		 * @param string $path The file path to sanitize.
@@ -242,10 +221,17 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		 *
 		 * @param string $ip The IP address to sanitize.
 		 *
-		 * @return string|false The sanitized IP address or false if invalid.
+		 * @return string The sanitized IP address, or an empty string if invalid.
 		 */
-		public static function ip( string $ip ) {
-			return filter_var( $ip, FILTER_VALIDATE_IP );
+		public static function ip( string $ip ): string {
+			// Trim the IP address
+			$ip = trim( $ip );
+
+			// Sanitize the IP address
+			$sanitized_ip = filter_var( $ip, FILTER_SANITIZE_IP );
+
+			// If sanitization succeeds, return the sanitized IP; otherwise, return an empty string
+			return $sanitized_ip !== false ? $sanitized_ip : '';
 		}
 
 		/**
@@ -343,17 +329,47 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
-		 * Sanitize a date string.
+		 * Sanitize and validate a date.
 		 *
-		 * @param string $date   The date string to sanitize.
-		 * @param string $format The expected date format (default: 'Y-m-d').
+		 * @param string $date   The date to sanitize.
+		 * @param string $format The format to return the date in (default: 'Y-m-d H:i:s').
 		 *
-		 * @return string The sanitized date string or empty string if invalid.
+		 * @return string|null The sanitized date or null if invalid.
 		 */
-		public static function date( string $date, string $format = 'Y-m-d' ): string {
-			$datetime = \DateTime::createFromFormat( $format, $date );
+		public static function date_time( string $date, string $format = 'Y-m-d H:i:s' ): ?string {
+			$sanitized_date = self::text( $date );
+			$timestamp      = strtotime( $sanitized_date );
 
-			return ( $datetime && $datetime->format( $format ) === $date ) ? $date : '';
+			return $timestamp ? date( $format, $timestamp ) : null;
+		}
+
+		/**
+		 * Sanitize and validate an option from a predefined set.
+		 *
+		 * @param string $option          The option to sanitize.
+		 * @param array  $allowed_options The allowed options.
+		 * @param string $default         The default option if invalid.
+		 *
+		 * @return string The sanitized and validated option.
+		 */
+		public static function option( string $option, array $allowed_options, string $default = '' ): string {
+			$sanitized_option = strtolower( self::text( $option ) );
+
+			return in_array( $sanitized_option, $allowed_options ) ? $sanitized_option : $default;
+		}
+
+		/**
+		 * Sanitize a code by removing invalid characters.
+		 *
+		 * @param string $code          The code to sanitize.
+		 * @param string $allowed_chars Regex pattern for allowed characters (default: 'a-zA-Z0-9-_').
+		 *
+		 * @return string The sanitized code.
+		 */
+		public static function code( string $code, string $allowed_chars = 'a-zA-Z0-9-_' ): string {
+			$sanitized = preg_replace( '/[^' . $allowed_chars . ']+/', '', $code );
+
+			return ( strtoupper( $code ) !== strtoupper( $sanitized ) ) ? $sanitized : $code;
 		}
 
 		/**
@@ -370,18 +386,41 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		/**
 		 * Sanitize a list of items.
 		 *
-		 * @param string|array  $input     The input to sanitize (string with line breaks or array).
-		 * @param callable|null $validator Optional custom validator function.
+		 * @param string|array  $input      The input to sanitize (string or array).
+		 * @param callable|null $validator  Optional custom validator function.
+		 * @param string        $delimiter  Delimiter for string input (default: "\n").
+		 * @param bool          $trim_items Whether to trim each item (default: true).
+		 * @param bool          $unique     Whether to remove duplicate items (default: true).
 		 *
 		 * @return array Sanitized array of items.
 		 */
-		public static function list( $input, callable $validator = null ): array {
-			$items     = is_array( $input ) ? $input : explode( "\n", $input );
-			$sanitized = array_map( 'trim', $items );
-			$sanitized = array_unique( $sanitized );
-			$sanitized = array_map( [ __CLASS__, 'text' ], $sanitized );
+		public static function list( $input, callable $validator = null, string $delimiter = "\n", bool $trim_items = true, bool $unique = true ): array {
+			// Convert string input to array
+			$items = is_array( $input ) ? $input : explode( $delimiter, $input );
 
-			return $validator ? array_filter( $sanitized, $validator ) : $sanitized;
+			// Trim items if required
+			if ( $trim_items ) {
+				$items = array_map( 'trim', $items );
+			}
+
+			// Remove empty items
+			$items = array_filter( $items );
+
+			// Remove duplicates if required
+			if ( $unique ) {
+				$items = array_unique( $items );
+			}
+
+			// Apply text sanitization
+			$items = array_map( [ __CLASS__, 'text' ], $items );
+
+			// Apply custom validator if provided
+			if ( $validator ) {
+				$items = array_filter( $items, $validator );
+			}
+
+			// Reset array keys
+			return array_values( $items );
 		}
 
 		/**
@@ -392,12 +431,24 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		 * @return array Sanitized array of emails.
 		 */
 		public static function emails( $input ): array {
-			$emails    = is_array( $input ) ? $input : explode( "\n", $input );
-			$sanitized = array_filter( array_map( 'trim', $emails ), function ( $email ) {
+			return self::list( $input, function ( $email ) {
 				return is_email( $email ) || $email[0] === '@';
 			} );
+		}
 
-			return array_values( $sanitized );
+		/**
+		 * Sanitize a list of IP addresses.
+		 *
+		 * @param string|array $input The input to sanitize (string with line breaks or array).
+		 *
+		 * @return array Sanitized array of IP addresses.
+		 */
+		public static function ips( $input ): array {
+			return self::list( $input, function ( $ip ) {
+				$sanitized_ip = self::ip( $ip );
+
+				return $sanitized_ip !== '';
+			} );
 		}
 
 		/**
@@ -408,7 +459,7 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		 * @return array Sanitized array of items.
 		 */
 		public static function comma_separated_list( string $input ): array {
-			return self::list( explode( ',', $input ) );
+			return self::list( $input, null, ',' );
 		}
 
 		/**
@@ -445,6 +496,17 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
+		 * Sanitize a table or column name.
+		 *
+		 * @param string $name The name to sanitize.
+		 *
+		 * @return string The sanitized name.
+		 */
+		public static function sql_name( string $name ): string {
+			return preg_replace( '/[^a-zA-Z0-9_]/', '', $name );
+		}
+
+		/**
 		 * Sanitize block attributes.
 		 *
 		 * @param array $attributes The block attributes to sanitize.
@@ -457,7 +519,7 @@ if ( ! class_exists( 'Sanitize' ) ) :
 				if ( is_string( $value ) ) {
 					$sanitized[ $key ] = sanitize_text_field( $value );
 				} elseif ( is_array( $value ) ) {
-					$sanitized[ $key ] = self::sanitize_block_attributes( $value );
+					$sanitized[ $key ] = self::block_attributes( $value );
 				} else {
 					$sanitized[ $key ] = $value;
 				}
