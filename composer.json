@@ -12,7 +12,17 @@
   ],
   "require": {
     "php": "^7.4 || ^8.0",
-    "ext-calendar": "*"
+    "ext-calendar": "*",
+    "ext-ctype": "*",
+    "ext-json": "*",
+    "ext-intl": "*",
+    "ext-simplexml": "*",
+    "ext-dom": "*",
+    "ext-mbstring": "*",
+    "ext-fileinfo": "*",
+    "ext-gd": "*",
+    "ext-mysqli": "*",
+    "ext-bcmath": "*"
   },
   "autoload": {
     "psr-4": {

@@ -21,6 +21,7 @@ namespace ArrayPress\Utils\Query;
  * Check if the class `Tax` is defined, and if not, define it.
  */
 if ( ! class_exists( 'Tax' ) ) :
+
 	/**
 	 * Tax Query Helper Class
 	 *
