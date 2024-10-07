@@ -67,7 +67,7 @@ if ( ! class_exists( 'Cache' ) ) :
 		 * @param callable $callback   The function to compute the value if not found in cache.
 		 * @param int      $expiration Optional. Time until expiration in seconds. Default is DEFAULT_EXPIRATION.
 		 *
-		 * @return mixed The cached or computed value.
+		 * @return mixed The cached or computed value, which may be null.
 		 */
 		public static function remember( string $key, callable $callback, int $expiration = self::DEFAULT_EXPIRATION ) {
 			$cached_value = get_transient( $key );
@@ -77,7 +77,11 @@ if ( ! class_exists( 'Cache' ) ) :
 			}
 
 			$value = $callback();
-			set_transient( $key, $value, $expiration );
+
+			// Only cache non-null values
+			if ( $value !== null ) {
+				set_transient( $key, $value, $expiration );
+			}
 
 			return $value;
 		}
