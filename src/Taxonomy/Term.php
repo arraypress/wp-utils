@@ -21,7 +21,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\Term;
+namespace ArrayPress\Utils\Taxonomy;
 
 use WP_Error;
 use WP_Term;

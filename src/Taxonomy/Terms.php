@@ -22,7 +22,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\Term;
+namespace ArrayPress\Utils\Taxonomy;
 
 /**
  * Check if the class `Terms` is defined, and if not, define it.
@@ -239,6 +239,30 @@ if ( ! class_exists( 'Terms' ) ) :
 
 			foreach ( $term_ids as $term_id ) {
 				$results[ $term_id ] = update_term_meta( $term_id, $meta_key, $meta_value );
+			}
+
+			return $results;
+		}
+
+		/**
+		 * Bulk delete term meta for multiple terms.
+		 *
+		 * @param array  $term_ids An array of term IDs.
+		 * @param string $meta_key The meta key to delete. If empty, all meta for each term will be deleted.
+		 *
+		 * @return array An array of results, with term IDs as keys and deletion results as values.
+		 */
+		public static function bulk_delete_meta( array $term_ids, string $meta_key = '' ): array {
+			$results = [];
+
+			foreach ( $term_ids as $term_id ) {
+				if ( empty( $meta_key ) ) {
+					// Delete all meta for this term
+					$results[ $term_id ] = delete_term_meta( $term_id, '' );
+				} else {
+					// Delete specific meta key for this term
+					$results[ $term_id ] = delete_term_meta( $term_id, $meta_key );
+				}
 			}
 
 			return $results;
