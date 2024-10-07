@@ -107,46 +107,6 @@ if ( ! class_exists( 'Exists' ) ) :
 			return (bool) $wpdb->get_var( $query );
 		}
 
-		/**
-		 * Check if a specific value exists in a specified table and column.
-		 *
-		 * @param string $table  The name of the table to check (without prefix).
-		 * @param string $column The name of the column to check.
-		 * @param mixed  $value  The value to look for.
-		 *
-		 * @return bool True if the value exists, false otherwise.
-		 */
-		public static function value( string $table, string $column, $value ): bool {
-			global $wpdb;
-
-			// Validate input
-			if ( empty( $table ) || empty( $column ) || $value === null ) {
-				return false;
-			}
-
-			// Sanitize table and column names
-			$table  = sanitize_key( $table );
-			$column = sanitize_key( $column );
-
-			// Prepare the query based on the value type
-			if ( is_numeric( $value ) ) {
-				$sql = $wpdb->prepare(
-					"SELECT EXISTS(SELECT 1 FROM {$wpdb->prefix}{$table} WHERE {$column} = %d LIMIT 1) AS result",
-					$value
-				);
-			} else {
-				$sql = $wpdb->prepare(
-					"SELECT EXISTS(SELECT 1 FROM {$wpdb->prefix}{$table} WHERE {$column} = %s LIMIT 1) AS result",
-					$value
-				);
-			}
-
-			// Execute the query
-			$exists = $wpdb->get_var( $sql );
-
-			return $exists === '1';
-		}
-
 	}
 
 endif;
