@@ -13,7 +13,7 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\User;
 
-use ArrayPress\Utils\Database\Helpers;
+use ArrayPress\Utils\Database\Exists;
 
 /**
  * Check if the class `User` is defined, and if not, define it.
@@ -72,7 +72,7 @@ if ( ! class_exists( 'User' ) ) :
 				return false;
 			}
 
-			return Helpers::row_exists( 'users', 'ID', $user_id );
+			return Exists::row( 'users', 'ID', $user_id );
 		}
 
 		/**

@@ -14,7 +14,7 @@
  * @author        David Sherlock
  */
 
-namespace ArrayPress\Utils\Conversion;
+namespace ArrayPress\Utils\Convert;
 
 /**
  * Check if the class `Unit` is defined, and if not, define it.
@@ -664,47 +664,5 @@ if ( ! class_exists( 'Unit' ) ) :
 			return $units[ $method ] ?? [];
 		}
 
-		/**
-		 * Convert color between HEX and RGB formats.
-		 *
-		 * @param string $value The color value to convert.
-		 * @param string $from  The format to convert from ('hex' or 'rgb').
-		 * @param string $to    The format to convert to ('hex' or 'rgb').
-		 *
-		 * @return string|null The converted color, or null if conversion is not possible.
-		 */
-		public static function color( string $value, string $from, string $to ): ?string {
-			$from = strtolower( $from );
-			$to   = strtolower( $to );
-
-			if ( $from === $to ) {
-				return $value;
-			}
-
-			if ( $from === 'hex' && $to === 'rgb' ) {
-				$hex = ltrim( $value, '#' );
-				if ( strlen( $hex ) === 3 ) {
-					$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-				}
-				if ( strlen( $hex ) !== 6 ) {
-					return null;
-				}
-				$r = hexdec( substr( $hex, 0, 2 ) );
-				$g = hexdec( substr( $hex, 2, 2 ) );
-				$b = hexdec( substr( $hex, 4, 2 ) );
-
-				return "rgb($r, $g, $b)";
-			} elseif ( $from === 'rgb' && $to === 'hex' ) {
-				if ( preg_match( '/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/', $value, $matches ) ) {
-					$r = intval( $matches[1] );
-					$g = intval( $matches[2] );
-					$b = intval( $matches[3] );
-
-					return sprintf( "#%02x%02x%02x", $r, $g, $b );
-				}
-			}
-
-			return null;
-		}
 	}
 endif;

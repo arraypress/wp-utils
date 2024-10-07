@@ -150,7 +150,7 @@ if ( ! class_exists( 'Arr' ) ) :
 		 *
 		 * @return bool True if all elements satisfy the condition, false otherwise.
 		 */
-		public static function all( array $array, callable $callback ): bool {
+		public static function all_by_callback( array $array, callable $callback ): bool {
 			foreach ( $array as $value ) {
 				if ( ! $callback( $value ) ) {
 					return false;
@@ -168,7 +168,7 @@ if ( ! class_exists( 'Arr' ) ) :
 		 *
 		 * @return bool True if any element satisfies the condition, false otherwise.
 		 */
-		public static function any( array $array, callable $callback ): bool {
+		public static function any_by_callback( array $array, callable $callback ): bool {
 			foreach ( $array as $value ) {
 				if ( $callback( $value ) ) {
 					return true;
@@ -942,18 +942,6 @@ if ( ! class_exists( 'Arr' ) ) :
 			}
 
 			return false;
-		}
-
-		/**
-		 * Join an array of strings with a delimiter.
-		 *
-		 * @param array  $array     The array of strings to join.
-		 * @param string $delimiter The delimiter to use.
-		 *
-		 * @return string The joined string.
-		 */
-		public static function to_deliminated( array $array, string $delimiter = ', ' ): string {
-			return implode( $delimiter, $array );
 		}
 
 		/**

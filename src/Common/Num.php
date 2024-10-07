@@ -17,8 +17,6 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
-use Random\RandomException;
-
 /**
  * Check if the class `Num` is defined, and if not, define it.
  */
@@ -49,7 +47,7 @@ if ( ! class_exists( 'Num' ) ) :
 		 *
 		 * @return bool True if the value is a positive integer, false otherwise.
 		 */
-		public static function is_positive_integer( $value ): bool {
+		public static function is_positive_int( $value ): bool {
 			return is_int( $value ) && $value > 0;
 		}
 
@@ -60,7 +58,7 @@ if ( ! class_exists( 'Num' ) ) :
 		 *
 		 * @return bool True if the value is a negative integer, false otherwise.
 		 */
-		public static function is_negative_integer( $value ): bool {
+		public static function is_negative_int( $value ): bool {
 			return is_int( $value ) && $value < 0;
 		}
 

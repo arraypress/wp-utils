@@ -40,7 +40,7 @@ if ( ! class_exists( 'Color' ) ) :
 		 * @return array|string|null An array with 'r', 'g', and 'b' keys, a string "r,g,b", or null if invalid.
 		 */
 		public static function hex_to_rgb( string $hex, bool $as_string = false ) {
-			$hex = self::sanitize_hex( $hex );
+			$hex = Sanitize::hex( $hex );
 			if ( strlen( $hex ) !== 6 || ! ctype_xdigit( $hex ) ) {
 				return null;
 			}
@@ -52,24 +52,6 @@ if ( ! class_exists( 'Color' ) ) :
 			];
 
 			return $as_string ? implode( ',', $rgb ) : $rgb;
-		}
-
-
-		/**
-		 * Convert RGB to hex color.
-		 *
-		 * @param int $r Red value (0-255)
-		 * @param int $g Green value (0-255)
-		 * @param int $b Blue value (0-255)
-		 *
-		 * @return string Hex color code
-		 */
-		public static function rgb_to_hex( int $r, int $g, int $b ): string {
-			$r = max( 0, min( 255, $r ) );
-			$g = max( 0, min( 255, $g ) );
-			$b = max( 0, min( 255, $b ) );
-
-			return sprintf( "#%02x%02x%02x", $r, $g, $b );
 		}
 
 		/**
@@ -98,6 +80,23 @@ if ( ! class_exists( 'Color' ) ) :
 		}
 
 		/**
+		 * Convert RGB to hex color.
+		 *
+		 * @param int $r Red value (0-255)
+		 * @param int $g Green value (0-255)
+		 * @param int $b Blue value (0-255)
+		 *
+		 * @return string Hex color code
+		 */
+		public static function rgb_to_hex( int $r, int $g, int $b ): string {
+			$r = max( 0, min( 255, $r ) );
+			$g = max( 0, min( 255, $g ) );
+			$b = max( 0, min( 255, $b ) );
+
+			return sprintf( "#%02x%02x%02x", $r, $g, $b );
+		}
+
+		/**
 		 * Convert RGBA to hex color.
 		 *
 		 * @param int   $r Red value (0-255)
@@ -116,23 +115,6 @@ if ( ! class_exists( 'Color' ) ) :
 			$alpha = round( $a * 255 );
 
 			return sprintf( "#%02x%02x%02x%02x", $r, $g, $b, $alpha );
-		}
-
-		/**
-		 * Sanitize a hex color.
-		 *
-		 * @param string $color The hex color code.
-		 *
-		 * @return string|null Sanitized hex color code, or null if invalid.
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-		 */
-		public static function sanitize_hex( string $color ): ?string {
-			if ( str_starts_with( $color, '#' ) ) {
-				return sanitize_hex_color( $color );
-			} else {
-				$sanitized = sanitize_hex_color_no_hash( $color );
-				return $sanitized !== null ? '#' . $sanitized : null;
-			}
 		}
 
 		/**

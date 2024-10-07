@@ -18,8 +18,6 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
-use Random\RandomException;
-
 /**
  * Check if the class `Generate` is defined, and if not, define it.
  */

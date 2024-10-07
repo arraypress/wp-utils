@@ -137,7 +137,10 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		 * @return string The sanitized file extension.
 		 */
 		public static function file_extension( string $extension ): string {
-			return sanitize_key( strtolower( trim( $extension ) ) );
+			$trimmed_extension   = trim( $extension );
+			$lowercase_extension = strtolower( $trimmed_extension );
+
+			return sanitize_key( $lowercase_extension );
 		}
 
 		/**
@@ -320,12 +323,17 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		/**
 		 * Sanitize a hex color.
 		 *
-		 * @param string $color The color to sanitize.
+		 * @param string $color The hex color code.
 		 *
-		 * @return string The sanitized color.
+		 * @return string|null Sanitized hex color code, or null if invalid.
 		 */
-		public static function hex_color( string $color ): string {
-			return sanitize_hex_color( $color ) ?: '';
+		public static function hex( string $color ): string {
+			if ( str_starts_with( $color, '#' ) ) {
+				return sanitize_hex_color( $color );
+			} else {
+				$sanitized = sanitize_hex_color_no_hash( $color );
+				return $sanitized !== null ? '#' . $sanitized : '';
+			}
 		}
 
 		/**

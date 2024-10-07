@@ -20,7 +20,7 @@ namespace ArrayPress\Utils\Post;
 
 use WP_Post;
 use WP_Query;
-use ArrayPress\Utils\Database\Helpers;
+use ArrayPress\Utils\Database\Exists;
 
 /**
  * Check if the class `Post` is defined, and if not, define it.
@@ -52,7 +52,7 @@ if ( ! class_exists( 'Post' ) ) :
 				return false;
 			}
 
-			return Helpers::row_exists( 'posts', 'ID', $post_id );
+			return Exists::row( 'posts', 'ID', $post_id );
 		}
 
 		/**

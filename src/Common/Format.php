@@ -40,22 +40,6 @@ if ( ! class_exists( 'Format' ) ) :
 		const MDASH = '&mdash;';
 
 		/**
-		 * Format numeric values.
-		 *
-		 * @param mixed $value    The value to be formatted.
-		 * @param int   $decimals The number of decimal points.
-		 *
-		 * @return string The formatted numeric value or em dash.
-		 */
-		public static function numeric( $value, int $decimals = 0 ): string {
-			if ( is_numeric( $value ) ) {
-				return number_format_i18n( (float) $value, $decimals );
-			}
-
-			return self::MDASH;
-		}
-
-		/**
 		 * Outputs or returns a value, using em dash if the value is empty.
 		 *
 		 * @param string $value The text string.
@@ -72,6 +56,36 @@ if ( ! class_exists( 'Format' ) ) :
 			}
 
 			return $value;
+		}
+
+		/**
+		 * Format numeric values.
+		 *
+		 * @param mixed $value    The value to be formatted.
+		 * @param int   $decimals The number of decimal points.
+		 *
+		 * @return string The formatted numeric value or em dash.
+		 */
+		public static function numeric( $value, int $decimals = 0 ): string {
+			if ( is_numeric( $value ) ) {
+				return number_format_i18n( (float) $value, $decimals );
+			}
+
+			return self::MDASH;
+		}
+
+		/**
+		 * Format a number with grouped thousands.
+		 *
+		 * @param float  $number        The number to format.
+		 * @param int    $decimals      Number of decimal points. Default 2.
+		 * @param string $dec_point     Decimal point character. Default '.'.
+		 * @param string $thousands_sep Thousands separator character. Default ','.
+		 *
+		 * @return string Formatted number.
+		 */
+		public static function number( float $number, int $decimals = 2, string $dec_point = '.', string $thousands_sep = ',' ): string {
+			return number_format( $number, $decimals, $dec_point, $thousands_sep );
 		}
 
 		/**
@@ -106,32 +120,6 @@ if ( ! class_exists( 'Format' ) ) :
 		}
 
 		/**
-		 * Format a number with grouped thousands.
-		 *
-		 * @param float  $number        The number to format.
-		 * @param int    $decimals      Number of decimal points. Default 2.
-		 * @param string $dec_point     Decimal point character. Default '.'.
-		 * @param string $thousands_sep Thousands separator character. Default ','.
-		 *
-		 * @return string Formatted number.
-		 */
-		public static function number( float $number, int $decimals = 2, string $dec_point = '.', string $thousands_sep = ',' ): string {
-			return number_format( $number, $decimals, $dec_point, $thousands_sep );
-		}
-
-		/**
-		 * Format a percentage.
-		 *
-		 * @param float $value    The value to format as percentage.
-		 * @param int   $decimals The number of decimal points. Default 2.
-		 *
-		 * @return string Formatted percentage.
-		 */
-		public static function percentage( float $value, int $decimals = 2 ): string {
-			return self::number( $value, $decimals ) . '%';
-		}
-
-		/**
 		 * Format a phone number.
 		 *
 		 * @param string $phone The phone number to format.
@@ -158,48 +146,5 @@ if ( ! class_exists( 'Format' ) ) :
 			return wpautop( wptexturize( $text ) );
 		}
 
-		/**
-		 * Format text as a slug.
-		 *
-		 * @param string $text The text to slugify.
-		 *
-		 * @return string Slugified text.
-		 */
-		public static function slug( string $text ): string {
-			return sanitize_title( $text );
-		}
-
-		/**
-		 * Format a URL.
-		 *
-		 * @param string $url The URL to format.
-		 *
-		 * @return string Formatted URL.
-		 */
-		public static function url( string $url ): string {
-			return esc_url( $url );
-		}
-
-		/**
-		 * Format text for use in an HTML attribute.
-		 *
-		 * @param string $text The text to format.
-		 *
-		 * @return string Formatted text safe for use in HTML attributes.
-		 */
-		public static function attr( string $text ): string {
-			return esc_attr( $text );
-		}
-
-		/**
-		 * Format text for use in JavaScript.
-		 *
-		 * @param string $text The text to format.
-		 *
-		 * @return string Formatted text safe for use in JavaScript.
-		 */
-		public static function js( string $text ): string {
-			return esc_js( $text );
-		}
 	}
 endif;

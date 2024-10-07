@@ -20,7 +20,7 @@ namespace ArrayPress\Utils\Meta;
 
 use ArrayPress\Utils\Common\Convert;
 use ArrayPress\Utils\Common\Compare;
-use ArrayPress\Utils\Database\Helpers;
+use ArrayPress\Utils\Database\Query;
 use ArrayPress\Utils\Database\SQL;
 
 /**
@@ -458,7 +458,7 @@ if ( ! class_exists( 'Meta' ) ) :
 			global $wpdb;
 
 			$sql_pattern = SQL::generate_like_pattern( $pattern, $type );
-			$meta_table  = Helpers::get_meta_table_name( $meta_type );
+			$meta_table  = Query::get_meta_table_name( $meta_type );
 			$meta_keys   = $wpdb->get_col(
 				$wpdb->prepare(
 					"SELECT DISTINCT meta_key FROM $meta_table WHERE meta_key LIKE %s",
@@ -607,7 +607,7 @@ if ( ! class_exists( 'Meta' ) ) :
 		 */
 		public static function find_objects_by_meta( string $meta_type, string $meta_key, string $operator, string $value, bool $case_sensitive = true ): array {
 			global $wpdb;
-			$table   = Helpers::get_meta_table_name( $meta_type );
+			$table   = Query::get_meta_table_name( $meta_type );
 			$query   = $wpdb->prepare(
 				"SELECT DISTINCT {$meta_type}_id FROM $table WHERE meta_key = %s",
 				$meta_key
@@ -618,7 +618,7 @@ if ( ! class_exists( 'Meta' ) ) :
 				return self::compare_string( $meta_type, (int) $object_id, $meta_key, $operator, $value, $case_sensitive );
 			} );
 		}
-
+/**/
 		/**
 		 * Find objects with meta values within a specific range.
 		 *
@@ -631,7 +631,7 @@ if ( ! class_exists( 'Meta' ) ) :
 		 */
 		public static function find_objects_by_meta_range( string $meta_type, string $meta_key, float $min, float $max ): array {
 			global $wpdb;
-			$table = Helpers::get_meta_table_name( $meta_type );
+			$table = Query::get_meta_table_name( $meta_type );
 			$query = $wpdb->prepare(
 				"SELECT DISTINCT {$meta_type}_id FROM $table WHERE meta_key = %s AND meta_value BETWEEN %f AND %f",
 				$meta_key, $min, $max
