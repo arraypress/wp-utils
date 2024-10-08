@@ -206,7 +206,7 @@ if ( ! class_exists( 'Users' ) ) :
 		 * @return WP_User[] An array of user objects.
 		 */
 		public static function get_where_meta_compared( string $meta_key, $amount, string $operator, array $args = [] ): array {
-			if ( ! Validate::is_valid_operator( $operator ) ) {
+			if ( ! Validate::is_operator( $operator ) ) {
 				return [];
 			}
 

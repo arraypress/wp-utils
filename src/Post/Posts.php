@@ -531,7 +531,7 @@ if ( ! class_exists( 'Posts' ) ) :
 		 * @return WP_Post[] An array of post objects.
 		 */
 		public static function get_where_meta_compared( string $meta_key, $amount, string $operator, array $args = [] ): array {
-			if ( ! Validate::is_valid_operator( $operator ) ) {
+			if ( ! Validate::is_operator( $operator ) ) {
 				return [];
 			}
 

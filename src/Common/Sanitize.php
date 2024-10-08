@@ -65,6 +65,17 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
+		 * Sanitize a text field.
+		 *
+		 * @param string $text The text to sanitize.
+		 *
+		 * @return string The sanitized text.
+		 */
+		public static function text( string $text ): string {
+			return sanitize_text_field( $text );
+		}
+
+		/**
 		 * Sanitize, validate, and deduplicate an array of object IDs.
 		 *
 		 * @param array $object_ids An array of object IDs.
@@ -146,12 +157,21 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		/**
 		 * Clean a textarea input, maintaining line breaks.
 		 *
-		 * @param string $var Data to sanitize.
+		 * @param string $input The textarea content to sanitize.
 		 *
-		 * @return string Sanitized data.
+		 * @return string Sanitized textarea content with preserved line breaks.
 		 */
-		public static function textarea( string $var ): string {
-			return implode( "\n", array_map( [ __CLASS__, 'text' ], explode( "\n", $var ) ) );
+		public static function textarea( string $input ): string {
+			// Split the input into an array of lines
+			$lines = explode( "\n", $input );
+
+			// Sanitize each line individually
+			$sanitized_lines = array_map( function ( $line ) {
+				return self::text( $line );
+			}, $lines );
+
+			// Rejoin the sanitized lines, preserving line breaks
+			return implode( "\n", $sanitized_lines );
 		}
 
 		/**
@@ -220,21 +240,23 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
-		 * Sanitize an IP address.
+		 * Sanitize and validate an IP address.
 		 *
-		 * @param string $ip The IP address to sanitize.
+		 * @param string $ip The IP address to sanitize and validate.
 		 *
-		 * @return string The sanitized IP address, or an empty string if invalid.
+		 * @return string The validated IP address, or an empty string if invalid.
 		 */
 		public static function ip( string $ip ): string {
 			// Trim the IP address
 			$ip = trim( $ip );
 
-			// Sanitize the IP address
-			$sanitized_ip = filter_var( $ip, FILTER_SANITIZE_IP );
+			// Validate the IP address (both IPv4 and IPv6)
+			if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_IPV6 ) ) {
+				return $ip;
+			}
 
-			// If sanitization succeeds, return the sanitized IP; otherwise, return an empty string
-			return $sanitized_ip !== false ? $sanitized_ip : '';
+			// If validation fails, return an empty string
+			return '';
 		}
 
 		/**
@@ -272,17 +294,6 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		 */
 		public static function search( string $value ): string {
 			return esc_sql( self::text( $value ) );
-		}
-
-		/**
-		 * Sanitize a text field.
-		 *
-		 * @param string $text The text to sanitize.
-		 *
-		 * @return string The sanitized text.
-		 */
-		public static function text( string $text ): string {
-			return sanitize_text_field( $text );
 		}
 
 		/**
@@ -332,6 +343,7 @@ if ( ! class_exists( 'Sanitize' ) ) :
 				return sanitize_hex_color( $color );
 			} else {
 				$sanitized = sanitize_hex_color_no_hash( $color );
+
 				return $sanitized !== null ? '#' . $sanitized : '';
 			}
 		}
@@ -534,6 +546,120 @@ if ( ! class_exists( 'Sanitize' ) ) :
 			}
 
 			return $sanitized;
+		}
+
+		/**
+		 * Sanitize a discount type.
+		 *
+		 * @param string $type The discount type to sanitize.
+		 *
+		 * @return string The sanitized discount type ('percentage' or 'flat').
+		 */
+		public static function discount_type( string $type ): string {
+			$sanitized = strtolower( self::text( $type ) );
+
+			return in_array( $sanitized, [ 'percentage', 'flat' ] ) ? $sanitized : 'percentage';
+		}
+
+		/**
+		 * Sanitize a percentage value.
+		 *
+		 * @param mixed $value The percentage value to sanitize.
+		 *
+		 * @return float The sanitized percentage value (0-100).
+		 */
+		public static function percentage( $value ): float {
+			$sanitized = self::float( $value );
+
+			return max( 0, min( 100, $sanitized ) );
+		}
+
+		/**
+		 * Sanitize a status value.
+		 *
+		 * @param string $status         The status to sanitize.
+		 * @param array  $valid_statuses Optional array of valid statuses. Defaults to ['active', 'inactive'].
+		 * @param string $default        Optional default status if the input is invalid. Defaults to 'active'.
+		 *
+		 * @return string The sanitized status.
+		 */
+		public static function status(
+			string $status, array $valid_statuses = [
+			'active',
+			'inactive'
+		], string $default = 'active'
+		): string {
+			$sanitized = strtolower( self::text( $status ) );
+
+			// If the sanitized status is in the list of valid statuses, return it
+			if ( in_array( $sanitized, $valid_statuses, true ) ) {
+				return $sanitized;
+			}
+
+			// If the default status is in the list of valid statuses, return it
+			if ( in_array( $default, $valid_statuses, true ) ) {
+				return $default;
+			}
+
+			// If neither the input nor the default is valid, return the first valid status
+			return reset( $valid_statuses ) ?: 'active';
+		}
+
+		/**
+		 * Sanitize a slug.
+		 *
+		 * @param string $slug The slug to sanitize.
+		 *
+		 * @return string The sanitized slug.
+		 */
+		public static function slug( string $slug ): string {
+			return sanitize_title( $slug );
+		}
+
+		/**
+		 * Sanitize a currency code.
+		 *
+		 * @param string $code        The currency code to sanitize.
+		 * @param array  $valid_codes Optional array of valid currency codes. If not provided, uses all supported currencies from the Currency class.
+		 * @param string $default     Optional default currency code if the input is invalid. Defaults to Currency::USD.
+		 *
+		 * @return string The sanitized currency code.
+		 */
+		public static function currency_code( string $code, array $valid_codes = [], string $default = Currency::USD ): string {
+			$sanitized = strtoupper( self::text( $code ) );
+
+			// If no valid codes are provided, use all supported currencies from the Currency class
+			if ( empty( $valid_codes ) ) {
+				$valid_codes = Currency::get_supported_currencies();
+			}
+
+			// If the sanitized code is in the list of valid codes, return it
+			if ( in_array( $sanitized, $valid_codes, true ) ) {
+				return $sanitized;
+			}
+
+			// If the default code is in the list of valid codes, return it
+			if ( in_array( $default, $valid_codes, true ) ) {
+				return $default;
+			}
+
+			// If neither the input nor the default is valid, return the first valid code
+			return reset( $valid_codes ) ?: Currency::USD;
+		}
+
+		/**
+		 * Sanitize a range value.
+		 *
+		 * @param mixed $value The value to sanitize.
+		 * @param float $min   The minimum allowed value.
+		 * @param float $max   The maximum allowed value.
+		 *
+		 * @return float The sanitized value within the specified range.
+		 */
+		public static function range( $value, float $min, float $max ): float {
+			$sanitized = self::float( $value );
+
+			return max( $min, min( $max, $sanitized ) );
 		}
 
 	}

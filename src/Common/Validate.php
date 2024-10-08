@@ -87,7 +87,7 @@ if ( ! class_exists( 'Validate' ) ) :
 		 *
 		 * @return bool True if the operator is valid, false otherwise.
 		 */
-		public static function is_valid_operator( string $operator ): bool {
+		public static function is_operator( string $operator ): bool {
 			return in_array( $operator, self::VALID_OPERATORS, true );
 		}
 
@@ -100,6 +100,65 @@ if ( ! class_exists( 'Validate' ) ) :
 		 */
 		public static function is_email( string $email ): bool {
 			return (bool) is_email( $email );
+		}
+
+		/**
+		 * Validate if a value is a valid discount type (flat or percentage).
+		 *
+		 * @param string $type The discount type to validate.
+		 *
+		 * @return bool True if the discount type is valid, false otherwise.
+		 */
+		public static function is_discount_type( string $type ): bool {
+			return in_array( strtolower( $type ), [ 'flat', 'percentage' ], true );
+		}
+
+		/**
+		 * Validate if a value is a valid percentage (0-100).
+		 *
+		 * @param mixed $value The value to validate.
+		 *
+		 * @return bool True if the value is a valid percentage, false otherwise.
+		 */
+		public static function is_percentage( $value ): bool {
+			return is_numeric( $value ) && $value >= 0 && $value <= 100;
+		}
+
+		/**
+		 * Validate if a string is a valid slug.
+		 *
+		 * @param string $slug The slug to validate.
+		 *
+		 * @return bool True if the slug is valid, false otherwise.
+		 */
+		public static function is_slug( string $slug ): bool {
+			return (bool) preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug );
+		}
+
+		/**
+		 * Validate if a value is within a specified range.
+		 *
+		 * @param mixed $value The value to validate.
+		 * @param mixed $min   The minimum allowed value.
+		 * @param mixed $max   The maximum allowed value.
+		 *
+		 * @return bool True if the value is within the specified range, false otherwise.
+		 */
+		public static function is_within_range( $value, $min, $max ): bool {
+			return $value >= $min && $value <= $max;
+		}
+
+		/**
+		 * Validate if a value represents an active or inactive status.
+		 *
+		 * @param mixed $value The value to validate.
+		 *
+		 * @return bool True if the value is a valid active/inactive status, false otherwise.
+		 */
+		public static function is_status( $value ): bool {
+			$valid_statuses = [ 'active', 'inactive', '1', '0', 1, 0, true, false ];
+
+			return in_array( $value, $valid_statuses, true );
 		}
 
 		/**
@@ -188,7 +247,7 @@ if ( ! class_exists( 'Validate' ) ) :
 		 *
 		 * @return bool True if the username is valid, false otherwise.
 		 */
-		public static function is_valid_username( string $username ): bool {
+		public static function is_username( string $username ): bool {
 			return validate_username( $username );
 		}
 
@@ -269,7 +328,7 @@ if ( ! class_exists( 'Validate' ) ) :
 		 *
 		 * @return bool True if the number is a valid credit card number, false otherwise.
 		 */
-		public static function is_valid_credit_card( string $number ): bool {
+		public static function is_credit_card_number( string $number ): bool {
 			$number = preg_replace( '/\D/', '', $number );
 			$length = strlen( $number );
 			$parity = $length % 2;

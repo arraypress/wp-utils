@@ -78,10 +78,8 @@ if ( ! class_exists( 'Cache' ) ) :
 
 			$value = $callback();
 
-			// Only cache non-null values
-			if ( $value !== null ) {
-				set_transient( $key, $value, $expiration );
-			}
+			// Cache the value even if it's null
+			set_transient( $key, $value, $expiration );
 
 			return $value;
 		}
