@@ -218,14 +218,58 @@ if ( ! class_exists( 'Sanitize' ) ) :
 		}
 
 		/**
-		 * Sanitize a file path.
+		 * Sanitize a file path using PHP's built-in functions.
 		 *
-		 * @param string $path The file path to sanitize.
+		 * @param string $path      The file path to sanitize.
+		 * @param bool   $allow_rel Whether to allow relative paths. Default is false.
 		 *
 		 * @return string The sanitized file path.
 		 */
-		public static function path( string $path ): string {
-			return str_replace( ' ', '-', preg_replace( '/[^A-Za-z0-9_\-\/\. ]/', '', $path ) );
+		public static function path( string $path, bool $allow_rel = false ): string {
+			// Normalize directory separators and remove any null bytes
+			$path = str_replace( [ '\\', "\0" ], '/', $path );
+
+			// Use realpath to resolve the absolute path, removing .. and . components
+			$realpath = realpath( $path );
+
+			if ( $realpath !== false ) {
+				// If realpath succeeds, use the resolved path
+				$sanitized = $realpath;
+			} else {
+				// If realpath fails (e.g., for non-existent paths), manually remove .. and . components
+				$parts      = explode( '/', $path );
+				$safe_parts = [];
+				foreach ( $parts as $part ) {
+					if ( $part == '..' && ! empty( $safe_parts ) && end( $safe_parts ) != '..' ) {
+						array_pop( $safe_parts );
+					} elseif ( $part != '.' && $part != '' ) {
+						$safe_parts[] = $part;
+					}
+				}
+				$sanitized = implode( '/', $safe_parts );
+			}
+
+			// Convert back to relative path if allowed and originally relative
+			if ( $allow_rel && ! path_is_absolute( $path ) ) {
+				$sanitized = ltrim( str_replace( getcwd(), '', $sanitized ), '/' );
+			}
+
+			return $sanitized;
+		}
+
+		/**
+		 * Check if a path is absolute.
+		 *
+		 * @param string $path The path to check.
+		 *
+		 * @return bool True if the path is absolute, false otherwise.
+		 */
+		private static function path_is_absolute( string $path ): bool {
+			if ( PHP_OS_FAMILY === 'Windows' ) {
+				return (bool) preg_match( '/^[A-Z]:\//i', $path );
+			}
+
+			return $path[0] === '/';
 		}
 
 		/**
