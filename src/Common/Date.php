@@ -16,29 +16,50 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
+use DateTimeInterface;
+use DateTime;
+
 /**
  * Check if the class `Date` is defined, and if not, define it.
  */
 if ( ! class_exists( 'Date' ) ) :
 
+	/**
+	 * Date Utility Class
+	 *
+	 * This class provides utility methods for handling date-related operations.
+	 */
 	class Date {
 
 		/**
 		 * Convert various date formats to a timestamp.
 		 *
-		 * @param mixed $time The date/time to convert.
+		 * @param mixed $datetime The date/time to convert.
 		 *
 		 * @return int|false Timestamp on success, false on failure.
 		 */
-		public static function to_timestamp( $time ) {
-			if ( $time instanceof \DateTimeInterface ) {
-				return $time->getTimestamp();
+		public static function to_timestamp( $datetime ) {
+			if ( $datetime instanceof DateTimeInterface ) {
+				return $datetime->getTimestamp();
 			}
-			if ( is_numeric( $time ) ) {
-				return (int) $time;
+			if ( is_numeric( $datetime ) ) {
+				return (int) $datetime;
 			}
 
-			return strtotime( $time );
+			return strtotime( $datetime );
+		}
+
+
+		/**
+		 * Convert a date string to UTC format.
+		 *
+		 * @param string $date   Date string in any valid format.
+		 * @param string $format The format to return the date in. Default 'Y-m-d H:i:s'.
+		 *
+		 * @return string Date in UTC format.
+		 */
+		private static function to_utc( string $date, string $format = 'Y-m-d H:i:s' ): string {
+			return gmdate( $format, strtotime( $date ) );
 		}
 
 		/**
@@ -180,11 +201,10 @@ if ( ! class_exists( 'Date' ) ) :
 		 * @param string $unit  Unit of time (years, months, days, hours, minutes, seconds).
 		 *
 		 * @return int The difference in the specified unit.
-		 * @throws \DateMalformedStringException
 		 */
 		public static function diff( $date1, $date2, string $unit = 'days' ): int {
-			$datetime1 = new \DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date1 ) ) );
-			$datetime2 = new \DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date2 ) ) );
+			$datetime1 = new DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date1 ) ) );
+			$datetime2 = new DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date2 ) ) );
 			$interval  = $datetime1->diff( $datetime2 );
 
 			switch ( $unit ) {
@@ -211,11 +231,26 @@ if ( ! class_exists( 'Date' ) ) :
 		 * @param string $unit   The unit (years, months, days, hours, minutes, seconds).
 		 *
 		 * @return string The new date after adding the interval.
-		 * @throws \DateMalformedStringException
 		 */
 		public static function add( $date, int $amount, string $unit ): string {
-			$datetime = new \DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date ) ) );
+			$datetime = new DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date ) ) );
 			$datetime->modify( "+{$amount} {$unit}" );
+
+			return $datetime->format( 'Y-m-d H:i:s' );
+		}
+
+		/**
+		 * Subtract a specified time interval from a date.
+		 *
+		 * @param mixed  $date   The starting date.
+		 * @param int    $amount The amount to subtract.
+		 * @param string $unit   The unit (years, months, days, hours, minutes, seconds).
+		 *
+		 * @return string The new date after subtracting the interval.
+		 */
+		public static function subtract( $date, int $amount, string $unit ): string {
+			$datetime = new DateTime( date( 'Y-m-d H:i:s', self::to_timestamp( $date ) ) );
+			$datetime->modify( "-{$amount} {$unit}" );
 
 			return $datetime->format( 'Y-m-d H:i:s' );
 		}
@@ -227,11 +262,10 @@ if ( ! class_exists( 'Date' ) ) :
 		 * @param int $year        Optional. The year. Default is current year.
 		 *
 		 * @return array Associative array with 'start' and 'end' timestamps.
-		 * @throws \DateMalformedStringException
 		 */
 		public static function week_range( int $week_number, int $year = 0 ): array {
 			$year       = $year ?: date( 'Y' );
-			$start_date = new \DateTime();
+			$start_date = new DateTime();
 			$start_date->setISODate( $year, $week_number );
 			$end_date = clone $start_date;
 			$end_date->modify( '+6 days' );
@@ -251,7 +285,7 @@ if ( ! class_exists( 'Date' ) ) :
 		 *
 		 * @return bool True if the date is within the range, false otherwise.
 		 */
-		public static function is_in_range( $date, $start, $end ): bool {
+		public static function in_range( $date, $start, $end ): bool {
 			$date_timestamp  = self::to_timestamp( $date );
 			$start_timestamp = self::to_timestamp( $start );
 			$end_timestamp   = self::to_timestamp( $end );
@@ -304,6 +338,50 @@ if ( ! class_exists( 'Date' ) ) :
 		}
 
 		/**
+		 * Converts a time period to minutes.
+		 *
+		 * @param string $period The period type.
+		 * @param int    $count  The count of the periods.
+		 *
+		 * @return float The number of minutes.
+		 */
+		public static function to_minutes( string $period, int $count ): float {
+			$minutes_map = [
+				'second' => 1 / 60,
+				'minute' => 1,
+				'hour'   => 60,
+				'day'    => 1440,
+				'week'   => 10080,
+				'month'  => 43200,   // Approximate (30 days)
+				'year'   => 525600,  // Approximate (365 days)
+			];
+
+			return ( $minutes_map[ strtolower( $period ) ] ?? 0 ) * $count;
+		}
+
+		/**
+		 * Converts a time period to hours.
+		 *
+		 * @param string $period The period type.
+		 * @param int    $count  The count of the periods.
+		 *
+		 * @return float The number of hours.
+		 */
+		public static function to_hours( string $period, int $count ): float {
+			$hours_map = [
+				'second' => 1 / 3600,
+				'minute' => 1 / 60,
+				'hour'   => 1,
+				'day'    => 24,
+				'week'   => 168,
+				'month'  => 720,    // Approximate (30 days)
+				'year'   => 8760,   // Approximate (365 days)
+			];
+
+			return ( $hours_map[ strtolower( $period ) ] ?? 0 ) * $count;
+		}
+
+		/**
 		 * Check if a date is a weekend.
 		 *
 		 * @param string $date Date string.
@@ -326,6 +404,26 @@ if ( ! class_exists( 'Date' ) ) :
 		}
 
 		/**
+		 * Check if a given date is the start of the week based on WordPress settings.
+		 *
+		 * @param mixed $date The date to check. Default is current time.
+		 *
+		 * @return bool True if the date is the start of the week, false otherwise.
+		 */
+		public static function is_start_of_week( $date = null ): bool {
+			$timestamp = $date ? self::to_timestamp( $date ) : current_time( 'timestamp' );
+
+			// Get the day of the week (0 for Sunday, 6 for Saturday)
+			$day_of_week = (int) date( 'w', $timestamp );
+
+			// Get WordPress start of week setting (0 for Sunday, 1-6 for Monday-Saturday)
+			$wp_start_of_week = (int) get_option( 'start_of_week', 0 );
+
+			// Check if the day of the week matches the WordPress setting
+			return $day_of_week === $wp_start_of_week;
+		}
+
+		/**
 		 * Get the number of days in a given month and year.
 		 *
 		 * @param int $month Month number (1-12).
@@ -335,6 +433,34 @@ if ( ! class_exists( 'Date' ) ) :
 		 */
 		public static function days_in_month( int $month, int $year ): int {
 			return cal_days_in_month( CAL_GREGORIAN, $month, $year );
+		}
+
+		/**
+		 * Check if a given year is a leap year.
+		 *
+		 * @param int $year The year to check.
+		 *
+		 * @return bool True if it's a leap year, false otherwise.
+		 */
+		public static function is_leap_year( int $year ): bool {
+			return ( ( ( $year % 4 ) == 0 ) && ( ( ( $year % 100 ) != 0 ) || ( ( $year % 400 ) == 0 ) ) );
+		}
+
+		/**
+		 * Check if the given string is empty or an invalid date.
+		 *
+		 * @param string|null $date The string to be checked.
+		 *
+		 * @return bool True if the string is empty or an invalid date, False otherwise.
+		 */
+		public static function is_empty( ?string $date = null ): bool {
+			if ( empty( $date ) || $date === '0000-00-00 00:00:00' ) {
+				return true;
+			}
+
+			$timestamp = strtotime( $date );
+
+			return $timestamp === false || $timestamp < 0;
 		}
 
 		/**
@@ -394,6 +520,68 @@ if ( ! class_exists( 'Date' ) ) :
 					return __( 'Invalid tooltip type.', 'arraypress' );
 			}
 		}
+
+		/**
+		 * Format a date for display in the WordPress admin area.
+		 *
+		 * @param string $date   The date to format.
+		 * @param string $format Optional. The format to use.
+		 *
+		 * @return string The formatted date.
+		 */
+		public static function format_for_admin( string $date, string $format = '' ): string {
+			if ( empty( $format ) ) {
+				$format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
+			}
+
+			return self::format( $date, $format );
+		}
+
+		/**
+		 * Get the WordPress timezone string.
+		 *
+		 * @return string
+		 */
+		public static function get_wp_timezone(): string {
+			return wp_timezone_string();
+		}
+
+		/**
+		 * Format a date using WordPress i18n functions.
+		 *
+		 * @param mixed  $date   Date to format. Can be a timestamp, date string, or DateTime object.
+		 * @param string $format The format to use (WordPress date format string).
+		 *
+		 * @return string Formatted date string.
+		 */
+		public static function wp_date_i18n( $date, string $format ): string {
+			$timestamp = self::to_timestamp( $date );
+
+			return date_i18n( $format, $timestamp );
+		}
+
+		/**
+		 * Get the current time, either in the site's timezone or UTC.
+		 *
+		 * @param string $type    Optional. Type of time to retrieve. Accepts 'mysql',
+		 *                        'timestamp', or PHP date format string. Default 'mysql'.
+		 * @param bool   $gmt     Optional. Whether to use GMT timezone. Default false.
+		 *
+		 * @return int|string Integer if $type is 'timestamp', string otherwise.
+		 */
+		public static function get_current_time( string $type = 'mysql', bool $gmt = false ) {
+			$timestamp = current_time( 'timestamp', $gmt );
+
+			switch ( $type ) {
+				case 'timestamp':
+					return $timestamp;
+				case 'mysql':
+					return date( 'Y-m-d H:i:s', $timestamp );
+				default:
+					return date( $type, $timestamp );
+			}
+		}
+
 	}
 
 endif;

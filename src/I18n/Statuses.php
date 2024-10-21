@@ -198,6 +198,28 @@ if ( ! class_exists( 'Statuses' ) ) :
 		}
 
 		/**
+		 * Get priority statuses.
+		 *
+		 * @param string|null $context Optional. The context for the statuses.
+		 *
+		 * @return array
+		 */
+		public static function get_priority_statuses( ?string $context = null ): array {
+			return Statuses::get_statuses( 'priorities', $context );
+		}
+
+		/**
+		 * Get fulfilment statuses.
+		 *
+		 * @param string|null $context Optional. The context for the statuses.
+		 *
+		 * @return array
+		 */
+		public static function get_fulfilment_statuses( ?string $context = null ): array {
+			return Statuses::get_statuses( 'fulfilment', $context );
+		}
+
+		/**
 		 * Get statuses for a specific type.
 		 *
 		 * @param string      $type    The type of statuses to retrieve.
@@ -338,6 +360,12 @@ if ( ! class_exists( 'Statuses' ) ) :
 					'cancelled'   => __( 'Cancelled', 'arraypress' ),
 					'overdue'     => __( 'Overdue', 'arraypress' ),
 				],
+				'fulfilment'   => [
+					'unfulfilled' => __( 'Unfulfilled', 'arraypress' ),
+					'fulfilled'   => __( 'Fulfilled', 'arraypress' ),
+					'expired'     => __( 'Expired', 'arraypress' ),
+					'cancelled'   => __( 'Cancelled', 'arraypress' )
+				],
 				'membership'   => [
 					'active'    => __( 'Active', 'arraypress' ),
 					'pending'   => __( 'Pending', 'arraypress' ),
@@ -346,6 +374,11 @@ if ( ! class_exists( 'Statuses' ) ) :
 					'on-hold'   => __( 'On Hold', 'arraypress' ),
 					'suspended' => __( 'Suspended', 'arraypress' ),
 				],
+				'priorities'   => [
+					'low'    => __( 'Low', 'arraypress' ),
+					'medium' => __( 'Medium', 'arraypress' ),
+					'high'   => __( 'High', 'arraypress' ),
+				]
 			];
 
 			return $all_statuses[ $type ] ?? [];

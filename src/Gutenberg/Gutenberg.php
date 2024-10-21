@@ -30,32 +30,6 @@ if ( ! class_exists( 'Gutenberg' ) ) :
 	class Gutenberg {
 
 		/**
-		 * Determine if the current request is a block rendering request in the editor.
-		 *
-		 * @return bool
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-		 */
-		public static function is_rendering_preview(): bool {
-			if ( is_admin() ) {
-				return true;
-			}
-
-			if ( ! defined( 'REST_REQUEST' ) || ! is_user_logged_in() ) {
-				return false;
-			}
-
-			global $wp;
-
-			if ( ! $wp instanceof \WP || empty( $wp->query_vars['rest_route'] ) ) {
-				return false;
-			}
-
-			$route = $wp->query_vars['rest_route'];
-
-			return str_contains( $route, '/block-renderer/' );
-		}
-
-		/**
 		 * Check if the Classic Editor plugin is active.
 		 *
 		 * @return bool
@@ -108,19 +82,6 @@ if ( ! class_exists( 'Gutenberg' ) ) :
 		 */
 		public static function does_theme_support(): bool {
 			return current_theme_supports( 'align-wide' ) || current_theme_supports( 'responsive-embeds' );
-		}
-
-		/**
-		 * Get the current Gutenberg version.
-		 *
-		 * @return string|null The Gutenberg version or null if not available.
-		 */
-		public static function get_version(): ?string {
-			if ( defined( 'GUTENBERG_VERSION' ) ) {
-				return GUTENBERG_VERSION;
-			}
-
-			return null;
 		}
 
 		/**

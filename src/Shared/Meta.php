@@ -16,7 +16,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\Meta;
+namespace ArrayPress\Utils\Shared;
 
 use ArrayPress\Utils\Common\Convert;
 use ArrayPress\Utils\Common\Compare;
@@ -138,6 +138,96 @@ if ( ! class_exists( 'Meta' ) ) :
 			}
 
 			return Convert::value( $value, $cast_type );
+		}
+
+		/**
+		 * Get all meta for an object that matches a specific prefix.
+		 *
+		 * @param string $meta_type The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param int    $object_id The object ID.
+		 * @param string $prefix    The meta key prefix to match.
+		 *
+		 * @return array An array of meta key-value pairs.
+		 */
+		public static function get_meta_by_prefix( string $meta_type, int $object_id, string $prefix ): array {
+			$all_meta = get_metadata( $meta_type, $object_id );
+
+			return array_filter( $all_meta, function ( $key ) use ( $prefix ) {
+				return strpos( $key, $prefix ) === 0;
+			}, ARRAY_FILTER_USE_KEY );
+		}
+
+		/**
+		 * Get meta values associated with an object's terms.
+		 *
+		 * @param string $meta_type The type of object metadata is for (e.g., 'post', 'user', 'comment', 'link').
+		 * @param int    $object_id The object ID.
+		 * @param string $taxonomy  The taxonomy name.
+		 * @param string $meta_key  The term meta key to retrieve.
+		 *
+		 * @return array An array of term meta values.
+		 */
+		public static function get_object_terms_meta( string $meta_type, int $object_id, string $taxonomy, string $meta_key ): array {
+			// Terms can't have terms, so we return an empty array for 'term' meta type
+			if ( $meta_type === 'term' ) {
+				return [];
+			}
+
+			// Check if Link Manager is enabled for 'link' meta type
+			if ( $meta_type === 'link' && ! get_option( 'link_manager_enabled' ) ) {
+				return [];
+			}
+
+			$terms = wp_get_object_terms( $object_id, $taxonomy, [ 'fields' => 'ids' ] );
+
+			if ( is_wp_error( $terms ) || empty( $terms ) ) {
+				return [];
+			}
+
+			$meta_values = [];
+			foreach ( $terms as $term_id ) {
+				$meta_value = get_term_meta( $term_id, $meta_key, true );
+				if ( $meta_value !== '' ) {
+					$meta_values[] = $meta_value;
+				}
+			}
+
+			return $meta_values;
+		}
+
+
+		/**
+		 * Retrieve a meta value with fallback to a global value and then a default.
+		 *
+		 * @param string               $meta_type       The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param int                  $object_id       The ID of the object.
+		 * @param string               $meta_key        The meta key to retrieve.
+		 * @param callable|string|null $global_callback Optional. A callback function or function name to retrieve a global value. Default is null.
+		 * @param mixed                $default         Optional. A default value to use if no specific or global value is found. Default is an empty string.
+		 *
+		 * @return mixed The retrieved value.
+		 */
+		public static function get_with_fallback( string $meta_type, int $object_id, string $meta_key, $global_callback = null, $default = '' ): mixed {
+			$value = get_metadata( $meta_type, $object_id, $meta_key, true );
+
+			if ( ! empty( $value ) ) {
+				return $value;
+			}
+
+			if ( $global_callback !== null ) {
+				$global_value = null;
+				if ( is_callable( $global_callback ) ) {
+					$global_value = $global_callback();
+				} elseif ( is_string( $global_callback ) && function_exists( $global_callback ) ) {
+					$global_value = $global_callback();
+				}
+
+				if ( ! empty( $global_value ) ) {
+					return $global_value;
+				}
+			}
+
+			return $default;
 		}
 
 		/** Meta Synchronization ******************************************************/
@@ -618,7 +708,7 @@ if ( ! class_exists( 'Meta' ) ) :
 				return self::compare_string( $meta_type, (int) $object_id, $meta_key, $operator, $value, $case_sensitive );
 			} );
 		}
-/**/
+		/**/
 		/**
 		 * Find objects with meta values within a specific range.
 		 *
@@ -638,6 +728,52 @@ if ( ! class_exists( 'Meta' ) ) :
 			);
 
 			return $wpdb->get_col( $query );
+		}
+
+		/** Meta Search ***************************************************************/
+
+		/**
+		 * Check if an object has a specific meta value set to true.
+		 *
+		 * @param string               $meta_type       The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param int                  $object_id       The ID of the object.
+		 * @param string               $meta_key        The meta key to check.
+		 * @param bool                 $default         Optional. A default value to return if the meta value is not found. Default is false.
+		 * @param callable|string|null $global_callback Optional. A callback function or function name to retrieve a global option. Default is null.
+		 * @param bool                 $global_default  Optional. A default value to return if the global option is not found. Default is false.
+		 *
+		 * @return bool True if the meta value or global option is set to true, false otherwise.
+		 */
+		public static function is_truthy( string $meta_type, int $object_id, string $meta_key, bool $default = false, $global_callback = null, bool $global_default = false ): bool {
+			$meta_value = get_metadata( $meta_type, $object_id, $meta_key, true );
+
+			if ( $meta_value !== '' ) {
+				return (bool) $meta_value;
+			}
+
+			if ( $global_callback !== null ) {
+				if ( is_callable( $global_callback ) ) {
+					return (bool) $global_callback( $global_default );
+				} elseif ( is_string( $global_callback ) && function_exists( $global_callback ) ) {
+					return (bool) $global_callback( $global_default );
+				}
+			}
+
+			return $default;
+		}
+
+		/**
+		 * Check if an object has a specific meta value set to false.
+		 *
+		 * @param string $meta_type The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param int    $object_id The ID of the object.
+		 * @param string $meta_key  The meta key to check.
+		 * @param bool   $default   Optional. A default value to return if the meta value is not found. Default is true.
+		 *
+		 * @return bool True if the meta value is set to false, false otherwise.
+		 */
+		public static function is_falsy( string $meta_type, int $object_id, string $meta_key, bool $default = true ): bool {
+			return ! self::is_truthy( $meta_type, $object_id, $meta_key, ! $default );
 		}
 
 	}

@@ -101,7 +101,7 @@ if ( ! class_exists( 'Constant' ) ) :
 		 *
 		 * @return array An associative array of constant names and their values.
 		 */
-		public static function get_with_prefix( string $prefix ): array {
+		public static function get_all_with_prefix( string $prefix ): array {
 			$constants      = get_defined_constants( true );
 			$user_constants = $constants['user'] ?? [];
 
@@ -117,8 +117,8 @@ if ( ! class_exists( 'Constant' ) ) :
 		 *
 		 * @return array An array of constant names.
 		 */
-		public static function get_names_by_prefix( string $prefix ): array {
-			return array_keys( self::get_with_prefix( $prefix ) );
+		public static function get_all_names_by_prefix( string $prefix ): array {
+			return array_keys( self::get_all_with_prefix( $prefix ) );
 		}
 
 		/**

@@ -23,48 +23,7 @@ if ( ! class_exists( 'Posts' ) ) :
 
 	class Posts {
 
-		/** Search and Retrieval ********************************************************/
-
-		/**
-		 * Search posts by term and arguments, returning results in key/value or label/value format.
-		 *
-		 * @param string $search_term The term to search for.
-		 * @param array  $args        The arguments to search with (e.g., post_type, numberposts, etc.).
-		 *
-		 * @return array An array of search results.
-		 */
-		public static function search( string $search_term, array $args = [] ): array {
-			$options = [];
-
-			if ( empty( $search_term ) ) {
-				return $options;
-			}
-
-			$default_args = [
-				'post_type'   => 'post',
-				'numberposts' => - 1,
-				'orderby'     => 'title',
-				'order'       => 'ASC',
-			];
-
-			$args      = wp_parse_args( $args, $default_args );
-			$args['s'] = $search_term;
-
-			$posts = get_posts( $args );
-
-			if ( empty( $posts ) ) {
-				return $options;
-			}
-
-			foreach ( $posts as $post ) {
-				$options[] = [
-					'label' => esc_html( $post->post_title ),
-					'value' => esc_attr( $post->ID ),
-				];
-			}
-
-			return $options;
-		}
+		/** Retrieval *******************************************************************/
 
 		/**
 		 * Get an array of post objects based on provided post IDs.
@@ -123,15 +82,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts associated with specific terms.
 		 *
-		 * @param array  $term_ids An array of term IDs.
-		 * @param string $taxonomy The taxonomy name.
-		 * @param array  $args     Optional. Additional WP_Query arguments.
+		 * @param string $taxonomy  The taxonomy name.
+		 * @param array  $term_ids  An array of term IDs.
+		 * @param string $post_type The post type to query. Default 'any'.
+		 * @param array  $args      Optional. Additional WP_Query arguments.
 		 *
 		 * @return array An array of post objects.
 		 */
-		public static function get_by_terms( array $term_ids, string $taxonomy, array $args = [] ): array {
+		public static function get_by_taxonomy_term_ids( string $taxonomy, array $term_ids, string $post_type = 'any', array $args = [] ): array {
 			$defaults = [
-				'post_type'   => 'any',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 				'tax_query'   => [
 					[
@@ -151,15 +111,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		 *
 		 * @param string $meta_key   The meta key to search for.
 		 * @param mixed  $meta_value The meta value to match.
+		 * @param string $post_type  The post type to query. Default 'post'.
 		 * @param array  $args       Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_meta( string $meta_key, $meta_value, array $args = [] ): array {
+		public static function get_by_meta_key_value( string $meta_key, $meta_value, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
 				'meta_key'    => $meta_key,
 				'meta_value'  => $meta_value,
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 			];
 
@@ -171,15 +132,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts by custom taxonomy term.
 		 *
-		 * @param string $taxonomy The custom taxonomy.
-		 * @param int    $term_id  The term ID.
-		 * @param array  $args     Additional query arguments.
+		 * @param string $taxonomy  The custom taxonomy.
+		 * @param int    $term_id   The term ID.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_taxonomy( string $taxonomy, int $term_id, array $args = [] ): array {
+		public static function get_by_taxonomy_term( string $taxonomy, int $term_id, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 				'tax_query'   => [
 					[
@@ -198,15 +160,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get recent posts.
 		 *
-		 * @param int   $number The number of posts to retrieve.
-		 * @param array $args   Additional query arguments.
+		 * @param int    $number    The number of posts to retrieve.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_recent( int $number = 5, array $args = [] ): array {
+		public static function get_recent( int $number = 5, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
 				'numberposts' => $number,
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'orderby'     => 'date',
 				'order'       => 'DESC',
 			];
@@ -219,15 +182,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts by author.
 		 *
-		 * @param int   $author_id The author ID to search for.
-		 * @param array $args      Additional query arguments.
+		 * @param int    $author_id The author ID to search for.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_author( int $author_id, array $args = [] ): array {
+		public static function get_by_author( int $author_id, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
 				'author'      => $author_id,
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 			];
 
@@ -239,15 +203,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts by category.
 		 *
-		 * @param int   $category_id The category ID to search for.
-		 * @param array $args        Additional query arguments.
+		 * @param int    $category_id The category ID to search for.
+		 * @param string $post_type   The post type to query. Default 'post'.
+		 * @param array  $args        Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_category( int $category_id, array $args = [] ): array {
+		public static function get_by_category( int $category_id, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
 				'category'    => $category_id,
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 			];
 
@@ -259,15 +224,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts by tag.
 		 *
-		 * @param int   $tag_id The tag ID to search for.
-		 * @param array $args   Additional query arguments.
+		 * @param int    $tag_id    The tag ID to search for.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_tag( int $tag_id, array $args = [] ): array {
+		public static function get_by_tag( int $tag_id, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
 				'tag_id'      => $tag_id,
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 			];
 
@@ -281,13 +247,14 @@ if ( ! class_exists( 'Posts' ) ) :
 		 *
 		 * @param string $start_date The start date (YYYY-MM-DD).
 		 * @param string $end_date   The end date (YYYY-MM-DD).
+		 * @param string $post_type  The post type to query. Default 'post'.
 		 * @param array  $args       Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_date_range( string $start_date, string $end_date, array $args = [] ): array {
+		public static function get_by_date_range( string $start_date, string $end_date, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'date_query'  => [
 					[
 						'after'     => $start_date,
@@ -307,12 +274,13 @@ if ( ! class_exists( 'Posts' ) ) :
 		 * Count posts by status.
 		 *
 		 * @param string $post_status The post status to count (e.g., 'publish', 'draft').
+		 * @param string $post_type   The post type to query. Default 'post'.
 		 *
 		 * @return int The number of posts with the specified status.
 		 */
-		public static function count_by_status( string $post_status ): int {
+		public static function count_by_status( string $post_status, string $post_type = 'post' ): int {
 			$args = [
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'post_status' => $post_status,
 				'numberposts' => - 1,
 			];
@@ -455,13 +423,14 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts with no thumbnail.
 		 *
-		 * @param array $args Additional query arguments.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_without_thumbnail( array $args = [] ): array {
+		public static function get_without_thumbnail( string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 				'meta_query'  => [
 					[
@@ -479,13 +448,14 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get sticky posts.
 		 *
-		 * @param array $args Additional query arguments.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_sticky_posts( array $args = [] ): array {
+		public static function get_sticky_posts( string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 				'post__in'    => get_option( 'sticky_posts' ),
 			];
@@ -498,14 +468,15 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts where a specific meta key exists.
 		 *
-		 * @param string $meta_key The meta key to check.
-		 * @param array  $args     Additional query arguments.
+		 * @param string $meta_key  The meta key to check.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_where_meta_exists( string $meta_key, array $args = [] ): array {
+		public static function get_where_meta_exists( string $meta_key, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 				'meta_query'  => [
 					[
@@ -523,20 +494,21 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts where a meta value is compared with a specific amount.
 		 *
-		 * @param string $meta_key The meta key to check.
-		 * @param mixed  $amount   The amount to compare against.
-		 * @param string $operator The comparison operator (e.g., '>', '<', '=', '!=').
-		 * @param array  $args     Additional query arguments.
+		 * @param string $meta_key  The meta key to check.
+		 * @param mixed  $amount    The amount to compare against.
+		 * @param string $operator  The comparison operator (e.g., '>', '<', '=', '!=').
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_where_meta_compared( string $meta_key, $amount, string $operator, array $args = [] ): array {
+		public static function get_where_meta_numeric_compared( string $meta_key, $amount, string $operator, string $post_type = 'post', array $args = [] ): array {
 			if ( ! Validate::is_operator( $operator ) ) {
 				return [];
 			}
 
 			$default_args = [
-				'post_type'   => 'post',
+				'post_type'   => $post_type,
 				'numberposts' => - 1,
 				'meta_query'  => [
 					[
@@ -556,14 +528,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		/**
 		 * Get posts ordered by a meta key value.
 		 *
-		 * @param string $meta_key The meta key to order by.
-		 * @param int    $number   The number of posts to retrieve.
-		 * @param array  $args     Additional query arguments.
+		 * @param string $meta_key  The meta key to order by.
+		 * @param int    $number    The number of posts to retrieve.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_meta_ordered( string $meta_key, int $number = 10, array $args = [] ): array {
+		public static function get_by_meta_ordered( string $meta_key, int $number = 10, string $post_type = 'post', array $args = [] ): array {
 			$default_args = [
+				'post_type'      => $post_type,
 				'posts_per_page' => $number,
 				'meta_query'     => [
 					[
@@ -583,38 +557,16 @@ if ( ! class_exists( 'Posts' ) ) :
 		}
 
 		/**
-		 * Get posts with a specific meta key and value.
-		 *
-		 * @param string $meta_key   The meta key to search for.
-		 * @param mixed  $meta_value The meta value to match.
-		 * @param array  $args       Additional query arguments.
-		 *
-		 * @return WP_Post[] An array of post objects.
-		 */
-		public static function get_by_meta_value( string $meta_key, $meta_value, array $args = [] ): array {
-			$default_args = [
-				'meta_key'       => $meta_key,
-				'meta_value'     => $meta_value,
-				'post_status'    => 'publish',
-				'posts_per_page' => - 1,
-				'fields'         => 'ids',
-			];
-
-			$args = wp_parse_args( $args, $default_args );
-
-			return get_posts( $args );
-		}
-
-		/**
 		 * Get posts with a specific meta key and a true value.
 		 *
-		 * @param string $meta_key The meta key to check.
-		 * @param array  $args     Additional query arguments.
+		 * @param string $meta_key  The meta key to check.
+		 * @param string $post_type The post type to query. Default 'post'.
+		 * @param array  $args      Additional query arguments.
 		 *
 		 * @return WP_Post[] An array of post objects.
 		 */
-		public static function get_by_meta_true( string $meta_key, array $args = [] ): array {
-			return self::get_by_meta_value( $meta_key, 1, $args );
+		public static function get_by_meta_true( string $meta_key, string $post_type = 'post', array $args = [] ): array {
+			return self::get_by_meta_key_value( $meta_key, 1, $post_type, $args );
 		}
 
 		/**

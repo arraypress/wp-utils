@@ -23,6 +23,8 @@ if ( ! class_exists( 'Email' ) ) :
 
 	/**
 	 * Email Utility Class
+	 *
+	 * This class provides utility methods for handling email-related operations.
 	 */
 	class Email {
 

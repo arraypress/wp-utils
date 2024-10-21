@@ -16,6 +16,8 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
+use InvalidArgumentException;
+
 /**
  * Check if the class `Math` is defined, and if not, define it.
  */
@@ -23,6 +25,8 @@ if ( ! class_exists( 'Math' ) ) :
 
 	/**
 	 * Math Utility Class
+	 *
+	 * This class provides utility methods for handling math-related operations.
 	 */
 	class Math {
 
@@ -64,7 +68,7 @@ if ( ! class_exists( 'Math' ) ) :
 		 */
 		public static function break_even_point( float $fixed_costs, float $price, float $variable_cost ): float {
 			if ( $price <= $variable_cost ) {
-				throw new \InvalidArgumentException( "Price must be greater than variable cost." );
+				throw new InvalidArgumentException( "Price must be greater than variable cost." );
 			}
 
 			return $fixed_costs / ( $price - $variable_cost );
@@ -327,17 +331,15 @@ if ( ! class_exists( 'Math' ) ) :
 		}
 
 		/**
-		 * Get the ordinal suffix for a number (st, nd, rd, th).
+		 * Calculate the percentage of a number.
 		 *
-		 * @param int $number The number to get the suffix for.
+		 * @param float $number The number to calculate the percentage of.
+		 * @param float $total  The total amount.
 		 *
-		 * @return string The ordinal suffix.
+		 * @return float
 		 */
-		public static function ordinal_suffix( int $number ): string {
-			$suffixes = [ 'th', 'st', 'nd', 'rd' ];
-			$mod100   = $number % 100;
-
-			return $number . ( $mod100 >= 11 && $mod100 <= 13 ? 'th' : $suffixes[ $number % 10 ] ?? 'th' );
+		public static function percentage( float $number, float $total ): float {
+			return ( $total != 0 ) ? ( $number / $total ) * 100 : 0;
 		}
 
 	}

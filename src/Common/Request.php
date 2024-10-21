@@ -132,12 +132,33 @@ if ( ! class_exists( 'Request' ) ) :
 		}
 
 		/**
-		 * Returns true if the request is a block editor request.
+		 * Determines if the current request is related to the block editor.
 		 *
-		 * @return bool
+		 * This method checks for three scenarios:
+		 * 1. If we're in the admin area and the current screen is a block editor.
+		 * 2. If it's a frontend request for block rendering (e.g., for server-side rendered blocks).
+		 * 3. If it's a REST API request for block rendering.
+		 *
+		 * @return bool True if the request is related to the block editor, false otherwise.
 		 */
 		public static function is_editor(): bool {
-			return function_exists( 'get_current_screen' ) && ! empty( get_current_screen()->is_block_editor );
+			// Check if we're in the admin area and it's a block editor screen
+			if ( is_admin() && function_exists( 'get_current_screen' ) ) {
+				$screen = get_current_screen();
+				if ( $screen && method_exists( $screen, 'is_block_editor' ) && $screen->is_block_editor() ) {
+					return true;
+				}
+			}
+
+			// Check if it's a frontend block rendering request
+			if ( ! is_admin() && defined( 'REST_REQUEST' ) && REST_REQUEST && is_user_logged_in() ) {
+				$current_route = self::get_current_rest_route();
+				if ( $current_route !== null && str_contains( $current_route, '/block-renderer/' ) ) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/**
@@ -158,6 +179,41 @@ if ( ! class_exists( 'Request' ) ) :
 			$user_agent = wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '' );
 
 			return wp_strip_all_tags( $user_agent );
+		}
+
+		/**
+		 * Checks if the current request is from a mobile device.
+		 *
+		 * @return bool True if the request is from a mobile device, false otherwise.
+		 */
+		public static function is_mobile(): bool {
+			$user_agent    = self::get_user_agent();
+			$mobile_agents = [
+				'Android',
+				'webOS',
+				'iPhone',
+				'iPad',
+				'iPod',
+				'BlackBerry',
+				'Windows Phone'
+			];
+
+			foreach ( $mobile_agents as $agent ) {
+				if ( stripos( $user_agent, $agent ) !== false ) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/**
+		 * Checks if the current request is from a desktop device.
+		 *
+		 * @return bool True if the request is from a desktop device, false otherwise.
+		 */
+		public static function is_desktop(): bool {
+			return ! self::is_mobile();
 		}
 
 		/**
@@ -214,6 +270,60 @@ if ( ! class_exists( 'Request' ) ) :
 		}
 
 		/**
+		 * Returns the sanitized version of the `$_POST` super-global array.
+		 *
+		 * @param bool $refresh Whether to refresh the cache.
+		 *
+		 * @return array The sanitized version of the `$_POST` super-global.
+		 */
+		public static function get_post_vars( bool $refresh = false ): array {
+			static $cache = null;
+
+			if ( null !== $cache && ! $refresh ) {
+				return $cache;
+			}
+
+			$cache = [];
+			foreach ( $_POST as $key => $value ) {
+				$sanitized_key = sanitize_key( $key );
+				if ( is_array( $value ) ) {
+					$cache[ $sanitized_key ] = array_map( 'sanitize_text_field', $value );
+				} else {
+					$cache[ $sanitized_key ] = sanitize_text_field( $value );
+				}
+			}
+
+			return $cache;
+		}
+
+		/**
+		 * Returns the sanitized version of the `$_GET` super-global array.
+		 *
+		 * @param bool $refresh Whether to refresh the cache.
+		 *
+		 * @return array The sanitized version of the `$_GET` super-global.
+		 */
+		public static function get_get_vars( bool $refresh = false ): array {
+			static $cache = null;
+
+			if ( null !== $cache && ! $refresh ) {
+				return $cache;
+			}
+
+			$cache = [];
+			foreach ( $_GET as $key => $value ) {
+				$sanitized_key = sanitize_key( $key );
+				if ( is_array( $value ) ) {
+					$cache[ $sanitized_key ] = array_map( 'sanitize_text_field', $value );
+				} else {
+					$cache[ $sanitized_key ] = sanitize_text_field( $value );
+				}
+			}
+
+			return $cache;
+		}
+
+		/**
 		 * Checks if the current connection is secure (SSL).
 		 *
 		 * This method checks for SSL connection using various methods:
@@ -248,6 +358,22 @@ if ( ! class_exists( 'Request' ) ) :
 			}
 
 			return false;
+		}
+
+		/** Helpers ******************************************************************/
+
+		/**
+		 * Get the current REST route.
+		 *
+		 * @return string|null The current REST route or null if not available.
+		 */
+		private static function get_current_rest_route(): ?string {
+			global $wp;
+			if ( $wp instanceof \WP && ! empty( $wp->query_vars['rest_route'] ) ) {
+				return $wp->query_vars['rest_route'];
+			}
+
+			return null;
 		}
 	}
 

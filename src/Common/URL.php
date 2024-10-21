@@ -265,24 +265,51 @@ if ( ! class_exists( 'URL' ) ) :
 		 * @return string The relative URL or the original URL if it is external.
 		 */
 		public static function make_relative( string $url ): string {
-			if ( self::is_external( $url ) ) {
+			// Get the site's home URL and parse it
+			$home_url   = home_url();
+			$home_parts = wp_parse_url( $home_url );
+
+			// Parse the input URL
+			$url_parts = wp_parse_url( $url );
+
+			// If there's no host or scheme, it's already relative
+			if ( ! isset( $url_parts['host'] ) && ! isset( $url_parts['scheme'] ) ) {
 				return $url;
 			}
 
-			$url_parts    = wp_parse_url( $url );
+			// If the host doesn't match the site's domain, it's external
+			if ( isset( $url_parts['host'] ) && $url_parts['host'] !== $home_parts['host'] ) {
+				return $url;
+			}
+
+			// Start building the relative URL
 			$relative_url = '';
 
+			// If there's a path, process it
 			if ( isset( $url_parts['path'] ) ) {
-				$relative_url .= $url_parts['path'];
+				// Remove the home path if it exists
+				$home_path = isset( $home_parts['path'] ) ? rtrim( $home_parts['path'], '/' ) : '';
+				$url_path  = $url_parts['path'];
+
+				if ( strpos( $url_path, $home_path ) === 0 ) {
+					$relative_url = substr( $url_path, strlen( $home_path ) );
+				} else {
+					$relative_url = $url_path;
+				}
 			}
+
+			// Add query string if it exists
 			if ( isset( $url_parts['query'] ) ) {
 				$relative_url .= '?' . $url_parts['query'];
 			}
+
+			// Add fragment if it exists
 			if ( isset( $url_parts['fragment'] ) ) {
 				$relative_url .= '#' . $url_parts['fragment'];
 			}
 
-			return $relative_url ?: '/';
+			// Ensure the relative URL starts with a slash
+			return '/' . ltrim( $relative_url, '/' );
 		}
 
 		/**
@@ -416,6 +443,38 @@ if ( ! class_exists( 'URL' ) ) :
 		}
 
 		/**
+		 * Get UTM URL.
+		 *
+		 * @param string $url    Base URL.
+		 * @param array  $params UTM parameters.
+		 *
+		 * @return string
+		 */
+		public static function get_utm( string $url, array $params = [] ): string {
+			$defaults = [
+				'source'   => 'default_source',
+				'medium'   => 'default_medium',
+				'campaign' => 'default_campaign',
+				'content'  => '',
+				'term'     => '',
+				'locale'   => get_user_locale(),
+			];
+
+			$utm_params = wp_parse_args( $params, $defaults );
+
+			$query_args = [];
+			foreach ( $utm_params as $key => $value ) {
+				if ( ! empty( $value ) ) {
+					$query_args["utm_$key"] = esc_attr( rawurlencode( $value ) );
+				}
+			}
+
+			return add_query_arg( $query_args, $url );
+		}
+
+		/** String Checking ********************************************************/
+
+		/**
 		 * Check if a given host matches any domain in the list.
 		 *
 		 * @param string $host    The host to check.
@@ -432,8 +491,6 @@ if ( ! class_exists( 'URL' ) ) :
 
 			return false;
 		}
-
-		/** String Checking ********************************************************/
 
 		/**
 		 * Check if a URL matches given extensions or domains.

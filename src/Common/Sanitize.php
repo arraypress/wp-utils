@@ -706,5 +706,257 @@ if ( ! class_exists( 'Sanitize' ) ) :
 			return max( $min, min( $max, $sanitized ) );
 		}
 
+		/**
+		 * Sanitize one or more CSS classes.
+		 *
+		 * @param string|array $classes One or more CSS classes to sanitize.
+		 *
+		 * @return string Sanitized CSS classes as a space-separated string.
+		 */
+		public static function html_class( $classes ): string {
+			$classes = is_array( $classes ) ? $classes : [ $classes ];
+			$classes = array_map( 'sanitize_html_class', $classes );
+			$classes = array_filter( $classes );
+			$classes = array_unique( $classes );
+
+			return implode( ' ', $classes );
+		}
+
+		/**
+		 * Sanitize file downloads.
+		 *
+		 * This method ensures files are correctly mapped to an array starting with an index of 0,
+		 * removes blank rows, and sanitizes file names and paths.
+		 *
+		 * @param array $files Array of all the file downloads.
+		 *
+		 * @return array Sanitized array of file downloads.
+		 */
+		public static function files( array $files ): array {
+			$sanitized_files = [];
+
+			foreach ( $files as $file ) {
+				// Skip empty rows
+				if ( empty( $file['name'] ) && empty( $file['file'] ) ) {
+					continue;
+				}
+
+				$sanitized_file = [
+					'name' => isset( $file['name'] ) ? self::text( $file['name'] ) : '',
+					'file' => isset( $file['file'] ) ? trim( $file['file'] ) : '',
+				];
+
+				// Only add non-empty files
+				if ( ! empty( $sanitized_file['name'] ) || ! empty( $sanitized_file['file'] ) ) {
+					$sanitized_files[] = $sanitized_file;
+				}
+			}
+
+			return $sanitized_files;
+		}
+
+		/**
+		 * Cast and sanitize a value based on the database column field type.
+		 *
+		 * @param mixed  $value   The value to be casted and sanitized.
+		 * @param string $type    The database column field type.
+		 * @param array  $options Additional options for casting and sanitization.
+		 *
+		 * @return mixed The casted and sanitized value.
+		 */
+		public static function db_cast( $value, string $type, array $options = [] ) {
+			$type       = strtolower( $type );
+			$allow_null = $options['allow_null'] ?? false;
+
+			if ( $allow_null && is_null( $value ) ) {
+				return null;
+			}
+
+			switch ( $type ) {
+				case 'tinyint':
+					return self::int_range( $value, $options['min'] ?? - 128, $options['max'] ?? 127 );
+				case 'smallint':
+					return self::int_range( $value, $options['min'] ?? - 32768, $options['max'] ?? 32767 );
+				case 'mediumint':
+					return self::int_range( $value, $options['min'] ?? - 8388608, $options['max'] ?? 8388607 );
+				case 'int':
+					return self::int_range( $value, $options['min'] ?? PHP_INT_MIN, $options['max'] ?? PHP_INT_MAX );
+				case 'bigint':
+					// For bigint, we'll use string representation to avoid integer overflow
+					return self::string_length( (string) $value, $options['max_length'] ?? 20 );
+				case 'float':
+				case 'double':
+				case 'decimal':
+					return self::float_precision( $value, $options['precision'] ?? 10, $options['scale'] ?? 2 );
+				case 'char':
+				case 'varchar':
+					return self::string_length( $value, $options['max_length'] ?? 255 );
+				case 'text':
+					return self::string_length( $value, $options['max_length'] ?? 65535 );
+				case 'mediumtext':
+					return self::string_length( $value, $options['max_length'] ?? 16777215 );
+				case 'longtext':
+					return self::string_length( $value, $options['max_length'] ?? 4294967295 );
+				case 'date':
+					return self::date_time( $value, $options['format'] ?? 'Y-m-d' );
+				case 'datetime':
+				case 'timestamp':
+					return self::date_time( $value, $options['format'] ?? 'Y-m-d H:i:s' );
+				case 'time':
+					return self::time( $value );
+				case 'year':
+					return self::year( $value );
+				case 'enum':
+				case 'set':
+					return self::enum( $value, $options['allowed_values'] ?? [] );
+				case 'binary':
+				case 'varbinary':
+					return self::binary( $value, $options['max_length'] ?? 255 );
+				case 'blob':
+					return self::binary( $value, $options['max_length'] ?? 65535 );
+				case 'mediumblob':
+					return self::binary( $value, $options['max_length'] ?? 16777215 );
+				case 'longblob':
+					return self::binary( $value, $options['max_length'] ?? 4294967295 );
+				case 'bit':
+					return self::bit( $value );
+				case 'bool':
+				case 'boolean':
+					return self::bool( $value );
+				default:
+					return self::clean( $value );
+			}
+		}
+
+		/**
+		 * Sanitize an integer value within a specific range.
+		 *
+		 * @param mixed $value The value to sanitize.
+		 * @param int   $min   The minimum allowed value.
+		 * @param int   $max   The maximum allowed value.
+		 *
+		 * @return int The sanitized integer value.
+		 */
+		public static function int_range( $value, int $min, int $max ): int {
+			return max( $min, min( $max, self::int( $value ) ) );
+		}
+
+		/**
+		 * Sanitize a float value with precision and scale.
+		 *
+		 * @param mixed $value     The value to sanitize.
+		 * @param int   $precision The total number of digits.
+		 * @param int   $scale     The number of digits after the decimal point.
+		 *
+		 * @return float The sanitized float value.
+		 */
+		public static function float_precision( $value, int $precision, int $scale ): float {
+			$float_value = self::float( $value );
+			$factor      = pow( 10, $precision - $scale );
+
+			return round( $float_value * $factor ) / $factor;
+		}
+
+		/**
+		 * Sanitize a string value with an optional maximum length.
+		 *
+		 * @param mixed    $value      The value to sanitize.
+		 * @param int|null $max_length The maximum allowed length of the string.
+		 *
+		 * @return string The sanitized string value.
+		 */
+		public static function string_length( $value, ?int $max_length ): string {
+			$sanitized = self::text( $value );
+			if ( $max_length !== null ) {
+				$sanitized = mb_substr( $sanitized, 0, $max_length );
+			}
+
+			return $sanitized;
+		}
+
+		/**
+		 * Sanitize a time value.
+		 *
+		 * @param mixed $value The value to sanitize.
+		 *
+		 * @return string|null The sanitized time value or null if invalid.
+		 */
+		public static function time( $value ): ?string {
+			if ( preg_match( '/^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/', $value ) ) {
+				return $value;
+			}
+
+			return null;
+		}
+
+		/**
+		 * Sanitize a year value.
+		 *
+		 * @param mixed $value The value to sanitize.
+		 *
+		 * @return int|null The sanitized year value or null if invalid.
+		 */
+		public static function year( $value ): ?int {
+			$year = self::int( $value );
+
+			return ( $year >= 1901 && $year <= 2155 ) ? $year : null;
+		}
+
+		/**
+		 * Sanitize an enum value.
+		 *
+		 * @param mixed $value          The value to sanitize.
+		 * @param array $allowed_values The list of allowed values.
+		 *
+		 * @return string|null The sanitized enum value or null if invalid.
+		 */
+		public static function enum( $value, array $allowed_values ): ?string {
+			$sanitized = self::text( $value );
+
+			return in_array( $sanitized, $allowed_values, true ) ? $sanitized : null;
+		}
+
+		/**
+		 * Sanitize a binary value.
+		 *
+		 * @param mixed    $value      The value to sanitize.
+		 * @param int|null $max_length The maximum allowed length of the binary data.
+		 *
+		 * @return string The sanitized binary value.
+		 */
+		public static function binary( $value, ?int $max_length ): string {
+			if ( $max_length !== null ) {
+				return substr( $value, 0, $max_length );
+			}
+
+			return $value;
+		}
+
+		/**
+		 * Sanitize a bit value.
+		 *
+		 * @param mixed $value The value to sanitize.
+		 *
+		 * @return string The sanitized bit value.
+		 */
+		public static function bit( $value ): string {
+			return $value ? '1' : '0';
+		}
+
+		/**
+		 * Sanitize a string by removing non-alphanumeric characters and converting to lowercase.
+		 *
+		 * @param string $string The string to sanitize.
+		 *
+		 * @return string The sanitized string.
+		 */
+		public static function alphanumeric_lowercase( string $string ): string {
+			// Remove non-alphanumeric characters
+			$string = preg_replace( '/[^a-zA-Z0-9]+/', '', $string );
+
+			// Convert to lowercase
+			return strtolower( $string );
+		}
+
 	}
 endif;

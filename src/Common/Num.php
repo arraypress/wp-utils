@@ -23,7 +23,9 @@ namespace ArrayPress\Utils\Common;
 if ( ! class_exists( 'Num' ) ) :
 
 	/**
-	 * Number Utility Class
+	 * Number/Numeric Utility Class
+	 *
+	 * This class provides utility methods for handling number-related operations.
 	 */
 	class Num {
 
@@ -257,20 +259,6 @@ if ( ! class_exists( 'Num' ) ) :
 		}
 
 		/**
-		 * Generate a random number within a range.
-		 *
-		 * @param int $min The minimum value.
-		 * @param int $max The maximum value.
-		 *
-		 * @return int
-		 * @throws RandomException
-		 * @throws RandomException
-		 */
-		public static function random_int( int $min, int $max ): int {
-			return random_int( $min, $max );
-		}
-
-		/**
 		 * Round a number to the nearest multiple of a given step.
 		 *
 		 * @param float $number The number to round.
@@ -293,18 +281,6 @@ if ( ! class_exists( 'Num' ) ) :
 		 */
 		public static function clamp( float $number, float $min, float $max ): float {
 			return max( $min, min( $max, $number ) );
-		}
-
-		/**
-		 * Calculate the percentage of a number.
-		 *
-		 * @param float $number The number to calculate the percentage of.
-		 * @param float $total  The total amount.
-		 *
-		 * @return float
-		 */
-		public static function percentage( float $number, float $total ): float {
-			return ( $total != 0 ) ? ( $number / $total ) * 100 : 0;
 		}
 
 	}

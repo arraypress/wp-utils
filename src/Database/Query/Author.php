@@ -15,7 +15,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\Query;
+namespace ArrayPress\Utils\Database\Query;
 
 /**
  * Check if the class `Author` is defined, and if not, define it.

@@ -14,7 +14,7 @@
  * @author        David Sherlock
  */
 
-namespace ArrayPress\Utils\Convert;
+namespace ArrayPress\Utils\Common;
 
 /**
  * Check if the class `Unit` is defined, and if not, define it.

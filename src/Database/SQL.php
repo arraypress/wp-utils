@@ -252,25 +252,6 @@ if ( ! class_exists( 'SQL' ) ) :
 		}
 
 		/**
-		 * Execute a query safely and handle errors.
-		 *
-		 * @param string $query The SQL query to execute.
-		 *
-		 * @return array|null The query results or null on error.
-		 */
-		public static function safe_query( string $query ): ?array {
-			global $wpdb;
-			$result = $wpdb->get_results( $query, ARRAY_A );
-			if ( $wpdb->last_error ) {
-				error_log( "SQL Error: " . $wpdb->last_error . " in query: $query" );
-
-				return null;
-			}
-
-			return $result;
-		}
-
-		/**
 		 * Generate a subquery.
 		 *
 		 * @param string $subquery The subquery SQL.

@@ -849,6 +849,68 @@ if ( ! class_exists( 'Str' ) ) :
 		}
 
 		/**
+		 * Count the number of words in a string.
+		 *
+		 * @param string $string The string to count words in.
+		 *
+		 * @return int   The number of words in the string.
+		 */
+		public static function word_count( string $string ): int {
+			// Strip HTML tags and count words
+			$clean_text = wp_strip_all_tags( $string );
+
+			return str_word_count( $clean_text );
+		}
+
+		/**
+		 * Calculate an estimated reading time for given WordPress content.
+		 *
+		 * @param string $content          The content to analyze.
+		 * @param int    $words_per_minute Optional. Average reading speed. Default 200.
+		 *
+		 * @return array An array containing 'minutes' and 'seconds'.
+		 */
+		public static function get_reading_time( string $content, int $words_per_minute = 200 ): array {
+			// Allow filtering of words per minute
+			$words_per_minute = apply_filters( 'str_reading_time_wpm', $words_per_minute );
+
+			// Strip shortcodes and tags
+			$content          = strip_shortcodes( $content );
+			$stripped_content = wp_strip_all_tags( $content );
+
+			// Count words
+			$words = str_word_count( $stripped_content );
+
+			// Calculate base reading time
+			$base_time = $words / $words_per_minute;
+
+			// Adjust for word complexity
+			$complex_words     = preg_match_all( '/\b\w{7,}\b/', $stripped_content, $matches );
+			$complexity_factor = 1 + ( $complex_words / max( $words, 1 ) ); // Avoid division by zero
+			$adjusted_time     = $base_time * $complexity_factor;
+
+			// Add time for images
+			$image_count   = substr_count( $content, '<img' ) + substr_count( $content, '[gallery' );
+			$adjusted_time += apply_filters( 'str_reading_time_image_time', $image_count * 0.1, $image_count );
+
+			// Add time for embeds
+			$embed_count   = substr_count( $content, '[embed' ) + substr_count( $content, 'wp-block-embed' );
+			$adjusted_time += apply_filters( 'str_reading_time_embed_time', $embed_count * 0.5, $embed_count );
+
+			// Allow for custom adjustments
+			$adjusted_time = apply_filters( 'str_reading_time_final', $adjusted_time, $content );
+
+			// Convert to minutes and seconds
+			$minutes = floor( $adjusted_time );
+			$seconds = round( ( $adjusted_time - $minutes ) * 60 );
+
+			return [
+				'minutes' => $minutes,
+				'seconds' => $seconds
+			];
+		}
+
+		/**
 		 * Guess the part of speech of a word.
 		 *
 		 * This is a very basic implementation and may not be accurate for all words.
@@ -1031,6 +1093,72 @@ if ( ! class_exists( 'Str' ) ) :
 		 */
 		public static function is_alphanumeric( string $string ): bool {
 			return ctype_alnum( $string );
+		}
+
+		/**
+		 * Splits the string into words.
+		 *
+		 * @param string $str
+		 *
+		 * @return array
+		 */
+		public static function words( string $str ): array {
+			return array_filter( preg_split( '/\s+/', $str ) );
+		}
+
+		/**
+		 * Splits the string into lines.
+		 *
+		 * @param string $str
+		 *
+		 * @return array
+		 */
+		public static function lines( string $str ): array {
+			return array_filter( explode( PHP_EOL, $str ) );
+		}
+
+		/**
+		 * Splits the string into sentences.
+		 *
+		 * @param string $str
+		 *
+		 * @return array
+		 */
+		public static function sentences( string $str ): array {
+			return array_filter( preg_split( '/[.!?]+/', $str ) );
+		}
+
+		/**
+		 * Counts the number of words in the string.
+		 *
+		 * @param string $str
+		 *
+		 * @return int
+		 */
+		public static function wordCount( string $str ): int {
+			return count( self::words( $str ) );
+		}
+
+		/**
+		 * Counts the number of characters in the string.
+		 *
+		 * @param string $str
+		 *
+		 * @return int
+		 */
+		public static function character_count( string $str ): int {
+			return mb_strlen( $str );
+		}
+
+		/**
+		 * Counts the number of lines in the string.
+		 *
+		 * @param string $str
+		 *
+		 * @return int
+		 */
+		public static function line_count( string $str ): int {
+			return count( self::lines( $str ) );
 		}
 
 	}

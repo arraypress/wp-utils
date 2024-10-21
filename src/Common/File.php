@@ -18,6 +18,9 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
+/**
+ * Check if the class `File` is defined, and if not, define it.
+ */
 if ( ! class_exists( 'File' ) ) :
 
 	/**

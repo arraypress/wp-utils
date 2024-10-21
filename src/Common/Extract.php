@@ -85,6 +85,11 @@ if ( ! class_exists( 'Extract' ) ) :
 			$words  = str_word_count( $string, 1, '.@+-_' );
 			$emails = array_filter( $words, 'is_email' );
 
+			// Trim, convert to lowercase, and remove duplicates
+			$emails = array_map( function ( $email ) {
+				return strtolower( trim( $email ) );
+			}, $emails );
+
 			// Remove duplicates and reindex the array
 			return array_values( array_unique( $emails ) );
 		}
@@ -119,10 +124,15 @@ if ( ! class_exists( 'Extract' ) ) :
 		 * @return array An array of extracted IP addresses.
 		 */
 		public static function ip_addresses( string $string ): array {
-			$words        = preg_split( '/\s+/', $string );
-			$ip_addresses = array_filter( $words, 'rest_is_ip_address' );
+			$words = preg_split( '/\s+/', $string );
 
-			// Re-index the array to remove gaps in keys
+			$ip_addresses = array_filter( array_map( function ( $word ) {
+				$trimmed = trim( $word );
+
+				return rest_is_ip_address( $trimmed ) ? $trimmed : null;
+			}, $words ) );
+
+			// Remove duplicates and re-index the array
 			return array_values( array_unique( $ip_addresses ) );
 		}
 

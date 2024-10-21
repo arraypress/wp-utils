@@ -16,7 +16,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\Query;
+namespace ArrayPress\Utils\Database\Query;
 
 /**
  * Check if the class `Post` is defined, and if not, define it.

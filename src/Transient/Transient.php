@@ -35,6 +35,17 @@ if ( ! class_exists( 'Transient' ) ) :
 	class Transient {
 
 		/**
+		 * Check if a transient exists.
+		 *
+		 * @param string $transient Transient name.
+		 *
+		 * @return bool True if the transient exists, false otherwise.
+		 */
+		public static function exists( string $transient ): bool {
+			return get_transient( $transient ) !== false;
+		}
+
+		/**
 		 * Retrieves a specific option for the current site.
 		 *
 		 * @param string $transient Name of the transient to retrieve.
@@ -197,17 +208,6 @@ if ( ! class_exists( 'Transient' ) ) :
 			unset( $current_array[ $key ] );
 
 			return self::set( $transient, array_values( $current_array ), $expiration );
-		}
-
-		/**
-		 * Check if a transient exists.
-		 *
-		 * @param string $transient Transient name.
-		 *
-		 * @return bool True if the transient exists, false otherwise.
-		 */
-		public static function exists( string $transient ): bool {
-			return get_transient( $transient ) !== false;
 		}
 
 		/**

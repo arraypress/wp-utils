@@ -14,6 +14,7 @@ declare( strict_types=1 );
 namespace ArrayPress\Utils\User;
 
 use ArrayPress\Utils\Database\Exists;
+use WP_User;
 
 /**
  * Check if the class `User` is defined, and if not, define it.
@@ -34,7 +35,7 @@ if ( ! class_exists( 'User' ) ) :
 		 *
 		 * @param int $user_id Optional. User ID. Default is the current logged-in user.
 		 *
-		 * @return \WP_User|false WP_User object on success, false on failure.
+		 * @return WP_User|false WP_User object on success, false on failure.
 		 */
 		private static function get_data( int $user_id = 0 ) {
 			if ( empty( $user_id ) && is_user_logged_in() ) {

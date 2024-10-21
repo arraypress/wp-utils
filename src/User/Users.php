@@ -29,47 +29,6 @@ if ( ! class_exists( 'Users' ) ) :
 		/** Search and Query ************************************************************/
 
 		/**
-		 * Search users by term and arguments, returning results in key/value or label/value format.
-		 *
-		 * @param string $search_term The term to search for.
-		 * @param array  $args        The arguments to search with (e.g., role, number, etc.).
-		 *
-		 * @return array An array of search results.
-		 */
-		public static function search( string $search_term, array $args = [] ): array {
-			$options = [];
-
-			if ( empty( $search_term ) ) {
-				return $options;
-			}
-
-			$default_args = [
-				'search'         => '*' . $search_term . '*',
-				'search_columns' => [ 'user_login', 'user_nicename', 'user_email', 'display_name' ],
-				'number'         => - 1,
-				'orderby'        => 'display_name',
-				'order'          => 'ASC',
-			];
-
-			$args = wp_parse_args( $args, $default_args );
-
-			$users = get_users( $args );
-
-			if ( empty( $users ) ) {
-				return $options;
-			}
-
-			foreach ( $users as $user ) {
-				$options[] = [
-					'label' => $user->display_name,
-					'value' => $user->ID,
-				];
-			}
-
-			return $options;
-		}
-
-		/**
 		 * Get an array of user objects based on provided user IDs.
 		 *
 		 * @param int[] $user_ids An array of user IDs.

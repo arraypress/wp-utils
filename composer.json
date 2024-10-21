@@ -27,7 +27,11 @@
   "autoload": {
     "psr-4": {
       "ArrayPress\\Utils\\": "src/"
-    }
+    },
+    "files": [
+      "src/Search/Functions.php",
+      "src/Register/Functions.php"
+    ]
   },
   "config": {
     "optimize-autoloader": true,
