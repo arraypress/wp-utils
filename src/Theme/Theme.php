@@ -64,13 +64,14 @@ if ( ! class_exists( 'Theme' ) ) :
 		 * @return bool True if the specified theme or one of the themes in the array is active, false otherwise.
 		 */
 		public static function is_active_theme( $theme ): bool {
-			$current_theme = get_template();
+			$current_theme = strtolower( get_template() );
+			$theme         = is_array( $theme )
+				? array_map( 'strtolower', $theme )
+				: strtolower( $theme );
 
-			if ( is_array( $theme ) ) {
-				return in_array( $current_theme, $theme, true );
-			}
-
-			return $current_theme === $theme;
+			return is_array( $theme )
+				? in_array( $current_theme, $theme, true )
+				: $current_theme === $theme;
 		}
 
 		/**

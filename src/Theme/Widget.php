@@ -206,5 +206,62 @@ if ( ! class_exists( 'Widget' ) ) :
 			return null;
 		}
 
+		/**
+		 * Get all widget settings for a specific widget type.
+		 *
+		 * @param string $widget_base The base ID of the widget type.
+		 *
+		 * @return array An array of widget settings.
+		 */
+		public static function get_widget_settings( string $widget_base ): array {
+			$settings = get_option( "widget_$widget_base" );
+
+			if ( ! is_array( $settings ) ) {
+				return [];
+			}
+
+			// Remove the '_multiwidget' element which WordPress uses internally
+			unset( $settings['_multiwidget'] );
+
+			return $settings;
+		}
+
+		/**
+		 * Get all instances of a specific widget type.
+		 *
+		 * @param string $widget_base The base ID of the widget type.
+		 *
+		 * @return array An array of active widget instances.
+		 */
+		public static function get_widget_instances( string $widget_base ): array {
+			global $wp_registered_widgets;
+			$instances = [];
+
+			// Get all sidebar widgets
+			$sidebars_widgets = wp_get_sidebars_widgets();
+
+			// Remove inactive widgets array
+			unset( $sidebars_widgets['wp_inactive_widgets'] );
+
+			// Loop through all sidebars
+			foreach ( $sidebars_widgets as $sidebar => $widgets ) {
+				if ( ! is_array( $widgets ) ) {
+					continue;
+				}
+
+				// Loop through widgets in this sidebar
+				foreach ( $widgets as $widget_id ) {
+					// Check if this widget matches our base ID
+					if ( strpos( $widget_id, $widget_base . '-' ) === 0 ) {
+						if ( isset( $wp_registered_widgets[ $widget_id ] ) ) {
+							$instances[] = $wp_registered_widgets[ $widget_id ];
+						}
+					}
+				}
+			}
+
+			return $instances;
+		}
+
 	}
 endif;
