@@ -18,6 +18,8 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
+use DateTime;
+
 /**
  * Check if the class `Convert` is defined, and if not, define it.
  */
@@ -254,7 +256,7 @@ if ( ! class_exists( 'Convert' ) ) :
 		 * @return string|false The formatted date string or false on failure.
 		 */
 		public static function to_date( $value, string $format = 'Y-m-d H:i:s' ) {
-			if ( $value instanceof \DateTime ) {
+			if ( $value instanceof DateTime ) {
 				return $value->format( $format );
 			}
 

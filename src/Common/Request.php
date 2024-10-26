@@ -324,6 +324,20 @@ if ( ! class_exists( 'Request' ) ) :
 		}
 
 		/**
+		 * Get the current page number from a specified parameter.
+		 *
+		 * Retrieves and sanitizes the specified parameter from $_GET, defaulting to 1 if not set or invalid.
+		 * This is primarily used for pagination in admin tables.
+		 *
+		 * @param string $param The URL parameter name to check for page number. Default 'paged'.
+		 *
+		 * @return int The current page number, minimum value of 1.
+		 */
+		public static function get_current_page( string $param = 'paged' ): int {
+			return isset( $_GET[ $param ] ) ? max( 1, absint( $_GET[ $param ] ) ) : 1;
+		}
+
+		/**
 		 * Checks if the current connection is secure (SSL).
 		 *
 		 * This method checks for SSL connection using various methods:

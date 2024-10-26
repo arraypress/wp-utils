@@ -136,6 +136,17 @@ if ( ! class_exists( 'Format' ) ) :
 		}
 
 		/**
+		 * Format a column key into a human-readable label.
+		 *
+		 * @param string $key The column key to format.
+		 *
+		 * @return string
+		 */
+		public static function label( string $key ): string {
+			return ucwords( str_replace( '_', ' ', $key ) );
+		}
+
+		/**
 		 * Format text as HTML.
 		 *
 		 * @param string $text The text to format.

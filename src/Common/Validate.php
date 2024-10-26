@@ -17,6 +17,8 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
+use DateTime;
+
 /**
  * Check if the class `Validate` is defined, and if not, define it.
  */
@@ -235,7 +237,7 @@ if ( ! class_exists( 'Validate' ) ) :
 		 * @return bool True if the date is valid, false otherwise.
 		 */
 		public static function is_date( string $date, string $format = 'Y-m-d' ): bool {
-			$d = \DateTime::createFromFormat( $format, $date );
+			$d = DateTime::createFromFormat( $format, $date );
 
 			return $d && $d->format( $format ) === $date;
 		}

@@ -345,7 +345,7 @@ if ( ! class_exists( 'Compare' ) ) :
 		 * @return array An array with 'reference_timestamp' and 'compare_timestamp'.
 		 */
 		public static function get_comparison_timestamps( string $value, string $reference_date ): array {
-			$unit_value = Str::to_unit_value( $value );
+			$unit_value = Split::unit_value( $value );
 			$number     = $unit_value['number'];
 			$period     = $unit_value['period'];
 

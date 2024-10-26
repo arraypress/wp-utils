@@ -15,6 +15,9 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Generate;
 
+use ArrayPress\Utils\Common\Request;
+use ArrayPress\Utils\Common\Format;
+
 /**
  * Check if the class `Table` is defined, and if not, define it.
  */
@@ -52,7 +55,7 @@ if ( ! class_exists( 'Table' ) ):
 				'pagination'    => [
 					'enabled'      => false,
 					'per_page'     => 20,
-					'current_page' => $this->get_current_page(),
+					'current_page' => Request::get_current_page(),
 					'total_items'  => 0,
 					'base'         => remove_query_arg( 'paged' ), // Just store the clean base URL
 					'format'       => '&paged=%#%', // Move the format here
@@ -70,7 +73,7 @@ if ( ! class_exists( 'Table' ) ):
 					}
 
 					$args['columns'][ $column_key ] = wp_parse_args( $column, [
-						'label'           => $this->format_label( $column_key ),
+						'label'           => Format::label( $column_key ),
 						'header_class'    => '',
 						'column_class'    => '',
 						'prefix'          => '',
@@ -98,31 +101,6 @@ if ( ! class_exists( 'Table' ) ):
 			}
 
 			$this->tables[ $key ] = wp_parse_args( $args, $defaults );
-		}
-
-		/**
-		 * Get the current page number.
-		 *
-		 * Retrieves and sanitizes the 'paged' parameter from $_GET, defaulting to 1 if not set or invalid.
-		 * This is primarily used for pagination in admin tables.
-		 *
-		 * @return int The current page number, minimum value of 1.
-		 * @since 1.0.0
-		 *
-		 */
-		private function get_current_page(): int {
-			return isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
-		}
-
-		/**
-		 * Format a column key into a human-readable label.
-		 *
-		 * @param string $key The column key to format.
-		 *
-		 * @return string
-		 */
-		private function format_label( string $key ): string {
-			return ucwords( str_replace( '_', ' ', $key ) );
 		}
 
 		/**
@@ -283,9 +261,27 @@ if ( ! class_exists( 'Table' ) ):
 			if ( empty( $value ) ) {
 				$value = '&mdash;';
 			} else {
-				$value = ( isset( $column['prefix'] ) ? wp_kses_post( $column['prefix'] ) : '' ) .
-				         wp_kses_post( $value ) .
-				         ( isset( $column['suffix'] ) ? wp_kses_post( $column['suffix'] ) : '' );
+				// Handle prefix
+				$prefix = '';
+				if ( isset( $column['prefix'] ) ) {
+					if ( is_callable( $column['prefix'] ) ) {
+						$prefix = call_user_func( $column['prefix'], $row, $column_key );
+					} else {
+						$prefix = $column['prefix'];
+					}
+				}
+
+				// Handle suffix
+				$suffix = '';
+				if ( isset( $column['suffix'] ) ) {
+					if ( is_callable( $column['suffix'] ) ) {
+						$suffix = call_user_func( $column['suffix'], $row, $column_key );
+					} else {
+						$suffix = $column['suffix'];
+					}
+				}
+
+				$value = wp_kses_post( $prefix ) . wp_kses_post( $value ) . wp_kses_post( $suffix );
 			}
 
 			// Add row actions if this is the primary column and we have actions

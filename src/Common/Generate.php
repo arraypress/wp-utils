@@ -117,9 +117,9 @@ if ( ! class_exists( 'Generate' ) ) :
 		/**
 		 * Generate a unique menu item ID.
 		 *
-		 * @return int A unique menu item ID.
+		 * @return string A unique menu item ID.
 		 */
-		public static function unique_menu_item_id(): int {
+		public static function unique_menu_item_id(): string {
 			return wp_unique_id( 'menu-item-' );
 		}
 

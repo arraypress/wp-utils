@@ -249,7 +249,7 @@ if ( ! class_exists( 'Term' ) ) :
 		 * @param int    $term_id  The term ID.
 		 * @param string $taxonomy The taxonomy name.
 		 *
-		 * @return array|WP_Term|\WP_Error|null
+		 * @return array|WP_Term|WP_Error|null
 		 */
 		public static function get_root_ancestor( int $term_id, string $taxonomy ) {
 			$ancestors = get_ancestors( $term_id, $taxonomy );
@@ -312,7 +312,7 @@ if ( ! class_exists( 'Term' ) ) :
 			$to_term   = get_term( $to_term_id, $taxonomy );
 
 			if ( is_wp_error( $from_term ) || is_wp_error( $to_term ) ) {
-				return new \WP_Error( 'invalid_term', 'Invalid term ID provided.' );
+				return new WP_Error( 'invalid_term', 'Invalid term ID provided.' );
 			}
 
 			$posts = get_posts( [

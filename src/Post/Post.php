@@ -611,33 +611,6 @@ if ( ! class_exists( 'Post' ) ) :
 		}
 
 		/**
-		 * Get a post meta value with optional type casting.
-		 *
-		 * @param int    $post_id   The post ID.
-		 * @param string $meta_key  The meta key to retrieve.
-		 * @param string $cast_type Optional. The type to cast to ('int', 'float', 'bool', 'array', 'string').
-		 * @param mixed  $default   Optional. Default value if meta doesn't exist.
-		 *
-		 * @return mixed The meta value.
-		 */
-		public static function get( int $post_id, string $meta_key, string $cast_type = '', $default = null ) {
-			return Meta::get_cast( 'post', $post_id, $meta_key, $cast_type, $default );
-		}
-
-		/**
-		 * Update a post meta value only if it's different from the current value.
-		 *
-		 * @param int    $post_id    The post ID.
-		 * @param string $meta_key   The meta key.
-		 * @param mixed  $meta_value The new meta value.
-		 *
-		 * @return bool True if updated, false otherwise.
-		 */
-		public static function update_if_changed( int $post_id, string $meta_key, $meta_value ): bool {
-			return Meta::update_if_changed( 'post', $post_id, $meta_key, $meta_value );
-		}
-
-		/**
 		 * Get all custom fields for a post, excluding WordPress default fields.
 		 *
 		 * @param int $post_id The post ID.
@@ -649,19 +622,6 @@ if ( ! class_exists( 'Post' ) ) :
 			$default_fields = [ '_edit_lock', '_edit_last', '_wp_page_template', '_thumbnail_id' ];
 
 			return array_diff_key( $all_fields, array_flip( $default_fields ) );
-		}
-
-		/**
-		 * Get meta values associated with a post's terms.
-		 *
-		 * @param int    $post_id  The post ID.
-		 * @param string $taxonomy The taxonomy name.
-		 * @param string $meta_key The term meta key to retrieve.
-		 *
-		 * @return array An array of term meta values.
-		 */
-		public static function get_terms_meta( int $post_id, string $taxonomy, string $meta_key ): array {
-			return Meta::get_object_terms_meta( 'post', $post_id, $taxonomy, $meta_key );
 		}
 
 		/**

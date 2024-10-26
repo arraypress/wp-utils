@@ -188,7 +188,7 @@ if ( ! class_exists( 'Arr' ) ) :
 		 *
 		 * @return array The array with specified keys removed.
 		 */
-		public static function remove_keys( array $array, array $keys_to_remove ): array {
+		public static function remove_by_keys( array $array, array $keys_to_remove ): array {
 			foreach ( $keys_to_remove as $key ) {
 				if ( array_key_exists( $key, $array ) ) {
 					unset( $array[ $key ] );
@@ -207,7 +207,7 @@ if ( ! class_exists( 'Arr' ) ) :
 		 *
 		 * @return array The updated array.
 		 */
-		public static function insert_after( array $array, string $key, array $new ): array {
+		public static function insert_after_key( array $array, string $key, array $new ): array {
 			$position = array_search( $key, array_keys( $array ) );
 
 			if ( $position === false ) {
@@ -230,7 +230,7 @@ if ( ! class_exists( 'Arr' ) ) :
 		 *
 		 * @return array The updated array.
 		 */
-		public static function insert_before( array $array, string $key, array $new ): array {
+		public static function insert_before_key( array $array, string $key, array $new ): array {
 			$position = array_search( $key, array_keys( $array ) );
 
 			if ( $position === false ) {
@@ -375,6 +375,25 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param string $delimiter The delimiter to use between flattened keys. Default is '.'.
 		 *
 		 * @return array The flattened array.
+		 *
+		 * @example
+		 * Input:
+		 * [
+		 *     'person' => [
+		 *         'name' => 'John',
+		 *         'age'  => 30,
+		 *         'address' => [
+		 *             'city' => 'New York'
+		 *         ]
+		 *     ]
+		 * ]
+		 *
+		 * Output:
+		 * [
+		 *     'person.name' => 'John',
+		 *     'person.age' => 30,
+		 *     'person.address.city' => 'New York'
+		 * ]
 		 */
 		public static function flatten_with_keys( array $array, string $prefix = '', string $delimiter = '.' ): array {
 			$result = [];
@@ -391,11 +410,24 @@ if ( ! class_exists( 'Arr' ) ) :
 		}
 
 		/**
-		 * Flatten a multi-dimensional array.
+		 * Flatten a multidimensional array.
 		 *
-		 * @param array $array The multi-dimensional array.
+		 * @param array $array The multidimensional array.
 		 *
 		 * @return array The flattened array.
+		 *
+		 * @example
+		 * Input:
+		 * [
+		 *     'fruits' => ['apple', 'banana'],
+		 *     'colors' => [
+		 *         'primary' => ['red', 'blue'],
+		 *         'secondary' => 'green'
+		 *     ]
+		 * ]
+		 *
+		 * Output:
+		 * ['apple', 'banana', 'red', 'blue', 'green']
 		 */
 		public static function flatten_array( array $array ): array {
 			$flat_array = [];
@@ -412,33 +444,16 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param mixed $value The value to ensure as an array.
 		 *
 		 * @return array The unique elements array.
+		 *
+		 * @example
+		 * Input:
+		 * ['a', 'b', 'b', ['c', 'c', 'd']]
+		 *
+		 * Output:
+		 * ['a', 'b', 'c', 'd']
 		 */
 		public static function ensure_unique( $value ): array {
 			return array_unique( self::flatten_array( (array) $value ) );
-		}
-
-		/**
-		 * Flatten a multi-dimensional array into a single-dimensional array while preserving keys.
-		 *
-		 * @param array  $array     The multi-dimensional array to flatten.
-		 * @param string $delimiter The delimiter to use for the keys of the flattened array.
-		 *
-		 * @return array The flattened array.
-		 */
-		public static function press( array $array, string $delimiter = '.' ): array {
-			$result = [];
-			foreach ( $array as $key => $value ) {
-				if ( is_array( $value ) ) {
-					$nested = self::press( $value, $delimiter );
-					foreach ( $nested as $nestedKey => $nestedValue ) {
-						$result[ $key . $delimiter . $nestedKey ] = $nestedValue;
-					}
-				} else {
-					$result[ $key ] = $value;
-				}
-			}
-
-			return $result;
 		}
 
 		/**
@@ -448,8 +463,16 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param array $allowed_keys The allowed keys.
 		 *
 		 * @return array The filtered array.
+		 *
+		 * @example
+		 * Input:
+		 * array: ['name' => 'John', 'age' => 30, 'email' => 'john@example.com']
+		 * allowed_keys: ['name', 'email']
+		 *
+		 * Output:
+		 * ['name' => 'John', 'email' => 'john@example.com']
 		 */
-		public static function filter_keys( array $array, array $allowed_keys ): array {
+		public static function filter_by_allowed_keys( array $array, array $allowed_keys ): array {
 			return array_intersect_key( $array, array_flip( $allowed_keys ) );
 		}
 
@@ -474,27 +497,6 @@ if ( ! class_exists( 'Arr' ) ) :
 		}
 
 		/**
-		 * Convert a string to a boolean value.
-		 *
-		 * @param mixed $value The value to convert.
-		 *
-		 * @return bool The boolean value.
-		 */
-		public static function string_to_bool( $value ): bool {
-			if ( is_bool( $value ) ) {
-				return $value;
-			}
-
-			if ( is_string( $value ) ) {
-				$value = strtolower( trim( $value ) );
-
-				return in_array( $value, [ 'true', '1', 'yes', 'on' ], true );
-			}
-
-			return (bool) $value;
-		}
-
-		/**
 		 * Check if an array has any matching elements with another array.
 		 *
 		 * @param array $array1 The first array to compare.
@@ -502,7 +504,7 @@ if ( ! class_exists( 'Arr' ) ) :
 		 *
 		 * @return bool True if there are matching elements, false otherwise.
 		 */
-		public static function has_array_matches( array $array1, array $array2 ): bool {
+		public static function has_matches( array $array1, array $array2 ): bool {
 			return ! empty( array_intersect( $array1, $array2 ) );
 		}
 
@@ -513,6 +515,19 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param string $conjunction The conjunction to use for the last element.
 		 *
 		 * @return string The imploded string.
+		 *
+		 * @example
+		 * Input:
+		 * ['apple', 'banana', 'orange']
+		 *
+		 * Output:
+		 * 'apple, banana, and orange'
+		 *
+		 * Input:
+		 * ['red', 'blue']
+		 *
+		 * Output:
+		 * 'red and blue'
 		 */
 		public static function implode_to_english( array $array, string $conjunction = 'and' ): string {
 			if ( empty( $array ) ) {
@@ -544,6 +559,26 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param array $array2 The second array.
 		 *
 		 * @return array The merged array.
+		 *
+		 * @example
+		 * Input:
+		 * array1: [
+		 *     'colors' => ['red', 'blue'],
+		 *     'settings' => ['theme' => 'dark']
+		 * ]
+		 * array2: [
+		 *     'colors' => ['green'],
+		 *     'settings' => ['mode' => 'compact']
+		 * ]
+		 *
+		 * Output:
+		 * [
+		 *     'colors' => ['green'],
+		 *     'settings' => [
+		 *         'theme' => 'dark',
+		 *         'mode' => 'compact'
+		 *     ]
+		 * ]
 		 */
 		public static function merge_recursive( array $array1, array $array2 ): array {
 			$merged = $array1;
@@ -569,6 +604,20 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param mixed  $default The default value to return if the key doesn't exist.
 		 *
 		 * @return mixed The retrieved value or default.
+		 *
+		 * @example
+		 * Input:
+		 * array: [
+		 *     'user' => [
+		 *         'info' => [
+		 *             'name' => 'John'
+		 *         ]
+		 *     ]
+		 * ]
+		 * key: 'user.info.name'
+		 *
+		 * Output:
+		 * 'John'
 		 */
 		public static function get( array $array, string $key, $default = null ) {
 			if ( isset( $array[ $key ] ) ) {
@@ -593,6 +642,15 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param array $array The array to check.
 		 *
 		 * @return bool True if the array is associative, false otherwise.
+		 *
+		 * @example
+		 * Input:
+		 * ['foo' => 'bar', 'baz' => 'qux']
+		 * Output: true
+		 *
+		 * Input:
+		 * ['apple', 'banana', 'orange']
+		 * Output: false
 		 */
 		public static function is_assoc( array $array ): bool {
 			if ( [] === $array ) {
@@ -609,6 +667,17 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param string $key   The key to pluck.
 		 *
 		 * @return array The plucked values.
+		 *
+		 * @example
+		 * Input:
+		 * array: [
+		 *     ['name' => 'John', 'age' => 30],
+		 *     ['name' => 'Jane', 'age' => 25]
+		 * ]
+		 * key: 'name'
+		 *
+		 * Output:
+		 * ['John', 'Jane']
 		 */
 		public static function pluck( array $array, string $key ): array {
 			return array_map( function ( $item ) use ( $key ) {
@@ -623,6 +692,14 @@ if ( ! class_exists( 'Arr' ) ) :
 		 * @param array $keys  The keys to exclude.
 		 *
 		 * @return array The filtered array.
+		 *
+		 * @example
+		 * Input:
+		 * array: ['name' => 'John', 'email' => 'john@example.com', 'password' => '123456']
+		 * keys: ['password', 'email']
+		 *
+		 * Output:
+		 * ['name' => 'John']
 		 */
 		public static function except( array $array, array $keys ): array {
 			return array_diff_key( $array, array_flip( $keys ) );
@@ -702,50 +779,6 @@ if ( ! class_exists( 'Arr' ) ) :
 		}
 
 		/** Array Normalization *******************************************************/
-
-		/**
-		 * Normalize a string with various options.
-		 *
-		 * @param string $value   The string to normalize.
-		 * @param array  $options An array of normalization options:
-		 *                        - 'case': 'lower' (default), 'upper', or 'none'
-		 *                        - 'trim': true (default) or false
-		 *                        - 'remove_spaces': true or false (default)
-		 *                        - 'transliterate': true or false (default)
-		 *
-		 * @return string The normalized string.
-		 */
-		public static function normalize_str( string $value, array $options = [] ): string {
-			$defaults = [
-				'case'          => 'lower',
-				'trim'          => true,
-				'remove_spaces' => false,
-				'transliterate' => false,
-			];
-
-			$options = array_merge( $defaults, $options );
-
-			if ( $options['trim'] ) {
-				$value = trim( $value );
-			}
-
-			if ( $options['remove_spaces'] ) {
-				$value = str_replace( ' ', '', $value );
-			}
-
-			if ( $options['transliterate'] && function_exists( 'transliterator_transliterate' ) ) {
-				$value = transliterator_transliterate( 'Any-Latin; Latin-ASCII', $value );
-			}
-
-			switch ( $options['case'] ) {
-				case 'lower':
-					return mb_strtolower( $value, 'UTF-8' );
-				case 'upper':
-					return mb_strtoupper( $value, 'UTF-8' );
-				default:
-					return $value;
-			}
-		}
 
 		/**
 		 * Normalize an array of strings with various options.
@@ -969,6 +1002,73 @@ if ( ! class_exists( 'Arr' ) ) :
 			}
 
 			return $output;
+		}
+
+		/** Helpers ******************************************************************/
+
+		/**
+		 * Convert a string to a boolean value.
+		 *
+		 * @param mixed $value The value to convert.
+		 *
+		 * @return bool The boolean value.
+		 */
+		private static function string_to_bool( $value ): bool {
+			if ( is_bool( $value ) ) {
+				return $value;
+			}
+
+			if ( is_string( $value ) ) {
+				$value = strtolower( trim( $value ) );
+
+				return in_array( $value, [ 'true', '1', 'yes', 'on' ], true );
+			}
+
+			return (bool) $value;
+		}
+
+		/**
+		 * Normalize a string with various options.
+		 *
+		 * @param string $value   The string to normalize.
+		 * @param array  $options An array of normalization options:
+		 *                        - 'case': 'lower' (default), 'upper', or 'none'
+		 *                        - 'trim': true (default) or false
+		 *                        - 'remove_spaces': true or false (default)
+		 *                        - 'transliterate': true or false (default)
+		 *
+		 * @return string The normalized string.
+		 */
+		private static function normalize_str( string $value, array $options = [] ): string {
+			$defaults = [
+				'case'          => 'lower',
+				'trim'          => true,
+				'remove_spaces' => false,
+				'transliterate' => false,
+			];
+
+			$options = array_merge( $defaults, $options );
+
+			if ( $options['trim'] ) {
+				$value = trim( $value );
+			}
+
+			if ( $options['remove_spaces'] ) {
+				$value = str_replace( ' ', '', $value );
+			}
+
+			if ( $options['transliterate'] && function_exists( 'transliterator_transliterate' ) ) {
+				$value = transliterator_transliterate( 'Any-Latin; Latin-ASCII', $value );
+			}
+
+			switch ( $options['case'] ) {
+				case 'lower':
+					return mb_strtolower( $value, 'UTF-8' );
+				case 'upper':
+					return mb_strtoupper( $value, 'UTF-8' );
+				default:
+					return $value;
+			}
 		}
 
 	}

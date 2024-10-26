@@ -29,8 +29,9 @@
       "ArrayPress\\Utils\\": "src/"
     },
     "files": [
-      "src/Search/Functions.php",
-      "src/Register/Functions.php"
+      "src/Generate/Functions.php",
+      "src/Register/Functions.php",
+      "src/Search/Functions.php"
     ]
   },
   "config": {

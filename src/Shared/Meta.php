@@ -20,6 +20,7 @@ namespace ArrayPress\Utils\Shared;
 
 use ArrayPress\Utils\Common\Convert;
 use ArrayPress\Utils\Common\Compare;
+use ArrayPress\Utils\Common\Sanitize;
 use ArrayPress\Utils\Database\Query;
 use ArrayPress\Utils\Database\SQL;
 
@@ -149,7 +150,7 @@ if ( ! class_exists( 'Meta' ) ) :
 		 *
 		 * @return array An array of meta key-value pairs.
 		 */
-		public static function get_meta_by_prefix( string $meta_type, int $object_id, string $prefix ): array {
+		public static function get_by_prefix( string $meta_type, int $object_id, string $prefix ): array {
 			$all_meta = get_metadata( $meta_type, $object_id );
 
 			return array_filter( $all_meta, function ( $key ) use ( $prefix ) {
@@ -207,7 +208,7 @@ if ( ! class_exists( 'Meta' ) ) :
 		 *
 		 * @return mixed The retrieved value.
 		 */
-		public static function get_with_fallback( string $meta_type, int $object_id, string $meta_key, $global_callback = null, $default = '' ): mixed {
+		public static function get_with_fallback( string $meta_type, int $object_id, string $meta_key, $global_callback = null, $default = '' ) {
 			$value = get_metadata( $meta_type, $object_id, $meta_key, true );
 
 			if ( ! empty( $value ) ) {
@@ -329,30 +330,6 @@ if ( ! class_exists( 'Meta' ) ) :
 			}
 
 			return $success;
-		}
-
-		/** Meta Key-Value Handling ***************************************************/
-
-		/**
-		 * Split meta key and expected value from the input string.
-		 *
-		 * @param string $input The input string in the format meta_key:value.
-		 *
-		 * @return array|null An array with meta_key and expected_value or null if the format is invalid.
-		 */
-		public static function split_key_value( string $input ): ?array {
-			$parts = explode( ':', $input, 2 );
-			if ( count( $parts ) !== 2 ) {
-				return null;
-			}
-
-			$meta_key   = trim( $parts[0] );
-			$meta_value = strtolower( trim( $parts[1] ) );
-
-			return [
-				'meta_key'   => $meta_key,
-				'meta_value' => $meta_value,
-			];
 		}
 
 		/** Numeric Meta Handling *****************************************************/
@@ -534,6 +511,48 @@ if ( ! class_exists( 'Meta' ) ) :
 		}
 
 		/** Meta Deletion *************************************************************/
+
+		/**
+		 * Delete metadata for an object.
+		 *
+		 * @param string $meta_type The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param int    $object_id The ID of the object the metadata is for.
+		 * @param string $meta_key  The meta key to delete.
+		 *
+		 * @return bool True on success, false on failure.
+		 */
+		public static function delete( string $meta_type, int $object_id, string $meta_key ): bool {
+			if ( empty( $object_id ) ) {
+				return false;
+			}
+
+			return delete_metadata( $meta_type, $object_id, $meta_key );
+		}
+
+		/**
+		 * Delete metadata if its value is different from the expected value.
+		 *
+		 * @param string $meta_type      The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param int    $object_id      The ID of the object the metadata is for.
+		 * @param string $meta_key       The meta key to delete.
+		 * @param mixed  $expected_value The value to compare against.
+		 *
+		 * @return bool True if deleted (value was different), false if not deleted (value matched or error).
+		 */
+		public static function delete_if_different( string $meta_type, int $object_id, string $meta_key, $expected_value ): bool {
+			if ( empty( $object_id ) ) {
+				return false;
+			}
+
+			$current_value = get_metadata( $meta_type, $object_id, $meta_key, true );
+
+			// Only delete if the current value is different from the expected value
+			if ( $current_value !== $expected_value ) {
+				return delete_metadata( $meta_type, $object_id, $meta_key );
+			}
+
+			return false;
+		}
 
 		/**
 		 * Delete metadata based on a pattern.
@@ -774,6 +793,60 @@ if ( ! class_exists( 'Meta' ) ) :
 		 */
 		public static function is_falsy( string $meta_type, int $object_id, string $meta_key, bool $default = true ): bool {
 			return ! self::is_truthy( $meta_type, $object_id, $meta_key, ! $default );
+		}
+
+		/**
+		 * Get meta values for multiple objects based on their IDs and meta key.
+		 *
+		 * @param string $meta_type  The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param array  $object_ids An array of object IDs.
+		 * @param string $meta_key   The meta key to retrieve.
+		 *
+		 * @return array An array of meta values keyed by object ID.
+		 */
+		public static function get_by_ids( string $meta_type, array $object_ids, string $meta_key ): array {
+			$meta_values = [];
+			$object_ids  = Sanitize::object_ids( $object_ids );
+
+			if ( empty( $object_ids ) ) {
+				return $meta_values;
+			}
+
+			foreach ( $object_ids as $object_id ) {
+				$meta_value = get_metadata( $meta_type, $object_id, $meta_key, true );
+				if ( $meta_value !== null ) {
+					$meta_values[ $object_id ] = $meta_value;
+				}
+			}
+
+			return $meta_values;
+		}
+
+		/**
+		 * Update meta values for multiple objects.
+		 *
+		 * @param string $meta_type  The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param array  $object_ids An array of object IDs.
+		 * @param string $meta_key   The meta key to update.
+		 * @param mixed  $meta_value The value to update the meta key with.
+		 *
+		 * @return bool True if the update was successful for all objects, false otherwise.
+		 */
+		public static function update_by_ids( string $meta_type, array $object_ids, string $meta_key, $meta_value ): bool {
+			$object_ids = Sanitize::object_ids( $object_ids );
+
+			if ( empty( $object_ids ) ) {
+				return false;
+			}
+
+			$success = true;
+			foreach ( $object_ids as $object_id ) {
+				if ( ! update_metadata( $meta_type, $object_id, $meta_key, $meta_value ) ) {
+					$success = false;
+				}
+			}
+
+			return $success;
 		}
 
 	}

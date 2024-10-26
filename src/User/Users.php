@@ -63,7 +63,7 @@ if ( ! class_exists( 'Users' ) ) :
 		 *
 		 * @return WP_User[] An array of user objects.
 		 */
-		public static function get_by_meta( string $meta_key, $meta_value, array $args = [] ): array {
+		public static function get_by_meta_key_value( string $meta_key, $meta_value, array $args = [] ): array {
 			$default_args = [
 				'meta_key'   => $meta_key,
 				'meta_value' => $meta_value,
@@ -138,7 +138,7 @@ if ( ! class_exists( 'Users' ) ) :
 		 *
 		 * @return WP_User[] An array of user objects.
 		 */
-		public static function get_where_meta_exists( string $meta_key, array $args = [] ): array {
+		public static function get_where_meta_key_exists( string $meta_key, array $args = [] ): array {
 			$default_args = [
 				'meta_query' => [
 					[
@@ -299,7 +299,7 @@ if ( ! class_exists( 'Users' ) ) :
 		 *
 		 * @return WP_User[] An array of user objects.
 		 */
-		public static function get_by_name( string $name, array $args = [] ): array {
+		public static function get_by_display_name( string $name, array $args = [] ): array {
 			$default_args = [
 				'search'         => '*' . $name . '*',
 				'search_columns' => [ 'display_name' ],
@@ -372,7 +372,7 @@ if ( ! class_exists( 'Users' ) ) :
 		 *
 		 * @return bool True if the update was successful for all users, false otherwise.
 		 */
-		public static function update_meta( array $user_ids, string $meta_key, $meta_value ): bool {
+		public static function update_meta_by_ids( array $user_ids, string $meta_key, $meta_value ): bool {
 			$user_ids = Sanitize::object_ids( $user_ids );
 
 			if ( empty( $user_ids ) ) {

@@ -193,7 +193,6 @@ if ( ! class_exists( 'Attachment' ) ) :
 			}
 
 			if ( empty( $allowed_filetypes ) ) {
-				// Use the common types from the MIME class as default allowed filetypes
 				$common_types      = MIME::get_common_types();
 				$allowed_filetypes = array_merge( ...array_values( $common_types ) );
 			}
@@ -210,7 +209,6 @@ if ( ! class_exists( 'Attachment' ) ) :
 		 * @param string $directory     The specific directory to check.
 		 *
 		 * @return bool True if the attachment is within the specified directory, false otherwise.
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
 		 */
 		public static function is_in_directory( int $attachment_id, string $directory ): bool {
 			$upload_dir      = wp_upload_dir();
@@ -456,19 +454,79 @@ if ( ! class_exists( 'Attachment' ) ) :
 		}
 
 		/**
-		 * Generate an image thumbnail HTML.
+		 * Generate an image thumbnail HTML with enhanced flexibility and features.
 		 *
-		 * @param int   $attachment_id The attachment ID.
-		 * @param mixed $size          The image size. Default is 'thumbnail'. Can be a string or an array of width and
-		 *                             height.
-		 * @param array $attr          Optional. Additional attributes for the image tag.
+		 * @param int          $attachment_id     The attachment ID.
+		 * @param mixed        $size              The image size. Default is 'thumbnail'.
+		 *                                        Can be a string (registered size) or array [width, height].
+		 * @param array        $attr              Optional. Additional attributes for the image tag.
+		 * @param array|string $container_classes Classes for the container div. Can be array or space-separated string.
+		 * @param array        $container_attr    Optional. Additional attributes for the container div.
+		 * @param string       $fallback          HTML/text to display if image doesn't exist. Default is em dash.
+		 * @param bool         $lazy_load         Whether to enable lazy loading. Default true.
+		 * @param bool         $link_to_full      Whether to link to full-size image. Default false.
 		 *
 		 * @return string The HTML for the image thumbnail.
 		 */
-		public static function image_thumbnail( int $attachment_id, $size = 'thumbnail', array $attr = [] ): string {
-			$image_html = wp_get_attachment_image( $attachment_id, $size, false, $attr );
+		public static function image_thumbnail(
+			int $attachment_id,
+			$size = 'thumbnail',
+			array $attr = [],
+			$container_classes = [ 'thumbnail' ],
+			array $container_attr = [],
+			string $fallback = '&mdash;',
+			bool $lazy_load = true,
+			bool $link_to_full = false
+		): string {
+			// Validate attachment exists
+			if ( ! wp_attachment_is_image( $attachment_id ) ) {
+				return $fallback;
+			}
 
-			return $image_html ? sprintf( '<div class="thumbnail">%s</div>', $image_html ) : '&mdash;';
+			// Process container classes
+			$container_classes = is_array( $container_classes ) ? $container_classes : explode( ' ', $container_classes );
+			$container_classes = array_map( 'sanitize_html_class', $container_classes );
+			$container_classes = array_filter( $container_classes );
+
+			// Prepare image attributes
+			$default_attr = [
+				'class'   => 'image-thumbnail',
+				'loading' => $lazy_load ? 'lazy' : 'eager',
+			];
+			$attr         = wp_parse_args( $attr, $default_attr );
+
+			// Get image HTML
+			$image_html = wp_get_attachment_image( $attachment_id, $size, false, $attr );
+			if ( ! $image_html ) {
+				return $fallback;
+			}
+
+			// Wrap image in link if requested
+			if ( $link_to_full ) {
+				$full_url = wp_get_attachment_image_url( $attachment_id, 'full' );
+				if ( $full_url ) {
+					$image_html = sprintf(
+						'<a href="%s" class="thumbnail-link">%s</a>',
+						esc_url( $full_url ),
+						$image_html
+					);
+				}
+			}
+
+			// Prepare container attributes
+			$container_attr['class'] = implode( ' ', $container_classes );
+			$container_attributes    = '';
+
+			foreach ( $container_attr as $key => $value ) {
+				if ( $value === true ) {
+					$container_attributes .= ' ' . esc_attr( $key );
+				} else {
+					$container_attributes .= sprintf( ' %s="%s"', esc_attr( $key ), esc_attr( $value ) );
+				}
+			}
+
+			// Return final HTML
+			return sprintf( '<div%s>%s</div>', $container_attributes, $image_html );
 		}
 
 		/**

@@ -496,6 +496,490 @@ if ( ! class_exists( 'Create' ) ) :
 		}
 
 		/**
+		 * Generate an image thumbnail HTML with enhanced flexibility and features.
+		 *
+		 * @param int          $attachment_id     The attachment ID.
+		 * @param mixed        $size              The image size. Default is 'thumbnail'.
+		 *                                        Can be a string (registered size) or array [width, height].
+		 * @param array        $attr              Optional. Additional attributes for the image tag.
+		 * @param array|string $container_classes Classes for the container div. Can be array or space-separated string.
+		 * @param array        $container_attr    Optional. Additional attributes for the container div.
+		 * @param string       $fallback          HTML/text to display if image doesn't exist. Default is em dash.
+		 * @param bool         $lazy_load         Whether to enable lazy loading. Default true.
+		 * @param bool         $link_to_full      Whether to link to full-size image. Default false.
+		 *
+		 * @return string The HTML for the image thumbnail.
+		 */
+		public static function attachment_thumbnail(
+			int $attachment_id,
+			$size = 'thumbnail',
+			array $attr = [],
+			$container_classes = [ 'thumbnail' ],
+			array $container_attr = [],
+			string $fallback = self::MDASH,
+			bool $lazy_load = true,
+			bool $link_to_full = false
+		): string {
+			// Validate attachment exists
+			if ( ! wp_attachment_is_image( $attachment_id ) ) {
+				return $fallback;
+			}
+
+			// Prepare image attributes
+			$default_attr = [
+				'class'   => 'image-thumbnail',
+				'loading' => $lazy_load ? 'lazy' : 'eager',
+			];
+			$attr         = wp_parse_args( $attr, $default_attr );
+
+			// Get image HTML
+			$image_html = wp_get_attachment_image( $attachment_id, $size, false, $attr );
+			if ( ! $image_html ) {
+				return $fallback;
+			}
+
+			// Wrap image in link if requested
+			if ( $link_to_full ) {
+				$full_url = wp_get_attachment_image_url( $attachment_id, 'full' );
+				if ( $full_url ) {
+					$image_html = self::link( $full_url, $image_html, [ 'class' => 'thumbnail-link' ] );
+				}
+			}
+
+			// Process container classes if they're in string format
+			if ( is_string( $container_classes ) ) {
+				$container_classes = explode( ' ', $container_classes );
+			}
+
+			// Ensure container classes are in the attributes
+			$container_attr['class'] = isset( $container_attr['class'] )
+				? $container_attr['class'] . ' ' . implode( ' ', $container_classes )
+				: implode( ' ', $container_classes );
+
+			// Create the container div
+			return self::div( $image_html, $container_attr );
+		}
+
+		/**
+		 * Create a responsive image element with srcset support.
+		 *
+		 * @param string $src   The source URL of the image.
+		 * @param string $alt   The alternative text for the image.
+		 * @param array  $sizes Array of image sizes (width => url).
+		 * @param array  $attrs Additional attributes for the image.
+		 *
+		 * @return string The HTML for the responsive image.
+		 */
+		public static function responsive_image( string $src, string $alt, array $sizes = [], array $attrs = [] ): string {
+			if ( ! empty( $sizes ) ) {
+				$srcset = [];
+				foreach ( $sizes as $width => $url ) {
+					$srcset[] = esc_url( $url ) . ' ' . $width . 'w';
+				}
+				$attrs['srcset'] = implode( ', ', $srcset );
+			}
+
+			return self::img( $src, $alt, $attrs );
+		}
+
+		/**
+		 * Create an image gallery.
+		 *
+		 * @param array $images Array of image data (src, alt, caption).
+		 * @param array $attrs  Additional attributes for the gallery container.
+		 *
+		 * @return string The HTML for the image gallery.
+		 */
+		public static function gallery( array $images, array $attrs = [] ): string {
+			$default_styles = [
+				'display'               => 'grid',
+				'grid-template-columns' => 'repeat(auto-fill, minmax(200px, 1fr))',
+				'gap'                   => '1rem',
+				'padding'               => '1rem'
+			];
+
+			$attrs['style'] = self::merge_styles( $default_styles, $attrs['style'] ?? '' );
+
+			$gallery_content = '';
+			foreach ( $images as $image ) {
+				$figure_content = self::img( $image['src'], $image['alt'] ?? '', [
+					'style' => 'width: 100%; height: 100%; object-fit: cover;'
+				] );
+
+				if ( ! empty( $image['caption'] ) ) {
+					$figure_content .= self::element( 'figcaption', [], esc_html( $image['caption'] ) );
+				}
+
+				$gallery_content .= self::element( 'figure', [
+					'style' => 'margin: 0; padding: 0;'
+				], $figure_content );
+			}
+
+			return self::div( $gallery_content, $attrs );
+		}
+
+		/**
+		 * Create a lightbox-ready image.
+		 *
+		 * @param string $thumb_src The thumbnail image source URL.
+		 * @param string $full_src  The full-size image source URL.
+		 * @param string $alt       The alternative text for the image.
+		 * @param array  $attrs     Additional attributes for the container.
+		 *
+		 * @return string The HTML for the lightbox image.
+		 */
+		public static function lightbox_image(
+			string $thumb_src,
+			string $full_src,
+			string $alt = '',
+			array $attrs = []
+		): string {
+			$default_attrs = [
+				'class'         => 'lightbox-image',
+				'data-full-src' => esc_url( $full_src )
+			];
+
+			$attrs = array_merge( $default_attrs, $attrs );
+
+			$img = self::img( $thumb_src, $alt, [
+				'style' => 'cursor: pointer; max-width: 100%; height: auto;'
+			] );
+
+			return self::div( $img, $attrs );
+		}
+
+		/**
+		 * Create an HTML form element.
+		 *
+		 * @param string $content The content of the form.
+		 * @param string $action  The form action URL.
+		 * @param string $method  The form method (get/post).
+		 * @param array  $attrs   Additional attributes for the form.
+		 *
+		 * @return string The HTML string for the form.
+		 */
+		public static function form( string $content, string $action = '', string $method = 'post', array $attrs = [] ): string {
+			$attrs['action'] = esc_url( $action );
+			$attrs['method'] = in_array( strtolower( $method ), [ 'get', 'post' ] ) ? $method : 'post';
+
+			if ( ! isset( $attrs['id'] ) ) {
+				$attrs['id'] = 'form-' . wp_rand();
+			}
+
+			return self::element( 'form', $attrs, $content );
+		}
+
+		/**
+		 * Create an HTML fieldset element.
+		 *
+		 * @param string $content The content of the fieldset.
+		 * @param string $legend  The legend text (optional).
+		 * @param array  $attrs   Additional attributes for the fieldset.
+		 *
+		 * @return string The HTML string for the fieldset.
+		 */
+		public static function fieldset( string $content, string $legend = '', array $attrs = [] ): string {
+			if ( ! empty( $legend ) ) {
+				$content = self::element( 'legend', [], esc_html( $legend ) ) . $content;
+			}
+
+			return self::element( 'fieldset', $attrs, $content );
+		}
+
+		/**
+		 * Create a form group with label and input.
+		 *
+		 * @param string $label      The label text.
+		 * @param string $input_type The type of input.
+		 * @param string $name       The input name attribute.
+		 * @param array  $attrs      Additional attributes for the input.
+		 *
+		 * @return string The HTML string for the form group.
+		 */
+		public static function form_group( string $label, string $input_type, string $name, array $attrs = [] ): string {
+			$id            = $attrs['id'] ?? 'field-' . wp_rand();
+			$attrs['id']   = $id;
+			$attrs['name'] = $name;
+
+			$label_html = self::label( $id, esc_html( $label ) );
+			$input_html = self::input( $input_type, $attrs );
+
+			return self::div( $label_html . $input_html, [ 'class' => 'form-group' ] );
+		}
+
+		/**
+		 * Table-related HTML creation methods.
+		 */
+
+		/**
+		 * Create an HTML table element.
+		 *
+		 * @param array $data    Array of row data.
+		 * @param array $headers Table headers.
+		 * @param array $attrs   Additional attributes for the table.
+		 *
+		 * @return string The HTML string for the table.
+		 */
+		public static function table( array $data, array $headers = [], array $attrs = [] ): string {
+			$content = '';
+
+			if ( ! empty( $headers ) ) {
+				$content .= self::thead( $headers );
+			}
+
+			$content .= self::tbody( $data );
+
+			$default_attrs = [ 'class' => 'wp-list-table widefat' ];
+			$attrs         = array_merge( $default_attrs, $attrs );
+
+			return self::element( 'table', $attrs, $content );
+		}
+
+		/**
+		 * Create an HTML table header.
+		 *
+		 * @param array $headers Array of header cells.
+		 * @param array $attrs   Additional attributes for the thead.
+		 *
+		 * @return string The HTML string for the table header.
+		 */
+		public static function thead( array $headers, array $attrs = [] ): string {
+			$header_cells = '';
+			foreach ( $headers as $key => $header ) {
+				$cell_attrs   = is_array( $header ) ? ( $header['attrs'] ?? [] ) : [];
+				$cell_content = is_array( $header ) ? ( $header['content'] ?? '' ) : $header;
+				$header_cells .= self::element( 'th', $cell_attrs, esc_html( $cell_content ) );
+			}
+
+			$header_row = self::element( 'tr', [], $header_cells );
+
+			return self::element( 'thead', $attrs, $header_row );
+		}
+
+		/**
+		 * Create an HTML table body.
+		 *
+		 * @param array $rows  Array of row data.
+		 * @param array $attrs Additional attributes for the tbody.
+		 *
+		 * @return string The HTML string for the table body.
+		 */
+		public static function tbody( array $rows, array $attrs = [] ): string {
+			$content = '';
+			foreach ( $rows as $row ) {
+				$cells = '';
+				foreach ( $row as $cell ) {
+					$cell_attrs   = is_array( $cell ) ? ( $cell['attrs'] ?? [] ) : [];
+					$cell_content = is_array( $cell ) ? ( $cell['content'] ?? '' ) : $cell;
+					$cells        .= self::element( 'td', $cell_attrs, esc_html( $cell_content ) );
+				}
+				$content .= self::element( 'tr', [], $cells );
+			}
+
+			return self::element( 'tbody', $attrs, $content );
+		}
+
+		/**
+		 * Create an HTML video element.
+		 *
+		 * @param string|array $src   Video source URL or array of sources.
+		 * @param array        $attrs Additional attributes for the video element.
+		 *
+		 * @return string The HTML string for the video element.
+		 */
+		public static function video( $src, array $attrs = [] ): string {
+			$content = '';
+
+			// Handle multiple sources
+			if ( is_array( $src ) ) {
+				foreach ( $src as $source ) {
+					$type    = ! empty( $source['type'] ) ? $source['type'] : 'video/mp4';
+					$content .= self::void_element( 'source', [
+						'src'  => esc_url( $source['url'] ),
+						'type' => $type
+					] );
+				}
+			} else {
+				$content .= self::void_element( 'source', [
+					'src'  => esc_url( $src ),
+					'type' => 'video/mp4'
+				] );
+			}
+
+			$default_attrs = [
+				'controls' => true,
+				'width'    => '100%',
+				'preload'  => 'metadata'
+			];
+
+			$attrs = array_merge( $default_attrs, $attrs );
+
+			return self::element( 'video', $attrs, $content );
+		}
+
+		/**
+		 * Create an HTML audio element.
+		 *
+		 * @param string|array $src   Audio source URL or array of sources.
+		 * @param array        $attrs Additional attributes for the audio element.
+		 *
+		 * @return string The HTML string for the audio element.
+		 */
+		public static function audio( $src, array $attrs = [] ): string {
+			$content = '';
+
+			// Handle multiple sources
+			if ( is_array( $src ) ) {
+				foreach ( $src as $source ) {
+					$type    = ! empty( $source['type'] ) ? $source['type'] : 'audio/mpeg';
+					$content .= self::void_element( 'source', [
+						'src'  => esc_url( $source['url'] ),
+						'type' => $type
+					] );
+				}
+			} else {
+				$content .= self::void_element( 'source', [
+					'src'  => esc_url( $src ),
+					'type' => 'audio/mpeg'
+				] );
+			}
+
+			$default_attrs = [
+				'controls' => true,
+				'preload'  => 'metadata'
+			];
+
+			$attrs = array_merge( $default_attrs, $attrs );
+
+			return self::element( 'audio', $attrs, $content );
+		}
+
+		/**
+		 * Navigation-related HTML creation methods.
+		 */
+
+		/**
+		 * Create an HTML navigation element.
+		 *
+		 * @param string $content The content of the nav element.
+		 * @param array  $attrs   Additional attributes for the nav element.
+		 *
+		 * @return string The HTML string for the nav element.
+		 */
+		public static function nav( string $content, array $attrs = [] ): string {
+			return self::element( 'nav', $attrs, $content );
+		}
+
+		/**
+		 * Create an HTML menu from an array of items.
+		 *
+		 * @param array $items Menu items array.
+		 * @param array $attrs Additional attributes for the menu container.
+		 *
+		 * @return string The HTML string for the menu.
+		 */
+		public static function menu( array $items, array $attrs = [] ): string {
+			$content = '';
+
+			foreach ( $items as $item ) {
+				$item_attrs   = $item['attrs'] ?? [];
+				$item_content = $item['content'] ?? '';
+
+				if ( ! empty( $item['url'] ) ) {
+					$item_content = self::link( $item['url'], $item_content );
+				}
+
+				if ( ! empty( $item['children'] ) ) {
+					$item_content .= self::menu( $item['children'] );
+				}
+
+				$content .= self::element( 'li', $item_attrs, $item_content );
+			}
+
+			$default_attrs = [ 'class' => 'menu' ];
+			$attrs         = array_merge( $default_attrs, $attrs );
+
+			return self::element( 'ul', $attrs, $content );
+		}
+
+		/**
+		 * Create a breadcrumb navigation.
+		 *
+		 * @param array $items Array of breadcrumb items.
+		 * @param array $attrs Additional attributes for the breadcrumb container.
+		 *
+		 * @return string The HTML string for the breadcrumbs.
+		 */
+		public static function breadcrumbs( array $items, array $attrs = [] ): string {
+			$content    = '';
+			$last_index = count( $items ) - 1;
+
+			foreach ( $items as $index => $item ) {
+				$is_last = ( $index === $last_index );
+
+				if ( ! empty( $item['url'] ) && ! $is_last ) {
+					$content .= self::link( $item['url'], esc_html( $item['text'] ) );
+				} else {
+					$content .= self::span( esc_html( $item['text'] ), [ 'class' => 'current' ] );
+				}
+
+				if ( ! $is_last ) {
+					$content .= self::span( ' / ', [ 'class' => 'separator' ] );
+				}
+			}
+
+			$default_attrs = [ 'class' => 'breadcrumbs' ];
+			$attrs         = array_merge( $default_attrs, $attrs );
+
+			return self::nav( $content, $attrs );
+		}
+
+		/**
+		 * Create a pagination element.
+		 *
+		 * @param int    $current_page Current page number.
+		 * @param int    $total_pages  Total number of pages.
+		 * @param string $base_url     Base URL for pagination links.
+		 * @param array  $attrs        Additional attributes for the pagination container.
+		 *
+		 * @return string The HTML string for the pagination.
+		 */
+		public static function pagination( int $current_page, int $total_pages, string $base_url, array $attrs = [] ): string {
+			if ( $total_pages <= 1 ) {
+				return '';
+			}
+
+			$content = '';
+
+			// Previous link
+			if ( $current_page > 1 ) {
+				$prev_url = add_query_arg( 'page', $current_page - 1, $base_url );
+				$content  .= self::link( $prev_url, '← Previous', [ 'class' => 'prev' ] );
+			}
+
+			// Page numbers
+			for ( $i = 1; $i <= $total_pages; $i ++ ) {
+				if ( $i === $current_page ) {
+					$content .= self::span( (string) $i, [ 'class' => 'current' ] );
+				} else {
+					$page_url = add_query_arg( 'page', $i, $base_url );
+					$content  .= self::link( $page_url, (string) $i );
+				}
+			}
+
+			// Next link
+			if ( $current_page < $total_pages ) {
+				$next_url = add_query_arg( 'page', $current_page + 1, $base_url );
+				$content  .= self::link( $next_url, 'Next →', [ 'class' => 'next' ] );
+			}
+
+			$default_attrs = [ 'class' => 'pagination' ];
+			$attrs         = array_merge( $default_attrs, $attrs );
+
+			return self::nav( $content, $attrs );
+		}
+
+		/**
 		 * Create an arbitrary HTML element.
 		 *
 		 * @param string $tag     The tag name of the element.

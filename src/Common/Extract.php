@@ -29,16 +29,46 @@ if ( ! class_exists( 'Extract' ) ) :
 	class Extract {
 
 		/**
-		 * Extract unique mentions (@username) from a string.
+		 * Extract unique mentions (@username) from a string while excluding email addresses.
+		 * Uses WordPress username validation and simple string parsing.
 		 *
 		 * @param string $string The input string.
 		 *
-		 * @return array An array of unique extracted mentions.
+		 * @return array An array of unique extracted mentions without the @ symbol.
 		 */
 		public static function mentions( string $string ): array {
-			preg_match_all( '/@(\w+)/', $string, $matches );
+			// Split string into words
+			$words = preg_split( '/\s+/', $string );
 
-			return ! empty( $matches[1] ) ? array_unique( $matches[1] ) : [];
+			// Initialize array for valid mentions
+			$mentions = [];
+
+			foreach ( $words as $word ) {
+				// Skip if not starting with @
+				if ( ! str_starts_with( $word, '@' ) ) {
+					continue;
+				}
+
+				// Skip if it looks like an email
+				if ( str_contains( $word, '.' ) ) {
+					continue;
+				}
+
+				// Extract username part (remove @ and any trailing punctuation)
+				$username = preg_replace( '/^@([a-zA-Z0-9_-]+).*$/', '$1', $word );
+
+				// Skip empty results
+				if ( empty( $username ) ) {
+					continue;
+				}
+
+				// Validate using WordPress function
+				if ( validate_username( $username ) ) {
+					$mentions[] = $username;
+				}
+			}
+
+			return array_unique( $mentions );
 		}
 
 		/**
