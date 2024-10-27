@@ -19,10 +19,8 @@ declare( strict_types=1 );
 namespace ArrayPress\Utils\Post;
 
 use WP_Post;
-use WP_User;
-use WP_Term;
-use WP_Error;
 use WP_Query;
+use WP_User;
 use ArrayPress\Utils\Common\Extract;
 use ArrayPress\Utils\Common\Str;
 use ArrayPress\Utils\Database\Exists;
@@ -256,6 +254,41 @@ if ( ! class_exists( 'Post' ) ) :
 			return $post ? apply_filters( 'the_content', $post->post_content ) : '';
 		}
 
+		/**
+		 * Retrieve the edit URL for a post.
+		 *
+		 * @param int $post_id The post ID.
+		 *
+		 * @return string|null The edit URL if the current user has permission, null otherwise.
+		 */
+		public static function get_edit_link( int $post_id ): ?string {
+			return current_user_can( 'edit_post', $post_id ) ? get_edit_post_link( $post_id ) : null;
+		}
+
+		/**
+		 * Retrieve the categories for a post.
+		 *
+		 * @param int    $post_id  The post ID.
+		 * @param string $taxonomy Optional. The taxonomy to lookup. Default 'category'.
+		 *
+		 * @return array An array of category objects if available, an empty array otherwise.
+		 */
+		public static function get_categories( int $post_id, string $taxonomy = 'category' ): array {
+			return get_the_terms( $post_id, $taxonomy ) ?: [];
+		}
+
+		/**
+		 * Retrieve the tags for a post.
+		 *
+		 * @param int    $post_id  The post ID.
+		 * @param string $taxonomy Optional. The taxonomy to lookup. Default 'post_tag'.
+		 *
+		 * @return array An array of tag objects if available, an empty array otherwise.
+		 */
+		public static function get_tags( int $post_id, string $taxonomy = 'post_tag' ): array {
+			return get_the_terms( $post_id, $taxonomy ) ?: [];
+		}
+
 		/** Post Comments ************************************************************/
 
 		/**
@@ -308,7 +341,7 @@ if ( ! class_exists( 'Post' ) ) :
 		 *
 		 * @return array An array of extracted content.
 		 */
-		public static function extract_from_post( int $post_id, string $type, array $args = [] ): array {
+		public static function extract( int $post_id, string $type, array $args = [] ): array {
 			$post = get_post( $post_id );
 
 			if ( ! $post ) {
@@ -401,38 +434,6 @@ if ( ! class_exists( 'Post' ) ) :
 		}
 
 		/**
-		 * Get post statuses and return them in label/value format.
-		 *
-		 * @param array $args Optional. Arguments to filter post statuses.
-		 *
-		 * @return array An array of post statuses in label/value format.
-		 */
-		public static function get_status_options( array $args = [] ): array {
-			$defaults   = [];
-			$args       = wp_parse_args( $args, $defaults );
-			$post_stati = get_post_stati( $args, 'objects' );
-
-			if ( empty( $post_stati ) || ! is_array( $post_stati ) ) {
-				return [];
-			}
-
-			$options = [];
-
-			foreach ( $post_stati as $status => $details ) {
-				if ( ! isset( $status, $details ) ) {
-					continue;
-				}
-
-				$options[] = [
-					'value' => esc_attr( $status ),
-					'label' => esc_html( $details->label ?? $status ),
-				];
-			}
-
-			return $options;
-		}
-
-		/**
 		 * Retrieve the URL of the post thumbnail.
 		 *
 		 * @param int $post_id The ID of the post.
@@ -441,6 +442,39 @@ if ( ! class_exists( 'Post' ) ) :
 		 */
 		public static function get_thumbnail_url( int $post_id ) {
 			return get_the_post_thumbnail_url( $post_id );
+		}
+
+		/**
+		 * Get the featured image (thumbnail) HTML for a post.
+		 *
+		 * Retrieves the post thumbnail with specified dimensions and attributes.
+		 * If no thumbnail exists, returns an empty string.
+		 *
+		 * @param int   $post_id The post ID. Default 0 (current post).
+		 * @param array $args    {
+		 *                       Optional. Arguments to customize the thumbnail display.
+		 *
+		 * @type int    $width   Thumbnail width in pixels. Default 64.
+		 * @type int    $height  Thumbnail height in pixels. Default 64.
+		 * @type string $class   CSS class names. Default empty.
+		 * @type string $alt     Image alt text. Default empty.
+		 * @type string $size    Image size. Accepts any registered image size name. Default calculated from width/height.
+		 *                       }
+		 *
+		 * @return string HTML img element or empty string if no thumbnail exists.
+		 */
+		public static function get_thumbnail( int $post_id = 0, array $args = [] ): string {
+			$default_args = [
+				'width'  => 64,
+				'height' => 64,
+				'class'  => '',
+				'alt'    => '',
+				'size'   => [ $args['width'] ?? 64, $args['height'] ?? 64 ]
+			];
+
+			$args = wp_parse_args( $args, $default_args );
+
+			return get_the_post_thumbnail( $post_id, $args['size'], $args );
 		}
 
 		/**
@@ -471,7 +505,7 @@ if ( ! class_exists( 'Post' ) ) :
 		 *
 		 * @return array An array of post revision objects.
 		 */
-		public static function get_post_revisions( int $post_id ): array {
+		public static function get_revisions( int $post_id ): array {
 			return wp_get_post_revisions( $post_id );
 		}
 
@@ -500,66 +534,6 @@ if ( ! class_exists( 'Post' ) ) :
 		}
 
 		/**
-		 * Get related posts based on shared terms in specified taxonomies.
-		 *
-		 * @param int   $post_id    The post ID.
-		 * @param array $args       Optional. An array of arguments. Default is an empty array.
-		 * @param array $taxonomies Optional. An array of taxonomy names to consider. Default is ['post_tag', 'category'].
-		 *
-		 * @return array An array of related post objects.
-		 */
-		public static function get_related_posts(
-			int $post_id, array $args = [], array $taxonomies = [
-			'post_tag',
-			'category'
-		]
-		): array {
-			$default_args = [
-				'posts_per_page'      => 5,
-				'post__not_in'        => [ $post_id ],
-				'ignore_sticky_posts' => 1,
-				'orderby'             => 'relevance',
-				'post_type'           => get_post_type( $post_id ),
-			];
-
-			$args = wp_parse_args( $args, $default_args );
-
-			// Get all terms for the current post across specified taxonomies
-			$terms = [];
-			foreach ( $taxonomies as $taxonomy ) {
-				$post_terms = wp_get_object_terms( $post_id, $taxonomy, [ 'fields' => 'ids' ] );
-				if ( ! is_wp_error( $post_terms ) && ! empty( $post_terms ) ) {
-					$terms = array_merge( $terms, $post_terms );
-				}
-			}
-
-			if ( empty( $terms ) ) {
-				return [];
-			}
-
-			// Prepare tax query
-			$tax_query = [];
-			foreach ( $taxonomies as $taxonomy ) {
-				$tax_query[] = [
-					'taxonomy' => $taxonomy,
-					'field'    => 'term_id',
-					'terms'    => $terms,
-				];
-			}
-
-			if ( count( $taxonomies ) > 1 ) {
-				$tax_query['relation'] = 'OR';
-			}
-
-			$args['tax_query'] = $tax_query;
-
-			// Perform the query
-			$related_query = new WP_Query( $args );
-
-			return $related_query->posts;
-		}
-
-		/**
 		 * Get post reading time estimate.
 		 *
 		 * @param int $post_id          The post ID.
@@ -585,29 +559,41 @@ if ( ! class_exists( 'Post' ) ) :
 		}
 
 		/**
-		 * Get or update post menu order.
+		 * Get post menu order.
 		 *
-		 * @param int      $post_id   The post ID.
-		 * @param int|null $new_order Optional. New menu order to set.
+		 * @param int $post_id The post ID.
 		 *
 		 * @return int Current menu order of the post.
 		 */
-		public static function post_menu_order( int $post_id, ?int $new_order = null ): int {
+		public static function get_menu_order( int $post_id ): int {
 			$post = get_post( $post_id );
 			if ( ! $post ) {
 				return 0;
 			}
 
-			if ( $new_order !== null ) {
-				wp_update_post( [
-					'ID'         => $post_id,
-					'menu_order' => $new_order
-				] );
+			return $post->menu_order;
+		}
 
-				return $new_order;
+		/**
+		 * Update post menu order.
+		 *
+		 * @param int $post_id   The post ID.
+		 * @param int $new_order The new menu order to set.
+		 *
+		 * @return int Updated menu order of the post.
+		 */
+		public static function update_menu_order( int $post_id, int $new_order ): int {
+			$post = get_post( $post_id );
+			if ( ! $post ) {
+				return 0;
 			}
 
-			return $post->menu_order;
+			wp_update_post( [
+				'ID'         => $post_id,
+				'menu_order' => $new_order
+			] );
+
+			return $new_order;
 		}
 
 		/**
@@ -624,22 +610,6 @@ if ( ! class_exists( 'Post' ) ) :
 			return array_diff_key( $all_fields, array_flip( $default_fields ) );
 		}
 
-		/**
-		 * Update post meta based on its current publish status.
-		 *
-		 * @param int    $post_id         The post ID.
-		 * @param string $meta_key        The meta key to update.
-		 * @param mixed  $published_value The value to set if the post is published.
-		 * @param mixed  $draft_value     The value to set if the post is not published.
-		 *
-		 * @return bool True if updated successfully, false otherwise.
-		 */
-		public static function update_by_publish_status( int $post_id, string $meta_key, $published_value, $draft_value ): bool {
-			$post_status = get_post_status( $post_id );
-			$new_value   = $post_status === 'publish' ? $published_value : $draft_value;
-
-			return Meta::update_if_changed( 'post', $post_id, $meta_key, $new_value );
-		}
 
 		/**
 		 * Get the next post in sequence based on a numeric meta value.
@@ -752,7 +722,7 @@ if ( ! class_exists( 'Post' ) ) :
 			}
 
 			// Check if any of the post's terms are excluded
-			return self::is_excluded_by_terms( $post_id, $taxonomy, $term_exclusion_key );
+			return Taxonomy::is_excluded_by_terms( $post_id, $taxonomy, $term_exclusion_key );
 		}
 
 		/**
@@ -765,25 +735,6 @@ if ( ! class_exists( 'Post' ) ) :
 		 */
 		private static function is_excluded_by_meta( int $post_id, string $exclusion_key ): bool {
 			return (bool) get_post_meta( $post_id, $exclusion_key, true );
-		}
-
-		/**
-		 * Check if a post is excluded based on its terms' meta.
-		 *
-		 * @param int    $post_id            The ID of the post to check.
-		 * @param string $taxonomy           The taxonomy to check.
-		 * @param string $term_exclusion_key The term meta key that indicates exclusion.
-		 *
-		 * @return bool True if any of the post's terms are excluded, false otherwise.
-		 */
-		private static function is_excluded_by_terms( int $post_id, string $taxonomy, string $term_exclusion_key ): bool {
-			$terms = wp_get_post_terms( $post_id, $taxonomy, [
-				'meta_key'   => $term_exclusion_key,
-				'meta_value' => 'on',
-				'fields'     => 'ids'
-			] );
-
-			return ! is_wp_error( $terms ) && ! empty( $terms );
 		}
 
 		/**
@@ -885,176 +836,7 @@ if ( ! class_exists( 'Post' ) ) :
 			return current_theme_supports( 'post-thumbnails' ) && has_post_thumbnail( $post_id );
 		}
 
-		/** Taxonomy Terms ***********************************************************/
-
-		/**
-		 * Retrieve the amounts for terms in a specific taxonomy for a post.
-		 *
-		 * @param int    $post_id  The ID of the post.
-		 * @param string $taxonomy The taxonomy to retrieve terms from.
-		 * @param string $meta_key The meta key to retrieve amounts from.
-		 *
-		 * @return array An array of amounts for the terms.
-		 */
-		public static function get_term_amounts( int $post_id, string $taxonomy, string $meta_key ): array {
-			$amounts = [];
-
-			$terms = get_the_terms( $post_id, $taxonomy );
-
-			if ( empty( $terms ) || is_wp_error( $terms ) ) {
-				return $amounts;
-			}
-
-			foreach ( $terms as $term ) {
-				$amount = get_term_meta( $term->term_id, $meta_key, true );
-
-				if ( ! empty( $amount ) ) {
-					$amounts[ $term->term_id ] = floatval( $amount );
-				}
-			}
-
-			return $amounts;
-		}
-
-		/**
-		 * Retrieve the highest or lowest amount for terms in a specific taxonomy for a post.
-		 *
-		 * @param int    $post_id     The ID of the post.
-		 * @param string $taxonomy    The taxonomy to retrieve terms from.
-		 * @param string $meta_key    The meta key to retrieve amounts from.
-		 * @param bool   $use_highest Whether to use the highest amount. Default true.
-		 *
-		 * @return float|null The highest or lowest amount, or null if no amounts found.
-		 */
-		public static function get_term_amount( int $post_id, string $taxonomy, string $meta_key, bool $use_highest = true ): ?float {
-			$amounts = self::get_term_amounts( $post_id, $taxonomy, $meta_key );
-
-			if ( empty( $amounts ) ) {
-				return null;
-			}
-
-			$amounts = array_values( $amounts );
-
-			return $use_highest ? max( $amounts ) : min( $amounts );
-		}
-
-		/**
-		 * Retrieve the term meta values for a specific taxonomy and post, and process them.
-		 *
-		 * @param int                  $post_id  The ID of the post.
-		 * @param string               $taxonomy The taxonomy to retrieve terms from.
-		 * @param string               $meta_key The meta key to retrieve from the terms.
-		 * @param callable|string|null $callback Optional. A callback function or function name to process the meta value. Default is 'floatval'.
-		 *
-		 * @return array The processed term meta values.
-		 */
-		public static function get_term_meta_values( int $post_id, string $taxonomy, string $meta_key, $callback = 'floatval' ): array {
-			$terms = get_the_terms( $post_id, $taxonomy );
-
-			if ( ! $terms || is_wp_error( $terms ) ) {
-				return [];
-			}
-
-			$values = [];
-
-			foreach ( $terms as $term ) {
-				$meta_value = get_term_meta( $term->term_id, $meta_key, true );
-
-				if ( $meta_value !== '' ) {
-					if ( is_callable( $callback ) ) {
-						$values[] = $callback( $meta_value );
-					} elseif ( is_string( $callback ) && function_exists( $callback ) ) {
-						$values[] = $callback( $meta_value );
-					} else {
-						$values[] = $meta_value;
-					}
-				}
-			}
-
-			return array_values( $values );
-		}
-
-		/**
-		 * Retrieve a single processed term meta value for a specific taxonomy and post.
-		 *
-		 * @param int                  $post_id     The ID of the post.
-		 * @param string               $taxonomy    The taxonomy to retrieve terms from.
-		 * @param string               $meta_key    The meta key to retrieve from the terms.
-		 * @param callable|string|null $callback    Optional. A callback function or function name to process the meta value. Default is 'floatval'.
-		 * @param bool                 $use_highest Optional. Whether to use the highest or lowest value. Default is true (highest).
-		 *
-		 * @return float The single processed term meta value.
-		 */
-		public static function get_single_term_meta_value( int $post_id, string $taxonomy, string $meta_key, $callback = 'floatval', bool $use_highest = true ): float {
-			$values = self::get_term_meta_values( $post_id, $taxonomy, $meta_key, $callback );
-
-			if ( empty( $values ) ) {
-				return 0.0;
-			}
-
-			return $use_highest ? max( $values ) : min( $values );
-		}
-
-		/**
-		 * Retrieves the terms of the specified taxonomy attached to the given post.
-		 *
-		 * @param int    $post_id  The ID of the post.
-		 * @param string $taxonomy Taxonomy name.
-		 * @param bool   $term_ids Whether to return term IDs instead of term objects. Default is true.
-		 *
-		 * @return int[]|WP_Term[]|false|WP_Error Array of term IDs or WP_Term objects on success,
-		 *                                        false if there are no terms or the post does not exist,
-		 *                                        WP_Error on failure.
-		 */
-		public static function get_terms( int $post_id, string $taxonomy, bool $term_ids = true ): ?array {
-			if ( empty( $post_id ) || ! taxonomy_exists( $taxonomy ) ) {
-				return false;
-			}
-
-			$post = get_post( $post_id );
-
-			if ( empty( $post ) || ! isset( $post->ID ) ) {
-				return false;
-			}
-
-			$terms = get_the_terms( $post->ID, $taxonomy );
-
-			if ( $terms && ! is_wp_error( $terms ) ) {
-				return $term_ids ? wp_list_pluck( $terms, 'term_id' ) : $terms;
-			}
-
-			return false;
-		}
-
 		/** Custom Post Type *********************************************************/
-
-		/**
-		 * Get registered custom post types and return them in label/value format.
-		 *
-		 * @param array $args Optional. Arguments to filter custom post types.
-		 *
-		 * @return array An array of custom post types in label/value format.
-		 */
-		public static function get_custom_post_type_options( array $args = [] ): array {
-			$defaults   = [ '_builtin' => false ];
-			$args       = wp_parse_args( $args, $defaults );
-			$post_types = get_post_types( $args, 'objects' );
-
-			if ( empty( $post_types ) || ! is_array( $post_types ) ) {
-				return [];
-			}
-
-			$options = [];
-
-			foreach ( $post_types as $post_type => $details ) {
-				$options[] = [
-					'value' => esc_attr( $post_type ),
-					'label' => esc_html( $details->label ),
-				];
-			}
-
-			return $options;
-		}
 
 		/**
 		 * Check if a post is of a specific post type.
@@ -1172,6 +954,7 @@ if ( ! class_exists( 'Post' ) ) :
 
 			return ! empty( $children );
 		}
+
 
 		/**
 		 * Determines if we're currently on a specific page

@@ -300,38 +300,6 @@ if ( ! class_exists( 'Meta' ) ) :
 			return $result;
 		}
 
-		/**
-		 * Bulk update meta values for multiple objects.
-		 *
-		 * @param string $meta_type  The type of object metadata is for (e.g., 'post', 'user', 'term').
-		 * @param array  $object_ids Array of object IDs.
-		 * @param string $meta_key   Meta key to update.
-		 * @param mixed  $meta_value Meta value to set.
-		 *
-		 * @return bool True on successful update of all objects, false if any update fails.
-		 */
-		public static function bulk_update( string $meta_type, array $object_ids, string $meta_key, $meta_value ): bool {
-			if ( empty( $object_ids ) ) {
-				return false;
-			}
-
-			$success = true;
-			foreach ( $object_ids as $object_id ) {
-				$object_id = absint( $object_id ); // Ensure integer value
-				if ( $object_id === 0 ) {
-					$success = false;
-					continue;
-				}
-
-				$result = update_metadata( $meta_type, $object_id, $meta_key, $meta_value );
-				if ( $result === false ) {
-					$success = false;
-				}
-			}
-
-			return $success;
-		}
-
 		/** Numeric Meta Handling *****************************************************/
 
 		/**
@@ -847,6 +815,70 @@ if ( ! class_exists( 'Meta' ) ) :
 			}
 
 			return $success;
+		}
+
+		/**
+		 * Bulk update metadata for multiple objects.
+		 *
+		 * @param string $meta_type  The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param array  $object_ids An array of object IDs.
+		 * @param string $meta_key   The meta key to update.
+		 * @param mixed  $meta_value The new meta value.
+		 *
+		 * @return array An array of results, with object IDs as keys and update results as values.
+		 */
+		public static function bulk_update( string $meta_type, array $object_ids, string $meta_key, $meta_value ): array {
+			$results    = [];
+			$object_ids = Sanitize::object_ids( $object_ids );
+
+			if ( empty( $object_ids ) ) {
+				return $results;
+			}
+
+			foreach ( $object_ids as $object_id ) {
+				$results[ $object_id ] = update_metadata( $meta_type, $object_id, $meta_key, $meta_value );
+			}
+
+			return $results;
+		}
+
+		/**
+		 * Bulk delete metadata for multiple objects.
+		 *
+		 * @param string $meta_type  The type of object metadata is for (e.g., 'post', 'user', 'term').
+		 * @param array  $object_ids An array of object IDs.
+		 * @param string $meta_key   The meta key to delete. If empty, all meta for each object will be deleted.
+		 *
+		 * @return array An array of results, with object IDs as keys and deletion results as values.
+		 */
+		public static function bulk_delete( string $meta_type, array $object_ids, string $meta_key = '' ): array {
+			$results    = [];
+			$object_ids = Sanitize::object_ids( $object_ids );
+
+			if ( empty( $object_ids ) ) {
+				return $results;
+			}
+
+			foreach ( $object_ids as $object_id ) {
+				if ( empty( $meta_key ) ) {
+					$all_meta = get_metadata( $meta_type, $object_id );
+					if ( is_array( $all_meta ) ) {
+						$success = true;
+						foreach ( array_keys( $all_meta ) as $key ) {
+							if ( ! delete_metadata( $meta_type, $object_id, $key ) ) {
+								$success = false;
+							}
+						}
+						$results[ $object_id ] = $success;
+					} else {
+						$results[ $object_id ] = false;
+					}
+				} else {
+					$results[ $object_id ] = delete_metadata( $meta_type, $object_id, $meta_key );
+				}
+			}
+
+			return $results;
 		}
 
 	}

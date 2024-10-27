@@ -281,29 +281,56 @@ if ( ! class_exists( 'Meta' ) ):
 			return MetaUtils::is_falsy( 'term', $term_id, $meta_key, $default );
 		}
 
+		/** Bulk ********************************************************************/
+
 		/**
-		 * Get user meta values based on provided user IDs and meta key.
+		 * Get user meta values based on provided term IDs and meta key.
 		 *
-		 * @param array  $user_ids An array of user IDs.
+		 * @param array  $term_ids An array of term IDs.
 		 * @param string $meta_key The meta key to retrieve.
 		 *
-		 * @return array An array of user meta values.
+		 * @return array An array of term meta values.
 		 */
-		public static function get_by_ids( array $user_ids, string $meta_key ): array {
-			return MetaUtils::get_by_ids( 'term', $user_ids, $meta_key );
+		public static function get_by_ids( array $term_ids, string $meta_key ): array {
+			return MetaUtils::get_by_ids( 'term', $term_ids, $meta_key );
 		}
 
 		/**
-		 * Update user meta for multiple users.
+		 * Update user meta for multiple terms.
 		 *
-		 * @param array  $user_ids   An array of user IDs.
+		 * @param array  $term_ids   An array of term IDs.
 		 * @param string $meta_key   The meta key to update.
 		 * @param mixed  $meta_value The value to update the meta key with.
 		 *
-		 * @return bool True if the update was successful for all users, false otherwise.
+		 * @return bool True if the update was successful for all terms, false otherwise.
 		 */
-		public static function update_by_ids( array $user_ids, string $meta_key, $meta_value ): bool {
-			return MetaUtils::update_by_ids( 'term', $user_ids, $meta_key, $meta_value );
+		public static function update_by_ids( array $term_ids, string $meta_key, $meta_value ): bool {
+			return MetaUtils::update_by_ids( 'term', $term_ids, $meta_key, $meta_value );
+		}
+
+		/**
+		 * Bulk update taxonomy metadata for multiple terms.
+		 *
+		 * @param array  $term_ids   An array of term IDs.
+		 * @param string $meta_key   The meta key to update.
+		 * @param mixed  $meta_value The new meta value.
+		 *
+		 * @return array An array of results, with post IDs as keys and update results as values.
+		 */
+		public static function bulk_update( array $term_ids, string $meta_key, $meta_value ): array {
+			return MetaUtils::bulk_update( 'term', $term_ids, $meta_key, $meta_value );
+		}
+
+		/**
+		 * Bulk delete taxonomy metadata for multiple terms.
+		 *
+		 * @param array  $term_ids An array of term IDs.
+		 * @param string $meta_key The meta key to delete. If empty, all meta for each post will be deleted.
+		 *
+		 * @return array An array of results, with term IDs as keys and deletion results as values.
+		 */
+		public static function bulk_delete( array $term_ids, string $meta_key = '' ): array {
+			return MetaUtils::bulk_delete( 'term', $term_ids, $meta_key );
 		}
 
 	}

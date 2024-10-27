@@ -26,6 +26,7 @@ if ( ! class_exists( 'Meta' ) ):
 	 * Provides static utility functions for post meta related operations.
 	 */
 	class Meta {
+
 		/**
 		 * Check if a post meta key exists.
 		 *
@@ -294,30 +295,74 @@ if ( ! class_exists( 'Meta' ) ):
 		}
 
 		/**
+		 * Update post meta based on its current publish status.
+		 *
+		 * @param int    $post_id         The post ID.
+		 * @param string $meta_key        The meta key to update.
+		 * @param mixed  $published_value The value to set if the post is published.
+		 * @param mixed  $draft_value     The value to set if the post is not published.
+		 *
+		 * @return bool True if updated successfully, false otherwise.
+		 */
+		public static function update_by_publish_status( int $post_id, string $meta_key, $published_value, $draft_value ): bool {
+			$post_status = get_post_status( $post_id );
+			$new_value   = $post_status === 'publish' ? $published_value : $draft_value;
+
+			return MetaUtils::update_if_changed( 'post', $post_id, $meta_key, $new_value );
+		}
+
+		/** Bulk ********************************************************************/
+
+		/**
 		 * Get user meta values based on provided post IDs and meta key.
 		 *
 		 * @param array  $post_ids An array of post IDs.
 		 * @param string $meta_key The meta key to retrieve.
 		 *
-		 * @return array An array of post meta values.
+		 * @return array An array of term meta values.
 		 */
 		public static function get_by_ids( array $post_ids, string $meta_key ): array {
 			return MetaUtils::get_by_ids( 'post', $post_ids, $meta_key );
 		}
 
 		/**
-		 * Update user meta for multiple users.
+		 * Update post meta for multiple posts.
 		 *
 		 * @param array  $post_ids   An array of post IDs.
 		 * @param string $meta_key   The meta key to update.
 		 * @param mixed  $meta_value The value to update the meta key with.
 		 *
-		 * @return bool True if the update was successful for all posts, false otherwise.
+		 * @return bool True if the update was successful for all terms, false otherwise.
 		 */
 		public static function update_by_ids( array $post_ids, string $meta_key, $meta_value ): bool {
 			return MetaUtils::update_by_ids( 'post', $post_ids, $meta_key, $meta_value );
 		}
-		
+
+		/**
+		 * Bulk update metadata for multiple posts.
+		 *
+		 * @param array  $post_ids   An array of post IDs.
+		 * @param string $meta_key   The meta key to update.
+		 * @param mixed  $meta_value The new meta value.
+		 *
+		 * @return array An array of results, with post IDs as keys and update results as values.
+		 */
+		public static function bulk_update( array $post_ids, string $meta_key, $meta_value ): array {
+			return MetaUtils::bulk_update( 'post', $post_ids, $meta_key, $meta_value );
+		}
+
+		/**
+		 * Bulk delete taxonomy metadata for multiple terms.
+		 *
+		 * @param array  $post_ids An array of term IDs.
+		 * @param string $meta_key The meta key to delete. If empty, all meta for each post will be deleted.
+		 *
+		 * @return array An array of results, with term IDs as keys and deletion results as values.
+		 */
+		public static function bulk_delete( array $post_ids, string $meta_key = '' ): array {
+			return MetaUtils::bulk_delete( 'post', $post_ids, $meta_key );
+		}
+
 	}
 
 endif;

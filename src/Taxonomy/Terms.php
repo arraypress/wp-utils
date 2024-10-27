@@ -129,6 +129,52 @@ if ( ! class_exists( 'Terms' ) ) :
 			return array_map( 'intval', array_keys( $unique_terms ) );
 		}
 
+
+		/**
+		 * Get term names from an array of term identifiers.
+		 *
+		 * @param array  $terms    Array of term IDs, names, slugs, or term objects.
+		 * @param string $taxonomy The taxonomy name.
+		 *
+		 * @return array Array of term names, empty array if no valid terms found.
+		 */
+		public static function get_term_names( array $terms, string $taxonomy ): array {
+			if ( empty( $terms ) || empty( $taxonomy ) ) {
+				return [];
+			}
+
+			$result = [];
+
+			foreach ( $terms as $term ) {
+				// If term is already a WP_Term object
+				if ( is_object( $term ) && isset( $term->name ) ) {
+					$result[] = $term->name;
+					continue;
+				}
+
+				// If term is numeric, try getting by ID
+				if ( is_numeric( $term ) ) {
+					$term_obj = get_term( (int) $term, $taxonomy );
+					if ( ! is_wp_error( $term_obj ) && $term_obj instanceof \WP_Term ) {
+						$result[] = $term_obj->name;
+					}
+					continue;
+				}
+
+				// Try getting by name first, then slug
+				$term_obj = get_term_by( 'name', (string) $term, $taxonomy );
+				if ( ! $term_obj ) {
+					$term_obj = get_term_by( 'slug', (string) $term, $taxonomy );
+				}
+
+				if ( $term_obj instanceof \WP_Term ) {
+					$result[] = $term_obj->name;
+				}
+			}
+
+			return $result;
+		}
+
 		/**
 		 * Get specified fields from terms based on provided term names, slugs, or IDs.
 		 *
@@ -221,69 +267,6 @@ if ( ! class_exists( 'Terms' ) ) :
             ", $taxonomy, $taxonomy, $limit );
 
 			return $wpdb->get_results( $query );
-		}
-
-		/** Modification ************************************************************/
-
-		/**
-		 * Bulk update term meta for multiple terms.
-		 *
-		 * @param array  $term_ids   An array of term IDs.
-		 * @param string $meta_key   The meta key to update.
-		 * @param mixed  $meta_value The new meta value.
-		 *
-		 * @return array An array of results, with term IDs as keys and update results as values.
-		 */
-		public static function bulk_update_meta( array $term_ids, string $meta_key, $meta_value ): array {
-			$results = [];
-
-			foreach ( $term_ids as $term_id ) {
-				$results[ $term_id ] = update_term_meta( $term_id, $meta_key, $meta_value );
-			}
-
-			return $results;
-		}
-
-		/**
-		 * Bulk delete term meta for multiple terms.
-		 *
-		 * @param array  $term_ids An array of term IDs.
-		 * @param string $meta_key The meta key to delete. If empty, all meta for each term will be deleted.
-		 *
-		 * @return array An array of results, with term IDs as keys and deletion results as values.
-		 */
-		public static function bulk_delete_meta( array $term_ids, string $meta_key = '' ): array {
-			$results = [];
-
-			foreach ( $term_ids as $term_id ) {
-				if ( empty( $meta_key ) ) {
-					// Delete all meta for this term
-					$results[ $term_id ] = delete_term_meta( $term_id, '' );
-				} else {
-					// Delete specific meta key for this term
-					$results[ $term_id ] = delete_term_meta( $term_id, $meta_key );
-				}
-			}
-
-			return $results;
-		}
-
-		/**
-		 * Bulk delete terms.
-		 *
-		 * @param array  $term_ids An array of term IDs to delete.
-		 * @param string $taxonomy The taxonomy name.
-		 *
-		 * @return array An array of results, with term IDs as keys and deletion results as values.
-		 */
-		public static function bulk_delete( array $term_ids, string $taxonomy ): array {
-			$results = [];
-
-			foreach ( $term_ids as $term_id ) {
-				$results[ $term_id ] = wp_delete_term( $term_id, $taxonomy );
-			}
-
-			return $results;
 		}
 
 		/** Utility ************************************************************/
@@ -429,6 +412,24 @@ if ( ! class_exists( 'Terms' ) ) :
 			}
 
 			return true;
+		}
+
+		/**
+		 * Bulk delete terms.
+		 *
+		 * @param array  $term_ids An array of term IDs to delete.
+		 * @param string $taxonomy The taxonomy name.
+		 *
+		 * @return array An array of results, with term IDs as keys and deletion results as values.
+		 */
+		public static function bulk_delete( array $term_ids, string $taxonomy ): array {
+			$results = [];
+
+			foreach ( $term_ids as $term_id ) {
+				$results[ $term_id ] = wp_delete_term( $term_id, $taxonomy );
+			}
+
+			return $results;
 		}
 
 	}

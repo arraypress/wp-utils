@@ -294,6 +294,8 @@ if ( ! class_exists( 'Meta' ) ) :
 			return MetaUtils::is_falsy( 'user', $user_id, $meta_key, $default );
 		}
 
+		/** Bulk ********************************************************************/
+
 		/**
 		 * Get user meta values based on provided user IDs and meta key.
 		 *
@@ -317,6 +319,31 @@ if ( ! class_exists( 'Meta' ) ) :
 		 */
 		public static function update_by_ids( array $user_ids, string $meta_key, $meta_value ): bool {
 			return MetaUtils::update_by_ids( 'user', $user_ids, $meta_key, $meta_value );
+		}
+
+		/**
+		 * Bulk update metadata for multiple users.
+		 *
+		 * @param array  $user_ids   An array of user IDs.
+		 * @param string $meta_key   The meta key to update.
+		 * @param mixed  $meta_value The new meta value.
+		 *
+		 * @return array An array of results, with user IDs as keys and update results as values.
+		 */
+		public static function bulk_update( array $user_ids, string $meta_key, $meta_value ): array {
+			return MetaUtils::bulk_update( 'user', $user_ids, $meta_key, $meta_value );
+		}
+
+		/**
+		 * Bulk delete metadata for multiple users.
+		 *
+		 * @param array  $user_ids An array of user IDs.
+		 * @param string $meta_key The meta key to delete. If empty, all meta for each post will be deleted.
+		 *
+		 * @return array An array of results, with user IDs as keys and deletion results as values.
+		 */
+		public static function bulk_delete( array $user_ids, string $meta_key = '' ): array {
+			return MetaUtils::bulk_delete( 'user', $user_ids, $meta_key );
 		}
 
 	}
