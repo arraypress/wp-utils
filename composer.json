@@ -22,14 +22,18 @@
     "ext-fileinfo": "*",
     "ext-gd": "*",
     "ext-mysqli": "*",
-    "ext-bcmath": "*"
+    "ext-bcmath": "*",
+    "ext-iconv": "*",
+    "ext-libxml": "*"
   },
   "autoload": {
     "psr-4": {
       "ArrayPress\\Utils\\": "src/"
     },
     "files": [
-      "src/Generate/Functions.php",
+      "src/HTML/Functions.php",
+      "src/Polyfills/Mdash.php",
+      "src/Polyfills/Misc.php",
       "src/Register/Functions.php",
       "src/Search/Functions.php"
     ]

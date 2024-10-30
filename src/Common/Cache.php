@@ -47,7 +47,7 @@ if ( ! class_exists( 'Cache' ) ) :
 		 *
 		 * @return string The generated cache key.
 		 */
-		public static function cache_key( string $prefix = '', ...$args ): string {
+		public static function generate_key( string $prefix = '', ...$args ): string {
 			$prefix    = strtolower( trim( $prefix ) );
 			$backtrace = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 2 );
 			$caller    = $backtrace[1];

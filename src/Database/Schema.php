@@ -139,12 +139,12 @@ if ( ! class_exists( 'Schema' ) ) :
 
 			// Check for custom object types
 			$custom_key = $object_type . '_id';
-			if ( Exists::column( Query::get_table_name( $object_type ), $custom_key ) ) {
+			if ( Exists::column( Table::get_table_name( $object_type ), $custom_key ) ) {
 				return $custom_key;
 			}
 
 			// Check for 'id' column
-			if ( Exists::column( Query::get_table_name( $object_type ), 'id' ) ) {
+			if ( Exists::column( Table::get_table_name( $object_type ), 'id' ) ) {
 				return 'id';
 			}
 

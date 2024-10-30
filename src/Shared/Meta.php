@@ -22,7 +22,7 @@ use ArrayPress\Utils\Common\Convert;
 use ArrayPress\Utils\Common\Compare;
 use ArrayPress\Utils\Common\Sanitize;
 use ArrayPress\Utils\Database\Query;
-use ArrayPress\Utils\Database\SQL;
+use ArrayPress\Utils\Database\Generate;
 
 /**
  * Check if the class `Meta` is defined, and if not, define it.
@@ -534,7 +534,7 @@ if ( ! class_exists( 'Meta' ) ) :
 		public static function delete_by_pattern( string $meta_type, string $pattern, string $type = 'exact' ): int {
 			global $wpdb;
 
-			$sql_pattern = SQL::generate_like_pattern( $pattern, $type );
+			$sql_pattern = Generate::like_pattern( $pattern, $type );
 			$meta_table  = Query::get_meta_table_name( $meta_type );
 			$meta_keys   = $wpdb->get_col(
 				$wpdb->prepare(
