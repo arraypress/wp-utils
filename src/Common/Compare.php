@@ -116,9 +116,6 @@ if ( ! class_exists( 'Compare' ) ) :
 		 * @param bool    $case_sensitive Whether the comparison should be case-sensitive. Default is true.
 		 *
 		 * @return bool
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
 		 */
 		public static function string( string $operator, string $value, ?string $string, bool $case_sensitive = true ): bool {
 			if ( ! $operator || ! $value || is_null( $string ) ) {
@@ -178,7 +175,6 @@ if ( ! class_exists( 'Compare' ) ) :
 		 * @param string $string   The string to compare.
 		 *
 		 * @return bool
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
 		 */
 		public static function check_string_multi( string $operator, ?array $values, string $string ): bool {
 			if ( ! $operator || is_null( $values ) || ! $string ) {

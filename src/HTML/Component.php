@@ -20,9 +20,9 @@ declare( strict_types=1 );
 namespace ArrayPress\Utils\HTML;
 
 /**
- * Check if the class `Components` is defined, and if not, define it.
+ * Check if the class `Component` is defined, and if not, define it.
  */
-if ( ! class_exists( 'Components' ) ):
+if ( ! class_exists( 'Component' ) ):
 
 	/**
 	 * UI component generation and management.
@@ -82,34 +82,33 @@ if ( ! class_exists( 'Components' ) ):
 		 * Create a progress bar element.
 		 *
 		 * @param int   $percentage The percentage of progress (0-100).
-		 * @param array $attrs      Additional attributes for the outer div.
+		 * @param array $attrs      Optional. Additional attributes for the outer div.
+		 * @param bool  $show_label Optional. Whether to show percentage label. Default true.
 		 *
 		 * @return string The HTML for the progress bar.
+		 * @since  1.0.0
+		 *
 		 */
-		public static function progress_bar( int $percentage, array $attrs = [] ): string {
-			$percentage = max( 0, min( 100, $percentage ) ); // Ensure percentage is between 0 and 100
+		public static function progress_bar( int $percentage, array $attrs = [], bool $show_label = true ): string {
+			$percentage = max( 0, min( 100, $percentage ) );
 
-			$outer_styles = [
-				'width'            => '100%',
-				'background-color' => '#f0f0f0',
-				'border-radius'    => '4px',
-				'overflow'         => 'hidden',
+			$default_attrs = [
+				'class' => 'wp-progress' . ( $show_label ? ' wp-progress--with-label' : '' )
 			];
+			$attrs         = array_merge( $default_attrs, $attrs );
 
-			$inner_styles = [
-				'width'            => $percentage . '%',
-				'height'           => '20px',
-				'background-color' => '#4CAF50',
-				'text-align'       => 'center',
-				'line-height'      => '20px',
-				'color'            => 'white',
-			];
+			$bar = Element::div( '', [
+				'class' => 'wp-progress-bar',
+				'style' => "width: {$percentage}%"
+			] );
 
-			$attrs['style'] = Element::merge_styles( $outer_styles, $attrs['style'] ?? '' );
+			if ( $show_label ) {
+				$bar .= Element::span( "{$percentage}%", [ 'class' => 'wp-progress-label' ] );
+			}
 
-			$inner_content = Element::div( $percentage . '%', [ 'style' => Element::build_style_string( $inner_styles ) ] );
+			Field::ensure_styles();
 
-			return Element::div( $inner_content, $attrs );
+			return Element::div( $bar, $attrs );
 		}
 
 		/**
@@ -122,87 +121,32 @@ if ( ! class_exists( 'Components' ) ):
 		 * @return string The HTML for the tooltip.
 		 */
 		public static function tooltip( string $content, string $tooltip_text, array $attrs = [] ): string {
-			$styles = [
-				'position'      => 'relative',
-				'display'       => 'inline-block',
-				'border-bottom' => '1px dotted black',
-				'cursor'        => 'help',
-			];
+			$attrs['class'] = isset( $attrs['class'] ) ? $attrs['class'] . ' wp-tooltip' : 'wp-tooltip';
 
-			$tooltip_styles = [
-				'visibility'       => 'hidden',
-				'width'            => '120px',
-				'background-color' => 'black',
-				'color'            => '#fff',
-				'text-align'       => 'center',
-				'border-radius'    => '6px',
-				'padding'          => '5px 0',
-				'position'         => 'absolute',
-				'z-index'          => '1',
-				'bottom'           => '125%',
-				'left'             => '50%',
-				'margin-left'      => '-60px',
-				'opacity'          => '0',
-				'transition'       => 'opacity 0.3s',
-			];
+			$tooltip_content = Element::span(
+				esc_html( $tooltip_text ),
+				[ 'class' => 'tooltiptext' ]
+			);
 
-			$attrs['style'] = Element::merge_styles( $styles, $attrs['style'] ?? '' );
-
-			$tooltip_content = Element::span( esc_html( $tooltip_text ), [
-				'style' => Element::build_style_string( $tooltip_styles ),
-				'class' => 'tooltiptext'
-			] );
+			Field::ensure_styles();
 
 			return Element::span( $content . $tooltip_content, $attrs );
 		}
 
 		/**
-		 * Create a badge element.
+		 * Generate HTML status badge with styling.
 		 *
-		 * @param string $content The content of the badge.
-		 * @param string $color   The background color of the badge.
-		 * @param array  $attrs   Additional attributes for the span.
+		 * @param string $status The status text to display.
+		 * @param string $type   Optional. Badge type (success, warning, error, info). Default 'default'.
 		 *
-		 * @return string The HTML for the badge.
-		 */
-		public static function badge( string $content, string $color = '#007bff', array $attrs = [] ): string {
-			$styles = [
-				'display'          => 'inline-block',
-				'padding'          => '.25em .4em',
-				'font-size'        => '75%',
-				'font-weight'      => '700',
-				'line-height'      => '1',
-				'text-align'       => 'center',
-				'white-space'      => 'nowrap',
-				'vertical-align'   => 'baseline',
-				'border-radius'    => '.25rem',
-				'color'            => '#fff',
-				'background-color' => $color,
-			];
-
-			$attrs['style'] = Element::merge_styles( $styles, $attrs['style'] ?? '' );
-
-			return Element::span( esc_html( $content ), $attrs );
-		}
-
-		/**
-		 * Generate HTML status badge.
+		 * @return string HTML badge element.
+		 * @since  1.0.0
 		 *
-		 * @param string $status Status text.
-		 * @param string $type   Badge type (success, warning, error, info).
-		 *
-		 * @return string HTML badge.
 		 */
 		public static function status_badge( string $status, string $type = 'default' ): string {
-			$classes = [
-				'success' => 'status-badge-success',
-				'warning' => 'status-badge-warning',
-				'error'   => 'status-badge-error',
-				'info'    => 'status-badge-info',
-				'default' => 'status-badge-default'
-			];
+			$class = 'wp-status-badge wp-status-badge--' . $type;
 
-			$class = 'status-badge ' . ( $classes[ $type ] ?? $classes['default'] );
+			Field::ensure_styles();
 
 			return Element::span( $status, [ 'class' => $class ] );
 		}
@@ -211,22 +155,28 @@ if ( ! class_exists( 'Components' ) ):
 		 * Create an avatar element.
 		 *
 		 * @param string $image_url The URL of the avatar image.
-		 * @param string $size      The size of the avatar (width and height).
+		 * @param string $size      The size of the avatar (xs, sm, md, lg, xl, or pixel value)
 		 * @param array  $attrs     Additional attributes for the img element.
 		 *
 		 * @return string The HTML for the avatar.
 		 */
-		public static function avatar( string $image_url, string $size = '50px', array $attrs = [] ): string {
-			$styles = [
-				'width'         => $size,
-				'height'        => $size,
-				'border-radius' => '50%',
-				'object-fit'    => 'cover',
-			];
+		public static function avatar( string $image_url, string $size = 'md', array $attrs = [] ): string {
+			// Base class
+			$attrs['class'] = isset( $attrs['class'] ) ? $attrs['class'] . ' wp-avatar' : 'wp-avatar';
 
-			$attrs['style'] = Element::merge_styles( $styles, $attrs['style'] ?? '' );
-			$attrs['src']   = esc_url( $image_url );
-			$attrs['alt']   = $attrs['alt'] ?? 'Avatar';
+			// Handle size
+			if ( in_array( $size, [ 'xs', 'sm', 'md', 'lg', 'xl' ] ) ) {
+				$attrs['class'] .= " wp-avatar-{$size}";
+			} else {
+				// Custom size - use inline style
+				$size           = is_numeric( $size ) ? $size . 'px' : $size;
+				$attrs['style'] = isset( $attrs['style'] ) ?
+					$attrs['style'] . ";width:{$size};height:{$size}" :
+					"width:{$size};height:{$size}";
+			}
+
+			$attrs['src'] = esc_url( $image_url );
+			$attrs['alt'] = $attrs['alt'] ?? 'Avatar';
 
 			return Element::img( $attrs['src'], $attrs['alt'], $attrs );
 		}
@@ -241,18 +191,12 @@ if ( ! class_exists( 'Components' ) ):
 		 * @return string The HTML for the card.
 		 */
 		public static function card( string $title, string $content, array $attrs = [] ): string {
-			$styles = [
-				'box-shadow'    => '0 4px 8px 0 rgba(0,0,0,0.2)',
-				'transition'    => '0.3s',
-				'border-radius' => '5px',
-				'padding'       => '16px',
-				'margin'        => '10px',
-			];
+			$attrs['class'] = isset( $attrs['class'] ) ? $attrs['class'] . ' wp-card' : 'wp-card';
 
-			$attrs['style'] = Element::merge_styles( $styles, $attrs['style'] ?? '' );
+			$title_html   = Element::create( 'h4', [ 'class' => 'wp-card-title' ], esc_html( $title ) );
+			$content_html = Element::create( 'div', [ 'class' => 'wp-card-content' ], wp_kses_post( $content ) );
 
-			$title_html   = Element::create( 'h4', [ 'style' => 'margin-top: 0;' ], esc_html( $title ) );
-			$content_html = Element::p( wp_kses_post( $content ) );
+			Field::ensure_styles();
 
 			return Element::div( $title_html . $content_html, $attrs );
 		}
@@ -404,6 +348,116 @@ if ( ! class_exists( 'Components' ) ):
 		}
 
 		/**
+		 * Create a responsive WordPress gallery with lightbox support.
+		 *
+		 * @param array $attachments     Array of attachment IDs
+		 * @param array $args            {
+		 *                               Optional. Array of gallery arguments.
+		 *
+		 * @type string $size            Image size to use. Default 'medium'.
+		 * @type int    $columns         Number of columns. Default 3.
+		 * @type bool   $show_captions   Whether to show captions. Default true.
+		 * @type bool   $lightbox        Whether to enable lightbox. Default true.
+		 * @type string $gap             Gap between items. Default '1rem'.
+		 * @type array  $container_class Additional classes for container.
+		 * @type array  $container_attrs Additional attributes for container.
+		 *                               }
+		 * @return string HTML gallery output
+		 */
+		public static function wp_gallery( array $attachments, array $args = [] ): string {
+			if ( empty( $attachments ) ) {
+				return '';
+			}
+
+			Field::ensure_assets();
+
+			$defaults = [
+				'size'            => 'medium',
+				'columns'         => 3,
+				'show_captions'   => true,
+				'lightbox'        => true,
+				'gap'             => '1rem',
+				'container_class' => [],
+				'container_attrs' => []
+			];
+
+			$args = wp_parse_args( $args, $defaults );
+
+			// Ensure container classes is an array
+			if ( is_string( $args['container_class'] ) ) {
+				$args['container_class'] = explode( ' ', $args['container_class'] );
+			}
+
+			// Base container classes
+			$container_classes = array_merge(
+				[ 'wp-gallery' ],
+				$args['container_class']
+			);
+
+			// Container styles
+			$styles = [
+				'display'               => 'grid',
+				'grid-template-columns' => "repeat({$args['columns']}, 1fr)",
+				'gap'                   => $args['gap'],
+			];
+
+			// Merge container attributes
+			$container_attrs = array_merge(
+				[
+					'class' => implode( ' ', $container_classes ),
+					'style' => Element::build_style_string( $styles )
+				],
+				$args['container_attrs']
+			);
+
+			$gallery_content = '';
+
+			foreach ( $attachments as $attachment_id ) {
+				$figure_content = '';
+
+				// Create image content
+				if ( $args['lightbox'] ) {
+					$figure_content .= self::attachment_lightbox(
+						$attachment_id,
+						$args['size'],
+						[ 'class' => 'wp-gallery-item-image' ]
+					);
+				} else {
+					$figure_content .= wp_get_attachment_image(
+						$attachment_id,
+						$args['size'],
+						false,
+						[ 'class' => 'wp-gallery-item-image' ]
+					);
+				}
+
+				// Add caption if enabled
+				if ( $args['show_captions'] ) {
+					$caption = wp_get_attachment_caption( $attachment_id );
+					if ( $caption ) {
+						$figure_content .= Element::create(
+							'figcaption',
+							[ 'class' => 'wp-gallery-item-caption' ],
+							esc_html( $caption )
+						);
+					}
+				}
+
+				// Wrap in figure element
+				$gallery_content .= Element::create(
+					'figure',
+					[ 'class' => 'wp-gallery-item' ],
+					$figure_content
+				);
+			}
+
+			Field::ensure_assets();
+
+			// Build the final gallery
+			return Element::div( $gallery_content, $container_attrs );
+		}
+
+		/**
 		 * Create a lightbox-ready image.
 		 *
 		 * @param string $thumb_src The thumbnail image source URL.
@@ -429,6 +483,50 @@ if ( ! class_exists( 'Components' ) ):
 			$img = Element::img( $thumb_src, $alt, [
 				'style' => 'cursor: pointer; max-width: 100%; height: auto;'
 			] );
+
+			Field::ensure_assets();
+
+			return Element::div( $img, $attrs );
+		}
+
+		/**
+		 * Create a lightbox-ready image from a WordPress attachment.
+		 *
+		 * @param int    $attachment_id The WordPress attachment ID.
+		 * @param string $size          Optional. Image size to use for thumbnail. Default 'thumbnail'.
+		 * @param array  $attrs         Optional. Additional attributes for the container.
+		 *
+		 * @return string The HTML for the lightbox image container.
+		 */
+		public static function attachment_lightbox(
+			int $attachment_id,
+			string $size = 'thumbnail',
+			array $attrs = []
+		): string {
+			$thumb_src = wp_get_attachment_image_url( $attachment_id, $size );
+			$full_src  = wp_get_attachment_image_url( $attachment_id, 'full' );
+			$alt       = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+			$caption   = wp_get_attachment_caption( $attachment_id );
+			$title     = get_the_title( $attachment_id );
+
+			if ( ! $thumb_src || ! $full_src ) {
+				return '';
+			}
+
+			$default_attrs = [
+				'class'         => 'wp-lightbox',
+				'data-full-src' => $full_src,
+				'data-caption'  => $caption ?: $title,
+				'title'         => $title
+			];
+			$attrs         = array_merge( $default_attrs, $attrs );
+
+			$img = wp_get_attachment_image( $attachment_id, $size, false, [
+				'class' => 'wp-lightbox-thumb',
+				'style' => 'cursor: pointer; max-width: 100%; height: auto;'
+			] );
+
+			Field::ensure_assets();
 
 			return Element::div( $img, $attrs );
 		}
@@ -460,51 +558,6 @@ if ( ! class_exists( 'Components' ) ):
 			}
 
 			$default_attrs = [ 'class' => 'breadcrumbs' ];
-			$attrs         = array_merge( $default_attrs, $attrs );
-
-			return Element::nav( $content, $attrs );
-		}
-
-		/**
-		 * Create a pagination element.
-		 *
-		 * @param int    $current_page Current page number.
-		 * @param int    $total_pages  Total number of pages.
-		 * @param string $base_url     Base URL for pagination links.
-		 * @param array  $attrs        Additional attributes for the pagination container.
-		 *
-		 * @return string The HTML string for the pagination.
-		 */
-		public static function pagination( int $current_page, int $total_pages, string $base_url, array $attrs = [] ): string {
-			if ( $total_pages <= 1 ) {
-				return '';
-			}
-
-			$content = '';
-
-			// Previous link
-			if ( $current_page > 1 ) {
-				$prev_url = add_query_arg( 'page', $current_page - 1, $base_url );
-				$content  .= Element::link( $prev_url, '← Previous', [ 'class' => 'prev' ] );
-			}
-
-			// Page numbers
-			for ( $i = 1; $i <= $total_pages; $i ++ ) {
-				if ( $i === $current_page ) {
-					$content .= Element::span( (string) $i, [ 'class' => 'current' ] );
-				} else {
-					$page_url = add_query_arg( 'page', $i, $base_url );
-					$content  .= Element::link( $page_url, (string) $i );
-				}
-			}
-
-			// Next link
-			if ( $current_page < $total_pages ) {
-				$next_url = add_query_arg( 'page', $current_page + 1, $base_url );
-				$content  .= Element::link( $next_url, 'Next →', [ 'class' => 'next' ] );
-			}
-
-			$default_attrs = [ 'class' => 'pagination' ];
 			$attrs         = array_merge( $default_attrs, $attrs );
 
 			return Element::nav( $content, $attrs );

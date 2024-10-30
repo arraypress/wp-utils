@@ -2,13 +2,134 @@
     'use strict';
 
     const FormFields = {
+        lightboxState: {
+            gallery: [],
+            currentIndex: 0
+        },
+
         init: function () {
+            this.initLightbox();
             this.initPasswordToggles();
             this.initMediaUploads();
             this.initRangeSliders();
         },
 
-        // Password toggle functionality
+        updateLightboxImage: function (index) {
+            const overlay = document.getElementById('wp-lightbox-overlay');
+            const img = overlay.querySelector('img');
+            const caption = overlay.querySelector('.wp-lightbox-caption');
+            const item = this.lightboxState.gallery[index];
+
+            img.src = item.fullSrc;
+            img.alt = item.alt || '';
+            caption.innerHTML = item.caption || '';
+            caption.style.display = item.caption ? 'block' : 'none';
+            this.lightboxState.currentIndex = index;
+
+            overlay.querySelector('.wp-lightbox-prev').style.display =
+                this.lightboxState.gallery.length > 1 ? 'block' : 'none';
+            overlay.querySelector('.wp-lightbox-next').style.display =
+                this.lightboxState.gallery.length > 1 ? 'block' : 'none';
+        },
+
+        closeLightbox: function () {
+            const overlay = document.getElementById('wp-lightbox-overlay');
+            overlay.style.display = 'none';
+            this.lightboxState.gallery = [];
+            this.lightboxState.currentIndex = 0;
+        },
+
+        initLightbox: function () {
+            if (!document.getElementById('wp-lightbox-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.id = 'wp-lightbox-overlay';
+                overlay.className = 'wp-lightbox-overlay';
+                overlay.innerHTML = `
+                    <div class="wp-lightbox-content">
+                        <img src="" alt="" />
+                        <div class="wp-lightbox-caption"></div>
+                        <button class="wp-lightbox-close">&times;</button>
+                        <button class="wp-lightbox-prev" style="display: none;">&larr;</button>
+                        <button class="wp-lightbox-next" style="display: none;">&rarr;</button>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                const self = this;
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay || e.target.classList.contains('wp-lightbox-close')) {
+                        self.closeLightbox();
+                    } else if (e.target.classList.contains('wp-lightbox-prev') && self.lightboxState.gallery.length > 1) {
+                        const newIndex = self.lightboxState.currentIndex > 0 ?
+                            self.lightboxState.currentIndex - 1 : self.lightboxState.gallery.length - 1;
+                        self.updateLightboxImage(newIndex);
+                    } else if (e.target.classList.contains('wp-lightbox-next') && self.lightboxState.gallery.length > 1) {
+                        const newIndex = self.lightboxState.currentIndex < self.lightboxState.gallery.length - 1 ?
+                            self.lightboxState.currentIndex + 1 : 0;
+                        self.updateLightboxImage(newIndex);
+                    }
+                });
+
+                document.addEventListener('keydown', function (e) {
+                    if (overlay.style.display !== 'flex') return;
+
+                    switch (e.key) {
+                        case 'Escape':
+                            self.closeLightbox();
+                            break;
+                        case 'ArrowLeft':
+                            if (self.lightboxState.gallery.length > 1) {
+                                const newIndex = self.lightboxState.currentIndex > 0 ?
+                                    self.lightboxState.currentIndex - 1 : self.lightboxState.gallery.length - 1;
+                                self.updateLightboxImage(newIndex);
+                            }
+                            break;
+                        case 'ArrowRight':
+                            if (self.lightboxState.gallery.length > 1) {
+                                const newIndex = self.lightboxState.currentIndex < self.lightboxState.gallery.length - 1 ?
+                                    self.lightboxState.currentIndex + 1 : 0;
+                                self.updateLightboxImage(newIndex);
+                            }
+                            break;
+                    }
+                });
+            }
+
+            const self = this;
+            document.querySelectorAll('.wp-lightbox, .wp-gallery-item').forEach(function (item) {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const overlay = document.getElementById('wp-lightbox-overlay');
+
+                    const gallery = this.closest('.wp-gallery');
+                    if (gallery) {
+                        self.lightboxState.gallery = Array.from(gallery.querySelectorAll('.wp-gallery-item')).map(item => {
+                            const img = item.querySelector('img');
+                            return {
+                                fullSrc: img.dataset.fullSrc || img.src,
+                                alt: img.alt || '',
+                                caption: item.querySelector('.wp-gallery-caption')?.textContent || ''
+                            };
+                        });
+                        self.lightboxState.currentIndex = Array.from(gallery.children).indexOf(this);
+                    } else {
+                        const img = this.querySelector('img');
+                        self.lightboxState.gallery = [{
+                            fullSrc: this.getAttribute('data-full-src'),
+                            alt: img?.alt || '',
+                            caption: this.getAttribute('data-caption') ||
+                                this.querySelector('.wp-caption-text')?.textContent ||
+                                this.getAttribute('title') || ''
+                        }];
+                        self.lightboxState.currentIndex = 0;
+                    }
+
+                    self.updateLightboxImage(self.lightboxState.currentIndex);
+                    overlay.style.display = 'flex';
+                });
+            });
+        },
+
         initPasswordToggles: function () {
             document.querySelectorAll('.password-toggle').forEach(function (toggle) {
                 toggle.addEventListener('change', function () {
@@ -22,7 +143,6 @@
             });
         },
 
-        // Media upload functionality
         initMediaUploads: function () {
             $('.wp-media-select').on('click', function (e) {
                 e.preventDefault();
@@ -32,7 +152,6 @@
                 const isMultiple = button.data('multiple') === '1';
                 const mediaType = button.data('type');
 
-                // Create the media frame
                 const frame = wp.media({
                     title: 'Select File',
                     multiple: isMultiple,
@@ -44,15 +163,12 @@
                     }
                 });
 
-                // When an image is selected in the media frame...
                 frame.on('select', function () {
                     const selection = frame.state().get('selection');
                     const attachment = selection.first().toJSON();
 
-                    // Update hidden input
                     $('#' + name).val(attachment.id);
 
-                    // Update preview
                     const preview = $('#' + name + '_preview');
                     if (mediaType === 'image') {
                         if (attachment.sizes && attachment.sizes.thumbnail) {
@@ -71,25 +187,18 @@
                 frame.open();
             });
 
-            // Handle remove button click
             $('.wp-media-remove').on('click', function (e) {
                 e.preventDefault();
 
                 const button = $(this);
                 const name = button.data('name');
 
-                // Clear hidden input
                 $('#' + name).val('');
-
-                // Clear preview
                 $('#' + name + '_preview').html('').addClass('hidden');
-
-                // Hide remove button
                 button.addClass('hidden');
             });
         },
 
-        // Range slider functionality
         initRangeSliders: function () {
             document.querySelectorAll('.wp-range-wrapper').forEach(function (wrapper) {
                 const range = wrapper.querySelector('input[type="range"]');
@@ -97,17 +206,14 @@
 
                 if (!range || !number) return;
 
-                // Update number when range changes
                 range.addEventListener('input', function () {
                     number.value = this.value;
                 });
 
-                // Update range when number changes
                 number.addEventListener('input', function () {
                     range.value = this.value;
                 });
 
-                // Ensure number stays within bounds
                 number.addEventListener('change', function () {
                     const value = parseFloat(this.value);
                     const min = parseFloat(this.min);
@@ -117,7 +223,6 @@
                     if (value < min) this.value = min;
                     if (value > max) this.value = max;
 
-                    // Adjust to nearest step
                     const steps = Math.round((value - min) / step);
                     this.value = min + (steps * step);
 
@@ -127,7 +232,6 @@
         }
     };
 
-    // Initialize on document ready
     $(document).ready(function () {
         FormFields.init();
     });

@@ -123,6 +123,194 @@ if ( ! class_exists( 'Element' ) ) :
 		 */
 		private static array $allowed_html = [];
 
+
+		/**
+		 * Initialize the default allowed HTML tags and attributes.
+		 *
+		 * This method sets up the allowed HTML elements and their attributes for use with wp_kses().
+		 * It merges WordPress's default 'post' allowed HTML with additional form-specific elements
+		 * defined in DEFAULT_ALLOWED_HTML.
+		 *
+		 * @return void
+		 */
+		private static function init_allowed_html(): void {
+			if ( empty( self::$allowed_html ) ) {
+				self::$allowed_html = array_merge(
+					wp_kses_allowed_html( 'post' ),
+					self::DEFAULT_ALLOWED_HTML
+				);
+			}
+		}
+
+		/**
+		 * Set or update allowed HTML tags and attributes
+		 *
+		 * @param array $tags  Array of tags and their allowed attributes
+		 * @param bool  $merge Whether to merge with existing tags or replace completely
+		 *
+		 * @return void
+		 */
+		public static function set_allowed_html( array $tags, bool $merge = true ): void {
+			self::init_allowed_html();
+
+			if ( $merge ) {
+				self::$allowed_html = array_merge( self::$allowed_html, $tags );
+			} else {
+				self::$allowed_html = $tags;
+			}
+		}
+
+		/**
+		 * Get the current allowed HTML configuration
+		 *
+		 * @return array Current allowed HTML tags and attributes
+		 */
+		public static function get_allowed_html(): array {
+			self::init_allowed_html();
+
+			return self::$allowed_html;
+		}
+
+		/**
+		 * Add allowed attributes to a specific HTML tag
+		 *
+		 * @param string $tag        The HTML tag
+		 * @param array  $attributes Array of attributes to allow
+		 *
+		 * @return void
+		 */
+		public static function add_allowed_attributes( string $tag, array $attributes ): void {
+			self::init_allowed_html();
+
+			if ( ! isset( self::$allowed_html[ $tag ] ) ) {
+				self::$allowed_html[ $tag ] = [];
+			}
+
+			self::$allowed_html[ $tag ] = array_merge( self::$allowed_html[ $tag ], $attributes );
+		}
+
+		/**
+		 * Create an arbitrary HTML element with opening and closing tags.
+		 *
+		 * @param string $tag     The tag name of the element.
+		 * @param array  $attrs   An associative array of attributes for the element.
+		 * @param string $content The content to be placed between the opening and closing tags.
+		 *
+		 * @return string The HTML string for the element.
+		 */
+		public static function create( string $tag, array $attrs = [], string $content = '' ): string {
+			self::init_allowed_html();
+			$attr_string  = self::build_attribute_string( self::escape_attributes( $attrs ) );
+			$safe_content = wp_kses( $content, self::$allowed_html );
+
+			return "<{$tag}{$attr_string}>{$safe_content}</{$tag}>";
+		}
+
+		/**
+		 * Create an arbitrary void HTML element (elements without a closing tag).
+		 *
+		 * @param string $tag   The tag name of the void element.
+		 * @param array  $attrs An associative array of attributes for the element.
+		 *
+		 * @return string The HTML string for the void element.
+		 */
+		public static function create_void( string $tag, array $attrs = [] ): string {
+			self::init_allowed_html();
+			$attr_string = self::build_attribute_string( self::escape_attributes( $attrs ) );
+
+			return "<{$tag}{$attr_string} />";
+		}
+
+		/**
+		 * Escape HTML attributes while preserving non-string values.
+		 *
+		 * @param array $attrs Array of attribute key-value pairs to escape.
+		 *
+		 * @return array Escaped attributes array with preserved non-string values.
+		 * @since 1.0.0
+		 *
+		 */
+		private static function escape_attributes( array $attrs ): array {
+			$escaped_attrs = [];
+			foreach ( $attrs as $key => $value ) {
+				$escaped_attrs[ $key ] = is_string( $value ) ? esc_attr( $value ) : $value;
+			}
+
+			return $escaped_attrs;
+		}
+
+		/**
+		 * Build an attribute string from an associative array of attributes.
+		 *
+		 * @param array $attrs An associative array of attributes.
+		 *
+		 * @return string The attribute string.
+		 */
+		private static function build_attribute_string( array $attrs ): string {
+			$attr_pairs = [];
+			foreach ( $attrs as $key => $value ) {
+				if ( $value === true ) {
+					$attr_pairs[] = esc_attr( $key );
+				} elseif ( $value !== false && $value !== null ) {
+					$attr_pairs[] = esc_attr( $key ) . '="' . $value . '"';
+				}
+			}
+
+			return $attr_pairs ? ' ' . implode( ' ', $attr_pairs ) : '';
+		}
+
+		/**
+		 * Parse a style attribute string into an associative array.
+		 *
+		 * @param string $style_string The style attribute string.
+		 *
+		 * @return array An associative array of style properties.
+		 */
+		public static function parse_style_attribute( string $style_string ): array {
+			$styles = [];
+			$parts  = explode( ';', $style_string );
+			foreach ( $parts as $part ) {
+				$part = trim( $part );
+				if ( $part ) {
+					list( $property, $value ) = explode( ':', $part, 2 );
+					$styles[ trim( $property ) ] = trim( $value );
+				}
+			}
+
+			return $styles;
+		}
+
+		/**
+		 * Build a style string from an associative array of style properties.
+		 *
+		 * @param array $styles An associative array of style properties.
+		 *
+		 * @return string The built style string.
+		 */
+		public static function build_style_string( array $styles ): string {
+			$style_parts = [];
+			foreach ( $styles as $property => $value ) {
+				$style_parts[] = $property . ': ' . $value;
+			}
+
+			return implode( '; ', $style_parts );
+		}
+
+		/**
+		 * Merge new styles with existing styles.
+		 *
+		 * @param array  $new_styles     The new styles to add.
+		 * @param string $existing_style The existing style string.
+		 *
+		 * @return string The merged style string.
+		 */
+		public static function merge_styles( array $new_styles, string $existing_style ): string {
+			$existing_styles = self::parse_style_attribute( $existing_style );
+			$merged_styles   = array_merge( $new_styles, $existing_styles );
+
+			return self::build_style_string( $merged_styles );
+		}
+
 		/**
 		 * Create an HTML link element.
 		 *
@@ -250,6 +438,21 @@ if ( ! class_exists( 'Element' ) ) :
 			$attrs['type'] = esc_attr( $type );
 
 			return self::create_void( 'input', $attrs );
+		}
+
+		/**
+		 * Create an HTML label element.
+		 *
+		 * @param string $for     The ID of the form element this label is for.
+		 * @param string $content The content of the label.
+		 * @param array  $attrs   Additional attributes for the label.
+		 *
+		 * @return string The HTML string for the label.
+		 */
+		public static function label( string $for, string $content, array $attrs = [] ): string {
+			$attrs['for'] = esc_attr( $for );
+
+			return self::create( 'label', $attrs, $content );
 		}
 
 		/**
@@ -412,21 +615,6 @@ if ( ! class_exists( 'Element' ) ) :
 		}
 
 		/**
-		 * Create an HTML label element.
-		 *
-		 * @param string $for     The ID of the form element this label is for.
-		 * @param string $content The content of the label.
-		 * @param array  $attrs   Additional attributes for the label.
-		 *
-		 * @return string The HTML string for the label.
-		 */
-		public static function label( string $for, string $content, array $attrs = [] ): string {
-			$attrs['for'] = esc_attr( $for );
-
-			return Element::create( 'label', $attrs, $content );
-		}
-
-		/**
 		 * Create an HTML video element.
 		 *
 		 * @param string|array $src   Video source URL or array of sources.
@@ -547,197 +735,6 @@ if ( ! class_exists( 'Element' ) ) :
 			$attrs         = array_merge( $default_attrs, $attrs );
 
 			return self::create( 'ul', $attrs, $content );
-		}
-
-		/**
-		 * Initialize the default allowed HTML tags and attributes.
-		 *
-		 * This method sets up the allowed HTML elements and their attributes for use with wp_kses().
-		 * It merges WordPress's default 'post' allowed HTML with additional form-specific elements
-		 * defined in DEFAULT_ALLOWED_HTML.
-		 *
-		 * @return void
-		 */
-		private static function init_allowed_html(): void {
-			if ( empty( self::$allowed_html ) ) {
-				self::$allowed_html = array_merge(
-					wp_kses_allowed_html( 'post' ),
-					self::DEFAULT_ALLOWED_HTML
-				);
-			}
-		}
-
-		/**
-		 * Set or update allowed HTML tags and attributes
-		 *
-		 * @param array $tags  Array of tags and their allowed attributes
-		 * @param bool  $merge Whether to merge with existing tags or replace completely
-		 *
-		 * @return void
-		 */
-		public static function set_allowed_html( array $tags, bool $merge = true ): void {
-			self::init_allowed_html();
-
-			if ( $merge ) {
-				self::$allowed_html = array_merge( self::$allowed_html, $tags );
-			} else {
-				self::$allowed_html = $tags;
-			}
-		}
-
-		/**
-		 * Get the current allowed HTML configuration
-		 *
-		 * @return array Current allowed HTML tags and attributes
-		 */
-		public static function get_allowed_html(): array {
-			self::init_allowed_html();
-
-			return self::$allowed_html;
-		}
-
-		/**
-		 * Add allowed attributes to a specific HTML tag
-		 *
-		 * @param string $tag        The HTML tag
-		 * @param array  $attributes Array of attributes to allow
-		 *
-		 * @return void
-		 */
-		public static function add_allowed_attributes( string $tag, array $attributes ): void {
-			self::init_allowed_html();
-
-			if ( ! isset( self::$allowed_html[ $tag ] ) ) {
-				self::$allowed_html[ $tag ] = [];
-			}
-
-			self::$allowed_html[ $tag ] = array_merge( self::$allowed_html[ $tag ], $attributes );
-		}
-
-		/**
-		 * Create an arbitrary HTML element with opening and closing tags.
-		 *
-		 * @param string $tag     The tag name of the element.
-		 * @param array  $attrs   An associative array of attributes for the element.
-		 * @param string $content The content to be placed between the opening and closing tags.
-		 *
-		 * @return string The HTML string for the element.
-		 */
-		public static function create( string $tag, array $attrs = [], string $content = '' ): string {
-			self::init_allowed_html();
-
-			// Escape all attribute values
-			$escaped_attrs = [];
-			foreach ( $attrs as $key => $value ) {
-				if ( is_string( $value ) ) {
-					$escaped_attrs[ $key ] = esc_attr( $value );
-				} else {
-					$escaped_attrs[ $key ] = $value;
-				}
-			}
-
-			$attr_string = self::build_attribute_string( $escaped_attrs );
-
-			// Apply wp_kses to content
-			$safe_content = wp_kses( $content, self::$allowed_html );
-
-			return "<{$tag}{$attr_string}>{$safe_content}</{$tag}>";
-		}
-
-
-		/**
-		 * Create an arbitrary void HTML element (elements without a closing tag).
-		 *
-		 * @param string $tag   The tag name of the void element.
-		 * @param array  $attrs An associative array of attributes for the element.
-		 *
-		 * @return string The HTML string for the void element.
-		 */
-		public static function create_void( string $tag, array $attrs = [] ): string {
-			$escaped_attrs = [];
-			foreach ( $attrs as $key => $value ) {
-				if ( is_string( $value ) ) {
-					$escaped_attrs[ $key ] = esc_attr( $value );
-				} else {
-					$escaped_attrs[ $key ] = $value;
-				}
-			}
-
-			$attr_string = self::build_attribute_string( $escaped_attrs );
-
-			return "<{$tag}{$attr_string} />";
-		}
-
-		/**
-		 * Build an attribute string from an associative array of attributes.
-		 *
-		 * @param array $attrs An associative array of attributes.
-		 *
-		 * @return string The attribute string.
-		 */
-		private static function build_attribute_string( array $attrs ): string {
-			$attr_pairs = [];
-			foreach ( $attrs as $key => $value ) {
-				if ( $value === true ) {
-					$attr_pairs[] = esc_attr( $key );
-				} elseif ( $value !== false && $value !== null ) {
-					$attr_pairs[] = esc_attr( $key ) . '="' . $value . '"';
-				}
-			}
-
-			return $attr_pairs ? ' ' . implode( ' ', $attr_pairs ) : '';
-		}
-
-		/**
-		 * Parse a style attribute string into an associative array.
-		 *
-		 * @param string $style_string The style attribute string.
-		 *
-		 * @return array An associative array of style properties.
-		 */
-		public static function parse_style_attribute( string $style_string ): array {
-			$styles = [];
-			$parts  = explode( ';', $style_string );
-			foreach ( $parts as $part ) {
-				$part = trim( $part );
-				if ( $part ) {
-					list( $property, $value ) = explode( ':', $part, 2 );
-					$styles[ trim( $property ) ] = trim( $value );
-				}
-			}
-
-			return $styles;
-		}
-
-		/**
-		 * Build a style string from an associative array of style properties.
-		 *
-		 * @param array $styles An associative array of style properties.
-		 *
-		 * @return string The built style string.
-		 */
-		public static function build_style_string( array $styles ): string {
-			$style_parts = [];
-			foreach ( $styles as $property => $value ) {
-				$style_parts[] = $property . ': ' . $value;
-			}
-
-			return implode( '; ', $style_parts );
-		}
-
-		/**
-		 * Merge new styles with existing styles.
-		 *
-		 * @param array  $new_styles     The new styles to add.
-		 * @param string $existing_style The existing style string.
-		 *
-		 * @return string The merged style string.
-		 */
-		public static function merge_styles( array $new_styles, string $existing_style ): string {
-			$existing_styles = self::parse_style_attribute( $existing_style );
-			$merged_styles   = array_merge( $new_styles, $existing_styles );
-
-			return self::build_style_string( $merged_styles );
 		}
 
 	}

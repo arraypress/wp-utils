@@ -93,10 +93,12 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 		/**
 		 * Get an array of days of the week with their values and labels.
 		 *
+		 * @param string|null $context Optional. The context in which the time units are being retrieved.
+		 *
 		 * @return array An array of associative arrays containing 'value' and 'label' for each day of the week.
 		 */
-		public static function get_days_of_week(): array {
-			return [
+		public static function get_days_of_week( ?string $context = null ): array {
+			$days = [
 				[
 					'value' => '1',
 					'label' => esc_html__( 'Monday', 'arraypress' ),
@@ -126,6 +128,14 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 					'label' => esc_html__( 'Sunday', 'arraypress' ),
 				],
 			];
+
+			/**
+			 * Filters the days of the week.
+			 *
+			 * @param array       $days    The array of days with their values and labels.
+			 * @param string|null $context The context in which the days of the week are being retrieved.
+			 */
+			return apply_filters( 'arraypress_days_of_week', $days, $context );
 		}
 
 		/**
@@ -133,8 +143,8 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 		 *
 		 * @return array An array of associative arrays containing 'value' and 'label' for each month of the year.
 		 */
-		public static function get_months_of_year(): array {
-			return [
+		public static function get_months_of_year( ?string $context = null ): array {
+			$months = [
 				[
 					'value' => 'January',
 					'label' => esc_html__( 'January', 'arraypress' ),
@@ -184,16 +194,26 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 					'label' => esc_html__( 'December', 'arraypress' ),
 				],
 			];
+
+			/**
+			 * Filters the months of the year.
+			 *
+			 * @param array       $months  The array of months with their values and labels.
+			 * @param string|null $context The context in which the months are being retrieved.
+			 */
+			return apply_filters( 'arraypress_months_of_year', $months, $context );
 		}
 
 
 		/**
 		 * Get an array of quarters of the year with their values and labels.
 		 *
+		 * @param string|null $context Optional. The context in which the quarters are being retrieved.
+		 *
 		 * @return array An array of associative arrays containing 'value' and 'label' for each quarter of the year.
 		 */
-		public static function get_quarters_of_year(): array {
-			return [
+		public static function get_quarters_of_year( ?string $context = null ): array {
+			$quarters = [
 				[
 					'value' => 'Q1',
 					'label' => esc_html__( 'Q1 (January - March)', 'arraypress' ),
@@ -211,6 +231,14 @@ if ( ! class_exists( 'TimeUnits' ) ) :
 					'label' => esc_html__( 'Q4 (October - December)', 'arraypress' ),
 				],
 			];
+
+			/**
+			 * Filters the quarters of the year.
+			 *
+			 * @param array       $quarters The array of quarters with their values and labels.
+			 * @param string|null $context  The context in which the quarters of the year are being retrieved.
+			 */
+			return apply_filters( 'arraypress_quarters_of_year', $quarters, $context );
 		}
 
 		/**

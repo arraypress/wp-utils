@@ -39,8 +39,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_basic_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'basic', $context );
+		public static function get_basic( ?string $context = null ): array {
+			return Statuses::get( 'basic', $context );
 		}
 
 		/**
@@ -50,8 +50,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_general_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'general', $context );
+		public static function get_general( ?string $context = null ): array {
+			return Statuses::get( 'general', $context );
 		}
 
 		/**
@@ -61,8 +61,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_payment_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'payment', $context );
+		public static function get_payment( ?string $context = null ): array {
+			return Statuses::get( 'payment', $context );
 		}
 
 		/**
@@ -72,8 +72,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_order_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'order', $context );
+		public static function get_order( ?string $context = null ): array {
+			return Statuses::get( 'order', $context );
 		}
 
 		/**
@@ -83,8 +83,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_subscription_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'subscription', $context );
+		public static function get_subscription( ?string $context = null ): array {
+			return Statuses::get( 'subscription', $context );
 		}
 
 		/**
@@ -94,8 +94,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_user_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'user', $context );
+		public static function get_user( ?string $context = null ): array {
+			return Statuses::get( 'user', $context );
 		}
 
 		/**
@@ -105,8 +105,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_discount_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'discount', $context );
+		public static function get_discount( ?string $context = null ): array {
+			return Statuses::get( 'discount', $context );
 		}
 
 		/**
@@ -116,8 +116,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_review_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'review', $context );
+		public static function get_review( ?string $context = null ): array {
+			return Statuses::get( 'review', $context );
 		}
 
 		/**
@@ -127,8 +127,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_ticket_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'ticket', $context );
+		public static function get_ticket( ?string $context = null ): array {
+			return Statuses::get( 'ticket', $context );
 		}
 
 		/**
@@ -138,8 +138,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_product_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'product', $context );
+		public static function get_product( ?string $context = null ): array {
+			return Statuses::get( 'product', $context );
 		}
 
 		/**
@@ -149,8 +149,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_email_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'email', $context );
+		public static function get_email( ?string $context = null ): array {
+			return Statuses::get( 'email', $context );
 		}
 
 		/**
@@ -160,8 +160,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_invoice_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'invoice', $context );
+		public static function get_invoice( ?string $context = null ): array {
+			return Statuses::get( 'invoice', $context );
 		}
 
 		/**
@@ -171,8 +171,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_project_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'project', $context );
+		public static function get_project( ?string $context = null ): array {
+			return Statuses::get( 'project', $context );
 		}
 
 		/**
@@ -182,8 +182,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_task_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'task', $context );
+		public static function get_task( ?string $context = null ): array {
+			return Statuses::get( 'task', $context );
 		}
 
 		/**
@@ -193,8 +193,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_membership_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'membership', $context );
+		public static function get_membership( ?string $context = null ): array {
+			return Statuses::get( 'membership', $context );
 		}
 
 		/**
@@ -204,8 +204,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_priority_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'priorities', $context );
+		public static function get_priority( ?string $context = null ): array {
+			return Statuses::get( 'priorities', $context );
 		}
 
 		/**
@@ -215,8 +215,19 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array
 		 */
-		public static function get_fulfilment_statuses( ?string $context = null ): array {
-			return Statuses::get_statuses( 'fulfilment', $context );
+		public static function get_fulfilment( ?string $context = null ): array {
+			return Statuses::get( 'fulfilment', $context );
+		}
+
+		/**
+		 * Get commission statuses.
+		 *
+		 * @param string|null $context Optional. The context for the statuses.
+		 *
+		 * @return array
+		 */
+		public static function get_commission( ?string $context = null ): array {
+			return Statuses::get( 'commission', $context );
 		}
 
 		/**
@@ -227,8 +238,8 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array An array of statuses with labels.
 		 */
-		public static function get_statuses( string $type, ?string $context = null ): array {
-			$statuses = self::get_default_statuses( $type );
+		public static function get( string $type, ?string $context = null ): array {
+			$statuses = self::get_default( $type );
 
 			/**
 			 * Filters the statuses for a specific type.
@@ -252,7 +263,7 @@ if ( ! class_exists( 'Statuses' ) ) :
 		 *
 		 * @return array An array of default statuses with labels.
 		 */
-		private static function get_default_statuses( string $type ): array {
+		private static function get_default( string $type ): array {
 			$all_statuses = [
 				'basic'        => [
 					'active'   => __( 'Active', 'arraypress' ),
@@ -378,8 +389,35 @@ if ( ! class_exists( 'Statuses' ) ) :
 					'low'    => __( 'Low', 'arraypress' ),
 					'medium' => __( 'Medium', 'arraypress' ),
 					'high'   => __( 'High', 'arraypress' ),
+				],
+				'commission'   => [
+					'unpaid'  => __( 'Unpaid', 'arraypress' ),
+					'paid'    => __( 'Paid', 'arraypress' ),
+					'revoked' => __( 'Revoked', 'arraypress' ),
 				]
 			];
+
+
+			/**
+			 * Filter the available status types.
+			 *
+			 * Allows adding new status types to the default set. Use this filter to register
+			 * custom status types with their respective labels.
+			 *
+			 * @param array $all_statuses Array of all registered status types and their labels.
+			 * @since 1.0.0
+			 *
+			 * @example
+			 * // Add a custom status type
+			 * add_filter( 'arraypress_status_types', function( $all_statuses ) {
+			 *     $all_statuses['custom'] = [
+			 *         'status1' => __( 'Status One', 'text-domain' ),
+			 *         'status2' => __( 'Status Two', 'text-domain' ),
+			 *     ];
+			 *     return $all_statuses;
+			 * });
+			 */
+			$all_statuses = apply_filters( 'arraypress_status_types', $all_statuses );
 
 			return $all_statuses[ $type ] ?? [];
 		}

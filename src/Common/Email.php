@@ -233,9 +233,6 @@ if ( ! class_exists( 'Email' ) ) :
 		 * @param array  $emails List of allowed email addresses, domains, or TLDs.
 		 *
 		 * @return bool Whether the email address matches any in the allowed list.
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-		 * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
 		 */
 		public static function matches_allowed_pattern( string $email, array $emails ): bool {
 			$email = strtolower( trim( $email ) );
