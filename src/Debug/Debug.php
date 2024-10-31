@@ -14,7 +14,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\Dev;
+namespace ArrayPress\Utils\Debug;
 
 /**
  * Check if the class `Debug` is defined, and if not, define it.
