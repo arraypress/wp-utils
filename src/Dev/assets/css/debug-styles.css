@@ -1,0 +1,197 @@
+/**
+ * Debug Styles
+ *
+ * CSS styles for the Debug class output formatting.
+ * These styles are only loaded when debug functions are used.
+ */
+
+/* Main debug container */
+.debug-container {
+    margin: 20px;
+    padding: 15px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #333;
+}
+
+/* Debug header */
+.debug-header {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Debug sections */
+.debug-section {
+    margin: 10px 0;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 3px;
+}
+
+/* Debug labels */
+.debug-label {
+    font-weight: bold;
+    color: #666;
+    margin-right: 8px;
+}
+
+/* Data type formatting */
+.debug-string {
+    color: #0a8;
+}
+
+.debug-number {
+    color: #c00;
+}
+
+.debug-boolean {
+    color: #60a;
+}
+
+.debug-null {
+    color: #999;
+    font-style: italic;
+}
+
+.debug-array {
+    color: #036;
+}
+
+.debug-object {
+    color: #456;
+}
+
+/* Stack trace styling */
+.debug-trace {
+    font-size: 12px;
+    color: #666;
+    margin-top: 10px;
+    padding: 8px;
+    background: #f8f8f8;
+    border-left: 3px solid #ddd;
+}
+
+.debug-trace-entry {
+    padding: 3px 0;
+    border-bottom: 1px dotted #eee;
+}
+
+.debug-trace-entry:last-child {
+    border-bottom: none;
+}
+
+/* Message types */
+.debug-error {
+    background: #fee;
+    color: #c00;
+    padding: 10px;
+    border: 1px solid #fcc;
+    border-radius: 3px;
+}
+
+.debug-success {
+    background: #efe;
+    color: #0a8;
+    padding: 10px;
+    border: 1px solid #cfc;
+    border-radius: 3px;
+}
+
+.debug-warning {
+    background: #ffd;
+    color: #960;
+    padding: 10px;
+    border: 1px solid #eeb;
+    border-radius: 3px;
+}
+
+/* Table formatting */
+.debug-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+.debug-table th {
+    background: #f0f0f0;
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+    font-weight: bold;
+}
+
+.debug-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+/* Collapsible sections */
+.debug-collapsible {
+    cursor: pointer;
+}
+
+.debug-collapsible-content {
+    display: none;
+    padding: 10px;
+    margin-left: 20px;
+    border-left: 2px solid #ddd;
+}
+
+.debug-collapsible.open .debug-collapsible-content {
+    display: block;
+}
+
+/* Array/Object tree view */
+.debug-tree {
+    margin-left: 20px;
+}
+
+.debug-tree-item {
+    padding: 2px 0;
+}
+
+/* Value formatting */
+.debug-value {
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-family: monospace;
+}
+
+.debug-value.string {
+    background: rgba(0, 170, 136, 0.1);
+}
+
+.debug-value.number {
+    background: rgba(204, 0, 0, 0.1);
+}
+
+.debug-value.boolean {
+    background: rgba(102, 0, 170, 0.1);
+}
+
+/* Code blocks */
+.debug-code {
+    background: #f8f8f8;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    overflow-x: auto;
+}
+
+/* File info */
+.debug-file-info {
+    color: #666;
+    font-size: 11px;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dotted #ddd;
+}

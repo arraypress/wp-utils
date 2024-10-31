@@ -55,20 +55,6 @@ if ( ! class_exists( 'Query' ) ) :
 		}
 
 		/**
-		 * Prepare a SQL query with proper escaping.
-		 *
-		 * @param string $query  SQL query with placeholders.
-		 * @param mixed  ...$args Values to replace placeholders.
-		 *
-		 * @return string|null The prepared SQL query, or null on failure.
-		 */
-		public static function prepare( string $query, ...$args ): ?string {
-			global $wpdb;
-
-			return $wpdb->prepare( $query, ...$args );
-		}
-
-		/**
 		 * Get the current blog ID.
 		 *
 		 * @return int The current blog ID.
