@@ -31,11 +31,15 @@
       "ArrayPress\\Utils\\": "src/"
     },
     "files": [
-      "src/HTML/Functions.php",
+      "src/Functions/HTML.php",
+      "src/Functions/Posts.php",
+      "src/Functions/PostTypes.php",
+      "src/Functions/Register.php",
+      "src/Functions/Taxonomies.php",
+      "src/Functions/Terms.php",
+      "src/Functions/Users.php",
       "src/Polyfills/Mdash.php",
-      "src/Polyfills/Misc.php",
-      "src/Register/Functions.php",
-      "src/Search/Functions.php"
+      "src/Polyfills/Misc.php"
     ]
   },
   "config": {
