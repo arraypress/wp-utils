@@ -15,6 +15,7 @@ namespace ArrayPress\Utils\HTML\Components;
 use ArrayPress\Utils\HTML\Element;
 
 class Container extends Base {
+
 	/**
 	 * Create a card element.
 	 *

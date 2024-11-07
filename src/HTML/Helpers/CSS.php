@@ -16,7 +16,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML;
+namespace ArrayPress\Utils\HTML\Helpers;
 
 class CSS {
 

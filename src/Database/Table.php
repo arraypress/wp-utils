@@ -240,7 +240,7 @@ class Table {
 	 *
 	 * @return string The database table prefix.
 	 */
-	public static function get_table_prefix(): string {
+	public static function get_prefix(): string {
 		global $wpdb;
 
 		return $wpdb->prefix;
