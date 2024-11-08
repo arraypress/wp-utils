@@ -108,7 +108,7 @@ class Field {
 	 * @return string
 	 */
 	private static function get_assets_dir(): string {
-		return dirname( __FILE__, 4 ) . '/Assets';  // Go up 3 levels to reach Src
+		return dirname( __FILE__, 3 ) . '/Assets';  // Go up 3 levels to reach Src
 	}
 
 	/**
@@ -117,7 +117,7 @@ class Field {
 	 * @return string
 	 */
 	private static function get_assets_url(): string {
-		return plugins_url( '.../Assets', __FILE__ );  // Go up one level then into Assets
+		return plugins_url( '../Assets', __FILE__ );  // Go up one level then into Assets
 	}
 
 	/**
