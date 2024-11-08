@@ -378,10 +378,8 @@ class Server {
 		$value = intval( substr( $size, 0, - 1 ) );
 
 		switch ( $unit ) {
-			case 'g':
-				$value *= 1024;
-				break;
 			case 'm':
+			case 'g':
 				$value *= 1024;
 				break;
 			case 'k':

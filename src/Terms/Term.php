@@ -31,6 +31,11 @@ use ArrayPress\Utils\Traits\Term\Relationship;
 use ArrayPress\Utils\Traits\Term\Utility;
 use ArrayPress\Utils\Traits\Shared\Meta;
 
+/**
+ * Class Term
+ *
+ * Utility functions for working with a specific Term.
+ */
 class Term {
 	use Core;
 	use Fields;

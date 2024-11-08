@@ -10,10 +10,10 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML\Components;
+namespace ArrayPress\Utils\Elements\Components;
 
-use ArrayPress\Utils\HTML\Element;
-use ArrayPress\Utils\HTML\Field;
+use ArrayPress\Utils\Elements\Element;
+use ArrayPress\Utils\Elements\Field;
 
 class Media extends Base {
 	/**

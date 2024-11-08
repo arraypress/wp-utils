@@ -26,7 +26,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML\Helpers;
+namespace ArrayPress\Utils\DOM;
 
 class JS {
 

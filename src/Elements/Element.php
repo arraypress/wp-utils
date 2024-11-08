@@ -17,8 +17,13 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML;
+namespace ArrayPress\Utils\Elements;
 
+/**
+ * Class Element
+ *
+ * Utility functions for creating DOM elements.
+ */
 class Element {
 
 	// Existing constant for mdash

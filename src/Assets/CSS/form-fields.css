@@ -250,13 +250,6 @@
     display: none !important;
 }
 
-/* Radio/Checkbox Styles */
-.radio-option,
-.checkbox-option {
-    display: flex;
-    align-items: center;
-}
-
 /* Password field wrapper */
 .wp-password-wrapper {
     display: flex;
@@ -631,4 +624,63 @@
 
 .wp-avatar:hover {
     box-shadow: 0 0 0 1px var(--wp-admin-theme-color);
+}
+
+/* Base Shape Styles */
+.wp-shape {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+}
+
+/* Circle Shape */
+.wp-shape-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Square Styles */
+.wp-shape-square {
+    min-width: 20px;
+    min-height: 20px;
+    border: 1px solid #ccc;
+}
+
+/* Triangle Base Styles */
+.wp-shape-triangle {
+    width: 0;
+    height: 0;
+    display: inline-block;
+    border: solid transparent;
+}
+
+/* Triangle Directions */
+.wp-shape-triangle-up {
+    border-bottom-width: inherit;
+    border-left-width: inherit;
+    border-right-width: inherit;
+    border-top-width: 0;
+}
+
+.wp-shape-triangle-down {
+    border-top-width: inherit;
+    border-left-width: inherit;
+    border-right-width: inherit;
+    border-bottom-width: 0;
+}
+
+.wp-shape-triangle-left {
+    border-right-width: inherit;
+    border-top-width: inherit;
+    border-bottom-width: inherit;
+    border-left-width: 0;
+}
+
+.wp-shape-triangle-right {
+    border-left-width: inherit;
+    border-top-width: inherit;
+    border-bottom-width: inherit;
+    border-right-width: 0;
 }

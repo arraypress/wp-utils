@@ -15,6 +15,11 @@ namespace ArrayPress\Utils\Register;
 
 use WP_Role;
 
+/**
+ * Class Roles
+ *
+ * Register custom user roles and capabilities.
+ */
 class Roles {
 
 	/**

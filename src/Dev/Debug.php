@@ -14,7 +14,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\Debug;
+namespace ArrayPress\Utils\Dev;
 
 class Debug {
 
@@ -29,16 +29,16 @@ class Debug {
 	 * @return string
 	 */
 	private static function get_assets_dir(): string {
-		return dirname( __FILE__ ) . '/assets';
+		return dirname( __FILE__, 3 ) . '/Assets';  // Go up 3 levels to reach Src
 	}
 
 	/**
-	 * Get debug assets URL
+	 * Get debug assets url
 	 *
 	 * @return string
 	 */
 	private static function get_assets_url(): string {
-		return plugins_url( 'assets', __FILE__ );
+		return plugins_url( '../Assets', __FILE__ );  // Go up one level then into Assets
 	}
 
 	/**
@@ -437,4 +437,5 @@ class Debug {
 
 		echo $output;
 	}
+
 }

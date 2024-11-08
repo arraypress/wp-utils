@@ -13,7 +13,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML\WP;
+namespace ArrayPress\Utils\Elements\Components;
 
 use ArrayPress\Utils\Common\Format;
 use ArrayPress\Utils\Common\Request;

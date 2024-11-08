@@ -42,8 +42,13 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML;
+namespace ArrayPress\Utils\Elements;
 
+/**
+ * Class FormLayout
+ *
+ * Utility functions for creating form layouts.
+ */
 class FormLayout {
 
 	/**

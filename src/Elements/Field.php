@@ -15,8 +15,13 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML;
+namespace ArrayPress\Utils\Elements;
 
+/**
+ * Class Field
+ *
+ * Utility functions for creating field elements.
+ */
 class Field {
 
 	/**
@@ -88,27 +93,31 @@ class Field {
 	];
 
 	/**
-	 * Track if assets have been enqueued
+	 * Track if style assets have been enqueued
 	 */
 	private static bool $styles_enqueued = false;
+
+	/**
+	 * Track if script assets have been enqueued
+	 */
 	private static bool $scripts_enqueued = false;
 
 	/**
-	 * Get assets directory path
+	 * Get debug assets directory path
 	 *
 	 * @return string
 	 */
 	private static function get_assets_dir(): string {
-		return dirname( __FILE__ ) . '/assets';
+		return dirname( __FILE__, 4 ) . '/Assets';  // Go up 3 levels to reach Src
 	}
 
 	/**
-	 * Get assets directory URL
+	 * Get debug assets url
 	 *
 	 * @return string
 	 */
 	private static function get_assets_url(): string {
-		return plugins_url( 'assets', __FILE__ );
+		return plugins_url( '.../Assets', __FILE__ );  // Go up one level then into Assets
 	}
 
 	/**

@@ -37,8 +37,6 @@ use ArrayPress\Utils\Traits\Shared\Meta;
  *
  * Main Post utility class that combines various traits for comprehensive
  * single post management.
- *
- * @package ArrayPress\Utils\Posts
  */
 class Post {
 	use Comments;

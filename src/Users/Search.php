@@ -19,6 +19,11 @@ use function absint;
 use function esc_html;
 use function wp_parse_args;
 
+/**
+ * Class Search
+ *
+ * Search utility for users.
+ */
 class Search {
 
 	/**

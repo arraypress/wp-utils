@@ -3,9 +3,7 @@
  * Field Class: WordPress Form Element Generator
  *
  * A comprehensive utilities class for generating HTML form elements in WordPress. This class provides
- * a collection of static methods designed to create standardized, accessible, and secure form fields
- * and form structures. It integrates seamlessly with WordPress's core functionality while maintaining
- * proper escaping and security practices.
+ * methods for creating shape elements with consistent styling and structure.
  *
  * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
@@ -16,7 +14,7 @@
 
 declare( strict_types=1 );
 
-namespace ArrayPress\Utils\HTML;
+namespace ArrayPress\Utils\Elements;
 
 class Shape {
 
@@ -29,29 +27,24 @@ class Shape {
 	 * @return string The HTML for the color circle div.
 	 */
 	public static function circle( string $color, array $attrs = [] ): string {
-		$sanitized_color = esc_attr( $color );
+		// Add the base class
+		$attrs['class'] = isset( $attrs['class'] )
+			? $attrs['class'] . ' wp-shape wp-shape-circle'
+			: 'wp-shape wp-shape-circle';
 
-		$default_styles = [
-			'display'          => 'inline-block',
-			'width'            => '20px',
-			'height'           => '20px',
-			'border-radius'    => '50%',
-			'background-color' => $sanitized_color,
-			'border'           => '1px solid #ccc'
-		];
+		// Keep only the dynamic background-color style
+		$styles = [ 'background-color' => esc_attr( $color ) ];
 
-		// Merge default styles with any existing style attribute
+		// Merge with any existing styles
 		if ( isset( $attrs['style'] ) ) {
 			$existing_styles = Element::parse_style_attribute( $attrs['style'] );
-			$merged_styles   = array_merge( $default_styles, $existing_styles );
-		} else {
-			$merged_styles = $default_styles;
+			$styles          = array_merge( $styles, $existing_styles );
 		}
 
-		// Convert merged styles back to a string
-		$attrs['style'] = Element::build_style_string( $merged_styles );
+		$attrs['style'] = Element::build_style_string( $styles );
 
-		// Use the div method to create the color circle
+		Field::ensure_styles();
+
 		return Element::div( '', $attrs );
 	}
 
@@ -65,14 +58,27 @@ class Shape {
 	 * @return string The HTML for the square div.
 	 */
 	public static function square( string $color, string $size = '50px', array $attrs = [] ): string {
+		// Add the base class
+		$attrs['class'] = isset( $attrs['class'] )
+			? $attrs['class'] . ' wp-shape wp-shape-square'
+			: 'wp-shape wp-shape-square';
+
+		// Keep only the dynamic styles
 		$styles = [
-			'width'            => $size,
-			'height'           => $size,
 			'background-color' => esc_attr( $color ),
-			'display'          => 'inline-block',
+			'width'            => $size,
+			'height'           => $size
 		];
 
-		$attrs['style'] = Element::merge_styles( $styles, $attrs['style'] ?? '' );
+		// Merge with any existing styles
+		if ( isset( $attrs['style'] ) ) {
+			$existing_styles = Element::parse_style_attribute( $attrs['style'] );
+			$styles          = array_merge( $styles, $existing_styles );
+		}
+
+		$attrs['style'] = Element::build_style_string( $styles );
+
+		Field::ensure_styles();
 
 		return Element::div( '', $attrs );
 	}
@@ -88,29 +94,50 @@ class Shape {
 	 * @return string The HTML for the triangle div.
 	 */
 	public static function triangle( string $color, string $size = '50px', string $direction = 'up', array $attrs = [] ): string {
+		// Add the base classes
+		$attrs['class'] = isset( $attrs['class'] )
+			? $attrs['class'] . ' wp-shape wp-shape-triangle wp-shape-triangle-' . $direction
+			: 'wp-shape wp-shape-triangle wp-shape-triangle-' . $direction;
+
+		// Calculate border size for equal sides
+		$border_size = $size;
+
+		// Set up the styles for the triangle
 		$styles = [
-			'width'   => '0',
-			'height'  => '0',
-			'display' => 'inline-block',
-			'border'  => $size . ' solid transparent',
+			'border-style' => 'solid',
+			'border-width' => $border_size,
+			'border-color' => 'transparent'
 		];
 
+		// Add direction-specific color
 		switch ( $direction ) {
 			case 'up':
 				$styles['border-bottom-color'] = $color;
+				$styles['border-top-width']    = '0';
 				break;
 			case 'down':
-				$styles['border-top-color'] = $color;
+				$styles['border-top-color']    = $color;
+				$styles['border-bottom-width'] = '0';
 				break;
 			case 'left':
 				$styles['border-right-color'] = $color;
+				$styles['border-left-width']  = '0';
 				break;
 			case 'right':
-				$styles['border-left-color'] = $color;
+				$styles['border-left-color']  = $color;
+				$styles['border-right-width'] = '0';
 				break;
 		}
 
-		$attrs['style'] = Element::merge_styles( $styles, $attrs['style'] ?? '' );
+		// Merge with any existing styles
+		if ( isset( $attrs['style'] ) ) {
+			$existing_styles = Element::parse_style_attribute( $attrs['style'] );
+			$styles          = array_merge( $styles, $existing_styles );
+		}
+
+		$attrs['style'] = Element::build_style_string( $styles );
+
+		Field::ensure_styles();
 
 		return Element::div( '', $attrs );
 	}

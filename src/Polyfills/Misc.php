@@ -2,12 +2,6 @@
 /**
  * Array Helper Utilities
  *
- * This class provides utility functions for working with arrays in PHP. It includes
- * methods for sorting, shuffling, selecting random elements, checking conditions across
- * elements, managing keys, and converting arrays into other formats such as JSON, XML,
- * or delimited strings. Additionally, it offers advanced operations for flattening, filtering,
- * normalizing, and recursive array manipulations.
- *
  * @package       ArrayPress/WP-Utils
  * @copyright     Copyright 2024, ArrayPress Limited
  * @license       GPL-2.0-or-later

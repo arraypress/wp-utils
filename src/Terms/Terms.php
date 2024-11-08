@@ -30,6 +30,11 @@ use ArrayPress\Utils\Traits\Terms\Analysis;
 use ArrayPress\Utils\Traits\Terms\ObjectRelations;
 use ArrayPress\Utils\Traits\Terms\Utility;
 
+/**
+ * Class Terms
+ *
+ * Utility functions for working with multiple terms.
+ */
 class Terms {
 	use Core;
 	use Query;

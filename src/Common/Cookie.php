@@ -210,19 +210,104 @@ class Cookie {
 			return null;
 		}
 
-		$cookies = wp_parse_cookie( $_SERVER['HTTP_COOKIE'] ?? '' );
+		$cookie_string = $_SERVER['HTTP_COOKIE'] ?? '';
+		if ( empty( $cookie_string ) ) {
+			return null;
+		}
+
+		$cookies = self::parse_cookie_string( $cookie_string );
 		if ( ! isset( $cookies[ $name ] ) ) {
 			return null;
 		}
 
-		$expire = isset( $cookies[ $name ]['expires'] ) ? strtotime( $cookies[ $name ]['expires'] ) : null;
-		if ( $expire === null || $expire === false ) {
+		$cookie_data = $cookies[ $name ];
+		if ( ! isset( $cookie_data['attributes']['expires'] ) ) {
+			return null;
+		}
+
+		$expire = strtotime( $cookie_data['attributes']['expires'] );
+		if ( $expire === false ) {
 			return null;
 		}
 
 		$remaining = $expire - time();
 
 		return $remaining > 0 ? $remaining : null;
+	}
+
+	/**
+	 * Set a cookie with proper security flags for WordPress.
+	 * This is an enhanced version of the set method with WordPress-specific security settings.
+	 *
+	 * @param string $name    The name of the cookie
+	 * @param string $value   The value of the cookie
+	 * @param array  $options Optional. Override default options
+	 *
+	 * @return bool Whether the cookie was successfully set
+	 */
+	public static function set_secure( string $name, string $value, array $options = [] ): bool {
+		// Default options with security best practices
+		$defaults = [
+			'expire'   => 0,
+			'path'     => COOKIEPATH,
+			'domain'   => COOKIE_DOMAIN,
+			'secure'   => is_ssl(),
+			'httponly' => true,
+			'samesite' => 'Strict'
+		];
+
+		$options = array_merge( $defaults, $options );
+
+		return self::set(
+			$name,
+			$value,
+			$options['expire'],
+			$options['path'],
+			$options['domain'],
+			$options['secure'],
+			$options['httponly']
+		);
+	}
+
+	/**
+	 * Parse raw cookie header string into an array.
+	 *
+	 * @param string $cookie_string Raw cookie header string
+	 *
+	 * @return array Associative array of cookie data
+	 */
+	private static function parse_cookie_string( string $cookie_string ): array {
+		$cookies = [];
+		$parts   = explode( ';', $cookie_string );
+
+		foreach ( $parts as $part ) {
+			$part = trim( $part );
+			if ( empty( $part ) ) {
+				continue;
+			}
+
+			// Split on first = only
+			$cookie_parts = explode( '=', $part, 2 );
+			if ( count( $cookie_parts ) !== 2 ) {
+				continue;
+			}
+
+			$key   = trim( $cookie_parts[0] );
+			$value = trim( $cookie_parts[1], ' "\'' );
+
+			// Handle special cookie attributes
+			$key_lower = strtolower( $key );
+			if ( in_array( $key_lower, [ 'expires', 'path', 'domain', 'secure', 'httponly', 'samesite' ], true ) ) {
+				$cookies['attributes'][ $key_lower ] = $value;
+			} else {
+				$cookies[ $key ] = [
+					'value'      => $value,
+					'attributes' => []
+				];
+			}
+		}
+
+		return $cookies;
 	}
 
 }
