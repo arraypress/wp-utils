@@ -20,6 +20,7 @@ use WP_Term;
 use WP_Error;
 
 trait Analysis {
+
 	/**
 	 * Get the term hierarchy as a nested array.
 	 *
@@ -142,4 +143,5 @@ trait Analysis {
 
 		return null;
 	}
+
 }

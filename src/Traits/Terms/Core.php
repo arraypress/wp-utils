@@ -134,6 +134,48 @@ trait Core {
 	}
 
 	/**
+	 * Get terms belonging to multiple taxonomies.
+	 *
+	 * @param array $taxonomies Array of taxonomy names.
+	 * @param array $args       Optional. Additional get_terms() arguments.
+	 *
+	 * @return array An array of term objects.
+	 */
+	protected static function get_by_taxonomies( array $taxonomies, array $args = [] ): array {
+		if ( empty( $taxonomies ) ) {
+			return [];
+		}
+
+		$defaults = [
+			'taxonomy'   => $taxonomies,
+			'hide_empty' => false,
+		];
+
+		$args  = wp_parse_args( $args, $defaults );
+		$terms = get_terms( $args );
+
+		return is_wp_error( $terms ) ? [] : $terms;
+	}
+
+	/**
+	 * Get terms that match a specific criteria across taxonomies.
+	 *
+	 * @param array  $taxonomies  Array of taxonomy names.
+	 * @param string $field       The field to match against (e.g., 'name', 'slug').
+	 * @param mixed  $value       The value to match.
+	 * @param array  $args        Optional. Additional get_terms() arguments.
+	 *
+	 * @return array An array of matching term objects.
+	 */
+	protected static function get_by_field_across_taxonomies( array $taxonomies, string $field, $value, array $args = [] ): array {
+		$all_terms = self::get_by_taxonomies( $taxonomies, $args );
+
+		return array_filter( $all_terms, function ( $term ) use ( $field, $value ) {
+			return isset( $term->$field ) && $term->$field === $value;
+		} );
+	}
+
+	/**
 	 * Get term names from an array of term identifiers.
 	 *
 	 * @param array  $terms    Array of term IDs, names, slugs, or term objects.

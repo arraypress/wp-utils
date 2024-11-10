@@ -148,4 +148,5 @@ trait Hierarchy {
 		return is_wp_error( $cousins ) ? [] : $cousins;
 
 	}
+
 }

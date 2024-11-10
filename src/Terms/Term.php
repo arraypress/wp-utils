@@ -27,7 +27,7 @@ use ArrayPress\Utils\Traits\Term\Core;
 use ArrayPress\Utils\Traits\Term\Fields;
 use ArrayPress\Utils\Traits\Term\Hierarchy;
 use ArrayPress\Utils\Traits\Term\Analysis;
-use ArrayPress\Utils\Traits\Term\Relationship;
+use ArrayPress\Utils\Traits\Term\Conditional;
 use ArrayPress\Utils\Traits\Term\Utility;
 use ArrayPress\Utils\Traits\Shared\Meta;
 
@@ -41,7 +41,7 @@ class Term {
 	use Fields;
 	use Hierarchy;
 	use Analysis;
-	use Relationship;
+	use Conditional;
 	use Utility;
 	use Meta;
 

@@ -29,6 +29,7 @@ use ArrayPress\Utils\Traits\Terms\Query;
 use ArrayPress\Utils\Traits\Terms\Analysis;
 use ArrayPress\Utils\Traits\Terms\ObjectRelations;
 use ArrayPress\Utils\Traits\Terms\Utility;
+use ArrayPress\Utils\Traits\Terms\Conditional;
 
 /**
  * Class Terms
@@ -41,4 +42,5 @@ class Terms {
 	use Analysis;
 	use ObjectRelations;
 	use Utility;
+	use Conditional;
 }
