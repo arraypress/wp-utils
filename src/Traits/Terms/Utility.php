@@ -16,6 +16,7 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Traits\Terms;
 
+use ArrayPress\Utils\Common\Sanitize;
 use WP_Error;
 use WP_Term;
 

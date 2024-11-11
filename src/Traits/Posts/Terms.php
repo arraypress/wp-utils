@@ -28,7 +28,7 @@ use WP_Error;
  * Handles taxonomy and term operations for multiple posts including
  * term retrieval, assignment, and relationship management.
  */
-trait Taxonomy {
+trait Terms {
 
 	/**
 	 * Get terms for multiple posts.
@@ -39,7 +39,7 @@ trait Taxonomy {
 	 *
 	 * @return int[]|WP_Term[]|WP_Error Array of term IDs/objects, or WP_Error on failure.
 	 */
-	public static function get_taxonomy_terms( array $post_ids, string $taxonomy, bool $return_objects = false ) {
+	public static function get_terms( array $post_ids, string $taxonomy, bool $return_objects = false ) {
 		if ( ! taxonomy_exists( $taxonomy ) || empty( $post_ids ) ) {
 			return [];
 		}
@@ -64,32 +64,6 @@ trait Taxonomy {
 		}
 
 		return $return_objects ? array_values( $terms_collection ) : array_map( 'intval', array_keys( $terms_collection ) );
-	}
-
-	/**
-	 * Get posts associated with specific terms.
-	 *
-	 * @param string $taxonomy  The taxonomy name.
-	 * @param array  $term_ids  Array of term IDs.
-	 * @param string $post_type The post type to query. Default 'any'.
-	 * @param array  $args      Optional. Additional WP_Query arguments.
-	 *
-	 * @return WP_Post[] Array of post objects.
-	 */
-	public static function get_by_taxonomy_terms( string $taxonomy, array $term_ids, string $post_type = 'any', array $args = [] ): array {
-		$default_args = [
-			'post_type'   => $post_type,
-			'numberposts' => - 1,
-			'tax_query'   => [
-				[
-					'taxonomy' => $taxonomy,
-					'field'    => 'term_id',
-					'terms'    => $term_ids,
-				],
-			],
-		];
-
-		return get_posts( wp_parse_args( $args, $default_args ) );
 	}
 
 	/**

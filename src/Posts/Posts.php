@@ -16,10 +16,13 @@ declare(strict_types=1);
 
 namespace ArrayPress\Utils\Posts;
 
-use ArrayPress\Utils\Traits\Posts\Core;
-use ArrayPress\Utils\Traits\Posts\Query;
-use ArrayPress\Utils\Traits\Posts\Bulk;
-use ArrayPress\Utils\Traits\Posts\Taxonomy;
+use ArrayPress\Utils\Traits\Posts\{
+	Core,
+	Query,
+	Bulk,
+	Terms,
+	Sanitize
+};
 use ArrayPress\Utils\Traits\Shared\Meta;
 
 /**
@@ -32,7 +35,8 @@ class Posts {
 	use Core;
 	use Query;
 	use Bulk;
-	use Taxonomy;
+	use Terms;
+	use Sanitize;
 	use Meta;
 
 	/**

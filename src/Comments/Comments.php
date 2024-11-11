@@ -16,8 +16,10 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Comments;
 
-use ArrayPress\Utils\Traits\Comments\Query;
-use ArrayPress\Utils\Traits\Comments\Bulk;
+use ArrayPress\Utils\Traits\Comments\{
+	Query,
+	Bulk,
+};
 
 /**
  * Comments Class

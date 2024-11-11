@@ -17,7 +17,6 @@ declare( strict_types=1 );
 namespace ArrayPress\Utils\Traits\Term;
 
 use WP_Error;
-use WP_Term;
 
 trait Utility {
 

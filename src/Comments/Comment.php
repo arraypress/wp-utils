@@ -15,12 +15,13 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Comments;
 
-use ArrayPress\Utils\Traits\Comment\Core;
-use ArrayPress\Utils\Traits\Comment\Hierarchy;
-use ArrayPress\Utils\Traits\Comment\Status;
-use ArrayPress\Utils\Traits\Comment\Dates;
+use ArrayPress\Utils\Traits\Comment\{
+	Core,
+	Dates,
+	Hierarchy,
+	Status
+};
 use ArrayPress\Utils\Traits\Shared\Meta;
-use WP_Comment;
 
 /**
  * Class Comment

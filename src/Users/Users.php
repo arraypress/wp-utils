@@ -13,9 +13,12 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Users;
 
-use ArrayPress\Utils\Traits\Users\Core;
-use ArrayPress\Utils\Traits\Users\Query;
-use ArrayPress\Utils\Traits\Users\Management;
+use ArrayPress\Utils\Traits\Users\{
+	Core,
+	Management,
+	Query,
+	Sanitize
+};
 
 /**
  * Class Users
@@ -24,6 +27,7 @@ use ArrayPress\Utils\Traits\Users\Management;
  */
 class Users {
 	use Core;
-	use Query;
 	use Management;
+	use Query;
+	use Sanitize;
 }

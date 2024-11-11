@@ -30,6 +30,25 @@ trait Core {
 	}
 
 	/**
+	 * Get a user object.
+	 *
+	 * @param int  $user_id       Optional. User ID. Default is 0.
+	 * @param bool $allow_current Optional. Whether to allow fallback to current user. Default true.
+	 *
+	 * @return WP_User|null The user object if found, null otherwise.
+	 */
+	public static function get( int $user_id = 0, bool $allow_current = true ): ?WP_User {
+		$user_id = self::get_validate_user_id( $user_id, $allow_current );
+		if ( $user_id === null ) {
+			return null;
+		}
+
+		$user = get_userdata( $user_id );
+
+		return ( $user instanceof WP_User ) ? $user : null;
+	}
+
+	/**
 	 * Check if a user exists by email.
 	 *
 	 * @param string $email Email address to check.
@@ -49,25 +68,6 @@ trait Core {
 	 */
 	public static function exists_by_login( string $login ): bool {
 		return self::get_by_login( $login ) !== null;
-	}
-
-	/**
-	 * Get a user object.
-	 *
-	 * @param int  $user_id       Optional. User ID. Default is 0.
-	 * @param bool $allow_current Optional. Whether to allow fallback to current user. Default true.
-	 *
-	 * @return WP_User|null The user object if found, null otherwise.
-	 */
-	public static function get( int $user_id = 0, bool $allow_current = true ): ?WP_User {
-		$user_id = self::get_validate_user_id( $user_id, $allow_current );
-		if ( $user_id === null ) {
-			return null;
-		}
-
-		$user = get_userdata( $user_id );
-
-		return ( $user instanceof WP_User ) ? $user : null;
 	}
 
 	/**

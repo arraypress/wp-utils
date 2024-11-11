@@ -17,6 +17,7 @@ declare( strict_types=1 );
 namespace ArrayPress\Utils\Traits\Term;
 
 trait Fields {
+	use Core;
 
 	/**
 	 * Get the term name.

@@ -16,36 +16,7 @@ namespace ArrayPress\Utils\Traits\User;
 use WP_User;
 
 trait Avatar {
-
-	/**
-	 * Required trait method for getting user data.
-	 *
-	 * @param int  $user_id       Optional. User ID. Default is 0.
-	 * @param bool $allow_current Optional. Whether to allow fallback to current user. Default true.
-	 *
-	 * @return WP_User|null
-	 */
-	abstract protected static function get( int $user_id = 0, bool $allow_current = true ): ?WP_User;
-
-	/**
-	 * Get the user's avatar URL.
-	 *
-	 * @param int    $user_id Optional. User ID. Default is the current user.
-	 * @param int    $size    Optional. Avatar size in pixels. Default 96.
-	 * @param string $default Optional. Default avatar URL.
-	 *
-	 * @return string Avatar URL or default value.
-	 */
-	public static function get_avatar_url( int $user_id = 0, int $size = 96, string $default = '' ): string {
-		$user = self::get( $user_id );
-		if ( ! $user ) {
-			return $default;
-		}
-
-		$avatar_url = get_avatar_url( $user->ID, [ 'size' => $size ] );
-
-		return $avatar_url ?: $default;
-	}
+	use Core;
 
 	/**
 	 * Get the user's avatar (the actual HTML).
@@ -71,6 +42,26 @@ trait Avatar {
 		], $args );
 
 		return get_avatar( $user->ID, $size, $default, $alt, $args );
+	}
+
+	/**
+	 * Get the user's avatar URL.
+	 *
+	 * @param int    $user_id Optional. User ID. Default is the current user.
+	 * @param int    $size    Optional. Avatar size in pixels. Default 96.
+	 * @param string $default Optional. Default avatar URL.
+	 *
+	 * @return string Avatar URL or default value.
+	 */
+	public static function get_avatar_url( int $user_id = 0, int $size = 96, string $default = '' ): string {
+		$user = self::get( $user_id );
+		if ( ! $user ) {
+			return $default;
+		}
+
+		$avatar_url = get_avatar_url( $user->ID, [ 'size' => $size ] );
+
+		return $avatar_url ?: $default;
 	}
 
 	/**

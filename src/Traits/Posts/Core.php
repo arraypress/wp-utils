@@ -29,6 +29,42 @@ use WP_Post;
 trait Core {
 
 	/**
+	 * Check if multiple posts exist and optionally validate their post type.
+	 *
+	 * @param array        $post_ids  Array of post IDs to check.
+	 * @param string|array $post_type Optional. Post type or array of post types. Default 'any'.
+	 *
+	 * @return array Array of existing post IDs that match the criteria.
+	 */
+	public static function exists( array $post_ids, $post_type = 'any' ): array {
+		$post_ids = Sanitize::object_ids( $post_ids );
+
+		if ( empty( $post_ids ) ) {
+			return [];
+		}
+
+		// Handle 'any' post type differently to avoid unnecessary type checking
+		if ( $post_type === 'any' ) {
+			return array_filter( $post_ids, function ( $post_id ) {
+				return Post::exists( $post_id );
+			} );
+		}
+
+		// Get valid posts with type checking
+		$posts = get_posts( [
+			'post__in'            => $post_ids,
+			'post_type'           => $post_type,
+			'post_status'         => 'any',
+			'posts_per_page'      => - 1,
+			'fields'              => 'ids',
+			'no_found_rows'       => true,
+			'ignore_sticky_posts' => true,
+		] );
+
+		return array_map( 'intval', $posts );
+	}
+
+	/**
 	 * Get multiple posts by their IDs.
 	 *
 	 * @param array        $post_ids    Array of post IDs.
@@ -51,6 +87,42 @@ trait Core {
 			'no_found_rows'       => true,
 			'ignore_sticky_posts' => true,
 		] );
+	}
+
+	/**
+	 * Get an array of unique post IDs or post objects based on provided identifiers.
+	 *
+	 * @param array        $identifiers    An array of post identifiers (IDs, titles, slugs, or post objects).
+	 * @param string|array $post_type      Optional. Post type or array of post types. Default 'any'.
+	 * @param string|array $post_status    Optional. Post status or array of post statuses. Default 'publish'.
+	 * @param bool         $return_objects Optional. Whether to return post objects instead of IDs. Default false.
+	 *
+	 * @return array Array of unique post IDs or WP_Post objects.
+	 */
+	public static function get_by_identifiers( array $identifiers, $post_type = 'any', $post_status = 'publish', bool $return_objects = false ): array {
+		if ( empty( $identifiers ) ) {
+			return [];
+		}
+
+		$unique_posts = [];
+
+		foreach ( $identifiers as $identifier ) {
+			if ( empty( $identifier ) ) {
+				continue;
+			}
+
+			$post = Post::get_by_identifier( $identifier, $post_type, $post_status );
+
+			if ( $post instanceof WP_Post ) {
+				$unique_posts[ $post->ID ] = $post;
+			}
+		}
+
+		if ( $return_objects ) {
+			return array_values( $unique_posts );
+		}
+
+		return array_map( 'intval', array_keys( $unique_posts ) );
 	}
 
 	/**

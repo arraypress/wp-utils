@@ -17,19 +17,22 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Posts;
 
-use ArrayPress\Utils\Traits\Post\Comments;
-use ArrayPress\Utils\Traits\Post\Conditional;
-use ArrayPress\Utils\Traits\Post\Content;
-use ArrayPress\Utils\Traits\Post\Core;
-use ArrayPress\Utils\Traits\Post\Dates;
-use ArrayPress\Utils\Traits\Post\Format;
-use ArrayPress\Utils\Traits\Post\Hierarchy;
-use ArrayPress\Utils\Traits\Post\Media;
-use ArrayPress\Utils\Traits\Post\Password;
-use ArrayPress\Utils\Traits\Post\Query;
-use ArrayPress\Utils\Traits\Post\Status;
-use ArrayPress\Utils\Traits\Post\Sticky;
-use ArrayPress\Utils\Traits\Post\Terms;
+use ArrayPress\Utils\Traits\Post\{
+	Comments,
+	Conditional,
+	Content,
+	Core,
+	Dates,
+	Format,
+	Hierarchy,
+	Media,
+	Password,
+	Query,
+	Relationship,
+	Status,
+	Sticky,
+	Terms
+};
 use ArrayPress\Utils\Traits\Shared\Meta;
 
 /**
@@ -50,6 +53,7 @@ class Post {
 	use Meta;
 	use Password;
 	use Query;
+	use Relationship;
 	use Status;
 	use Sticky;
 	use Terms;

@@ -16,20 +16,22 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Users;
 
-use ArrayPress\Utils\Traits\User\MetaKeys;
-use ArrayPress\Utils\Traits\User\Authentication;
-use ArrayPress\Utils\Traits\User\Avatar;
-use ArrayPress\Utils\Traits\User\Capabilities;
-use ArrayPress\Utils\Traits\User\Comments;
-use ArrayPress\Utils\Traits\User\Core;
-use ArrayPress\Utils\Traits\User\Dates;
-use ArrayPress\Utils\Traits\User\Info;
+use ArrayPress\Utils\Traits\User\{
+	Authentication,
+	Avatar,
+	Capabilities,
+	Comments,
+	Core,
+	Dates,
+	Fields,
+	MetaKeys,
+	Posts,
+	Roles,
+	Security,
+	Social,
+	Spam
+};
 use ArrayPress\Utils\Traits\Shared\Meta;
-use ArrayPress\Utils\Traits\User\Posts;
-use ArrayPress\Utils\Traits\User\Roles;
-use ArrayPress\Utils\Traits\User\Security;
-use ArrayPress\Utils\Traits\User\Social;
-use ArrayPress\Utils\Traits\User\Spam;
 
 /**
  * Class User
@@ -44,7 +46,7 @@ class User {
 	use Comments;
 	use Core;
 	use Dates;
-	use Info;
+	use Fields;
 	use Meta;
 	use Posts;
 	use Roles;

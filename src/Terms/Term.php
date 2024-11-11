@@ -23,12 +23,14 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Terms;
 
-use ArrayPress\Utils\Traits\Term\Core;
-use ArrayPress\Utils\Traits\Term\Fields;
-use ArrayPress\Utils\Traits\Term\Hierarchy;
-use ArrayPress\Utils\Traits\Term\Analysis;
-use ArrayPress\Utils\Traits\Term\Conditional;
-use ArrayPress\Utils\Traits\Term\Utility;
+use ArrayPress\Utils\Traits\Term\{
+	Analysis,
+	Conditional,
+	Core,
+	Fields,
+	Hierarchy,
+	Utility
+};
 use ArrayPress\Utils\Traits\Shared\Meta;
 
 /**
@@ -37,11 +39,11 @@ use ArrayPress\Utils\Traits\Shared\Meta;
  * Utility functions for working with a specific Term.
  */
 class Term {
+	use Analysis;
+	use Conditional;
 	use Core;
 	use Fields;
 	use Hierarchy;
-	use Analysis;
-	use Conditional;
 	use Utility;
 	use Meta;
 

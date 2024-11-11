@@ -15,21 +15,8 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Traits\Terms;
 
-use WP_Term;
-
-
 trait Conditional {
-
-	/**
-	 * Required trait method for getting terms by their identifiers.
-	 *
-	 * @param array  $term_identifiers An array of term identifiers (IDs, slugs, names, or term objects).
-	 * @param string $taxonomy         The taxonomy name.
-	 * @param bool   $return_objects   Whether to return term objects instead of term IDs.
-	 *
-	 * @return array An array of unique term IDs or WP_Term objects.
-	 */
-	abstract protected static function get_by_identifiers( array $term_identifiers, string $taxonomy, bool $return_objects = false ): array;
+	use Core;
 
 	/**
 	 * Check if all or any of the specified terms exist within a collection of term IDs.

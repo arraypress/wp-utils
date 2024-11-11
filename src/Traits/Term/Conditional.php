@@ -18,16 +18,7 @@ namespace ArrayPress\Utils\Traits\Term;
 use WP_Term;
 
 trait Conditional {
-
-	/**
-	 * Required trait method for getting a term by its identifier.
-	 *
-	 * @param mixed  $identifier The term identifier (ID, slug, name, or term object).
-	 * @param string $taxonomy   The taxonomy name.
-	 *
-	 * @return WP_Term|null Returns the term object if found, null if not found or on error.
-	 */
-	abstract protected static function get_by_identifier( $identifier, string $taxonomy ): ?WP_Term;
+	use Core;
 
 	/**
 	 * Check if a specific term exists within a collection of term IDs.

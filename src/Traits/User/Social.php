@@ -19,16 +19,7 @@ namespace ArrayPress\Utils\Traits\User;
 use WP_User;
 
 trait Social {
-
-	/**
-	 * Required trait method for getting user data.
-	 *
-	 * @param int  $user_id       Optional. User ID. Default is 0.
-	 * @param bool $allow_current Optional. Whether to allow fallback to current user. Default true.
-	 *
-	 * @return WP_User|null
-	 */
-	abstract protected static function get( int $user_id = 0, bool $allow_current = true ): ?WP_User;
+	Use Core;
 
 	/**
 	 * Check if the user is online (active within the last 15 minutes).

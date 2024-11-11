@@ -24,12 +24,15 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Terms;
 
-use ArrayPress\Utils\Traits\Terms\Core;
-use ArrayPress\Utils\Traits\Terms\Query;
-use ArrayPress\Utils\Traits\Terms\Analysis;
-use ArrayPress\Utils\Traits\Terms\ObjectRelations;
-use ArrayPress\Utils\Traits\Terms\Utility;
-use ArrayPress\Utils\Traits\Terms\Conditional;
+use ArrayPress\Utils\Traits\Terms\{
+	Analysis,
+	Conditional,
+	Core,
+	ObjectRelations,
+	Query,
+	Sanitize,
+	Utility
+};
 
 /**
  * Class Terms
@@ -37,10 +40,11 @@ use ArrayPress\Utils\Traits\Terms\Conditional;
  * Utility functions for working with multiple terms.
  */
 class Terms {
-	use Core;
-	use Query;
 	use Analysis;
-	use ObjectRelations;
-	use Utility;
 	use Conditional;
+	use Core;
+	use ObjectRelations;
+	use Query;
+	use Sanitize;
+	use Utility;
 }

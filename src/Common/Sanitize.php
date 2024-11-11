@@ -78,6 +78,21 @@ class Sanitize {
 	}
 
 	/**
+	 * Sanitize and validate an 'all' or 'any' condition value.
+	 *
+	 * This function sanitizes and validates a value that can only be 'all' or 'any',
+	 * commonly used for conditional logic in filters, rules, or conditions. Returns
+	 * 'all' by default if an invalid value is provided.
+	 *
+	 * @param string $value The value to be sanitized ('all' or 'any').
+	 *
+	 * @return string The sanitized and validated value ('all' or 'any').
+	 */
+	public static function all_any( string $value ): string {
+		return self::option( $value, [ 'all', 'any' ], 'all' );
+	}
+
+	/**
 	 * Sanitize a numeric value.
 	 *
 	 * @param mixed $value The value to sanitize.

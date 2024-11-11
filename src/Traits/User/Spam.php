@@ -19,25 +19,7 @@ namespace ArrayPress\Utils\Traits\User;
 use WP_User;
 
 trait Spam {
-
-	/**
-	 * Required trait method for getting user data.
-	 *
-	 * @param int  $user_id       Optional. User ID. Default is 0.
-	 * @param bool $allow_current Optional. Whether to allow fallback to current user. Default true.
-	 *
-	 * @return WP_User|null
-	 */
-	abstract protected static function get( int $user_id = 0, bool $allow_current = true ): ?WP_User;
-
-	/**
-	 * Required trait method for checking if a user exists.
-	 *
-	 * @param int $user_id User ID.
-	 *
-	 * @return bool True if the user exists, false otherwise.
-	 */
-	abstract protected static function exists( int $user_id ): bool;
+	use Core;
 
 	/**
 	 * Check if user is suspended.
