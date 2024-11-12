@@ -25,6 +25,13 @@ class Compare {
 	public const DEFAULT_EPSILON = 0.00001;
 
 	/**
+	 * Safely decode operator string.
+	 */
+	private static function decode_operator( string $operator ): string {
+		return html_entity_decode( $operator, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	}
+
+	/**
 	 * Check if boolean passes a comparison.
 	 *
 	 * @param string $operator The comparison operator.
@@ -34,6 +41,8 @@ class Compare {
 	 * @return bool
 	 */
 	public static function boolean( string $operator, $value, $bool ): bool {
+		$operator = self::decode_operator( $operator );
+
 		if ( ! $operator || is_null( $value ) || is_null( $bool ) ) {
 			return false;
 		}
@@ -65,6 +74,8 @@ class Compare {
 	 * @return bool The result of the comparison.
 	 */
 	public static function numeric( string $operator, $value1, $value2, float $epsilon = self::DEFAULT_EPSILON ): bool {
+		$operator = self::decode_operator( $operator );
+
 		$value1 = (float) $value1;
 		$value2 = (float) $value2;
 
@@ -105,6 +116,8 @@ class Compare {
 	 * @return bool
 	 */
 	public static function string( string $operator, string $value, ?string $string, bool $case_sensitive = true ): bool {
+		$operator = self::decode_operator( $operator );
+
 		if ( ! $operator || ! $value || is_null( $string ) ) {
 			return false;
 		}
@@ -144,6 +157,8 @@ class Compare {
 	 * @return bool
 	 */
 	public static function dates( string $operator, $value, $date ): bool {
+		$operator = self::decode_operator( $operator );
+
 		$timestamp_value = strtotime( (string) $value );
 		$timestamp_date  = strtotime( (string) $date );
 
@@ -163,7 +178,9 @@ class Compare {
 	 *
 	 * @return bool
 	 */
-	public static function check_string_multi( string $operator, ?array $values, string $string ): bool {
+	public static function string_multi( string $operator, ?array $values, string $string ): bool {
+		$operator = self::decode_operator( $operator );
+
 		if ( ! $operator || is_null( $values ) || ! $string ) {
 			return false;
 		}
@@ -207,7 +224,9 @@ class Compare {
 	 *
 	 * @return bool
 	 */
-	public static function check_array( string $operator, $value, ?array $array ): bool {
+	public static function array( string $operator, $value, ?array $array ): bool {
+		$operator = self::decode_operator( $operator );
+
 		if ( ! $operator || is_null( $value ) || is_null( $array ) ) {
 			return false;
 		}
@@ -234,6 +253,8 @@ class Compare {
 	 * @return bool
 	 */
 	public static function array_multi( string $operator, $value, ?array $array ): bool {
+		$operator = self::decode_operator( $operator );
+
 		if ( ! $operator || is_null( $value ) || is_null( $array ) ) {
 			return false;
 		}
