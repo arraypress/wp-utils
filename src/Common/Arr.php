@@ -1223,4 +1223,38 @@ class Arr {
 		return array_merge( $array1, $array2 );
 	}
 
+	/**
+	 * Convert all string values in an array to lowercase.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to lowercase
+	 *
+	 * @example
+	 * Input: ['Name' => 'John', 'CODE' => 'ABC123']
+	 * Output: ['Name' => 'john', 'CODE' => 'abc123']
+	 */
+	public static function lowercase_values( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? strtolower( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Remove all whitespace from string values in an array.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with whitespace removed from all string values
+	 *
+	 * @example
+	 * Input: ['code' => 'ABC 123', 'postal' => 'SW1 1AA']
+	 * Output: ['code' => 'ABC123', 'postal' => 'SW11AA']
+	 */
+	public static function remove_whitespace_values( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? Str::remove_whitespace( $value ) : $value;
+		}, (array) $array );
+	}
+
 }

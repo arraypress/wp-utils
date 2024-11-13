@@ -112,14 +112,20 @@ class Compare {
 	 * @param string  $value          The value to compare against.
 	 * @param ?string $string         The string to compare.
 	 * @param bool    $case_sensitive Whether the comparison should be case-sensitive. Default is true.
+	 * @param bool    $strip_spaces   Whether to strip all whitespace. Default is false.
 	 *
 	 * @return bool
 	 */
-	public static function string( string $operator, string $value, ?string $string, bool $case_sensitive = true ): bool {
+	public static function string( string $operator, string $value, ?string $string, bool $case_sensitive = true, bool $strip_spaces = false ): bool {
 		$operator = self::decode_operator( $operator );
 
 		if ( ! $operator || ! $value || is_null( $string ) ) {
 			return false;
+		}
+
+		if ( $strip_spaces ) {
+			$value  = Str::remove_whitespace( $value );
+			$string = Str::remove_whitespace( $string );
 		}
 
 		if ( ! $case_sensitive ) {
@@ -170,19 +176,70 @@ class Compare {
 	}
 
 	/**
-	 * Check if multi-value string passes a comparison.
+	 * Check if time value passes a comparison.
 	 *
 	 * @param string $operator The comparison operator.
-	 * @param ?array $values   The values to compare against.
-	 * @param string $string   The string to compare.
+	 * @param mixed  $value    The time to compare against (H:i format).
+	 * @param mixed  $time     The time to compare (H:i format).
 	 *
 	 * @return bool
 	 */
-	public static function string_multi( string $operator, ?array $values, string $string ): bool {
+	public static function times( string $operator, $value, $time ): bool {
+		$operator = self::decode_operator( $operator );
+
+		// Validate time formats
+		if ( ! Validate::is_time( (string) $value ) || ! Validate::is_time( (string) $time ) ) {
+			return false;
+		}
+
+		// Convert times to minutes since midnight for comparison
+		list( $hours_value, $mins_value ) = explode( ':', $value );
+		list( $hours_time, $mins_time ) = explode( ':', $time );
+
+		$value_minutes = ( (int) $hours_value * 60 ) + (int) $mins_value;
+		$time_minutes  = ( (int) $hours_time * 60 ) + (int) $mins_time;
+
+		return self::numeric( $operator, $value_minutes, $time_minutes );
+	}
+
+	/**
+	 * Check if multi-value string passes a comparison.
+	 *
+	 * @param string $operator       The comparison operator.
+	 * @param ?array $values         The values to compare against.
+	 * @param string $string         The string to compare.
+	 * @param bool   $case_sensitive Whether the comparison should be case-sensitive. Default is true.
+	 * @param bool   $strip_spaces   Whether to remove all whitespace. Default is false.
+	 *
+	 * @return bool
+	 */
+	public static function string_multi(
+		string $operator,
+		?array $values,
+		string $string,
+		bool $case_sensitive = true,
+		bool $strip_spaces = false
+	): bool {
 		$operator = self::decode_operator( $operator );
 
 		if ( ! $operator || is_null( $values ) || ! $string ) {
 			return false;
+		}
+
+		// Format string
+		if ( $strip_spaces ) {
+			$string = Str::remove_whitespace( $string );
+		}
+		if ( ! $case_sensitive ) {
+			$string = strtolower( $string );
+		}
+
+		// Format values
+		if ( $strip_spaces ) {
+			$values = Arr::remove_whitespace_values( $values );
+		}
+		if ( ! $case_sensitive ) {
+			$values = Arr::lowercase_values( $values );
 		}
 
 		switch ( $operator ) {
@@ -218,17 +275,43 @@ class Compare {
 	/**
 	 * Check if array passes a comparison.
 	 *
-	 * @param string $operator The comparison operator.
-	 * @param mixed  $value    The value to compare against.
-	 * @param ?array $array    The array to compare.
+	 * @param string $operator       The comparison operator.
+	 * @param mixed  $value          The value to compare against.
+	 * @param ?array $array          The array to compare.
+	 * @param bool   $case_sensitive Whether the comparison should be case-sensitive. Default is true.
+	 * @param bool   $strip_spaces   Whether to remove all whitespace. Default is false.
 	 *
 	 * @return bool
 	 */
-	public static function array( string $operator, $value, ?array $array ): bool {
+	public static function array(
+		string $operator,
+		$value,
+		?array $array,
+		bool $case_sensitive = true,
+		bool $strip_spaces = false
+	): bool {
 		$operator = self::decode_operator( $operator );
 
 		if ( ! $operator || is_null( $value ) || is_null( $array ) ) {
 			return false;
+		}
+
+		// Format value if it's a string
+		if ( is_string( $value ) ) {
+			if ( $strip_spaces ) {
+				$value = Str::remove_whitespace( $value );
+			}
+			if ( ! $case_sensitive ) {
+				$value = strtolower( $value );
+			}
+		}
+
+		// Format array
+		if ( $strip_spaces ) {
+			$array = Arr::remove_whitespace_values( $array );
+		}
+		if ( ! $case_sensitive ) {
+			$array = Arr::lowercase_values( $array );
 		}
 
 		switch ( $operator ) {
@@ -246,13 +329,21 @@ class Compare {
 	/**
 	 * Check if multi value array passes a comparison.
 	 *
-	 * @param string $operator The comparison operator.
-	 * @param mixed  $value    The value to compare against.
-	 * @param ?array $array    The array to compare.
+	 * @param string $operator       The comparison operator.
+	 * @param mixed  $value          The value to compare against.
+	 * @param ?array $array          The array to compare.
+	 * @param bool   $case_sensitive Whether the comparison should be case-sensitive. Default is true.
+	 * @param bool   $strip_spaces   Whether to remove all whitespace. Default is false.
 	 *
 	 * @return bool
 	 */
-	public static function array_multi( string $operator, $value, ?array $array ): bool {
+	public static function array_multi(
+		string $operator,
+		$value,
+		?array $array,
+		bool $case_sensitive = true,
+		bool $strip_spaces = false
+	): bool {
 		$operator = self::decode_operator( $operator );
 
 		if ( ! $operator || is_null( $value ) || is_null( $array ) ) {
@@ -261,6 +352,16 @@ class Compare {
 
 		if ( ! is_array( $value ) ) {
 			$value = [ $value ];
+		}
+
+		// Format arrays
+		if ( $strip_spaces ) {
+			$value = Arr::remove_whitespace_values( $value );
+			$array = Arr::remove_whitespace_values( $array );
+		}
+		if ( ! $case_sensitive ) {
+			$value = Arr::lowercase_values( $value );
+			$array = Arr::lowercase_values( $array );
 		}
 
 		switch ( $operator ) {

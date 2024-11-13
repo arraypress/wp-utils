@@ -230,6 +230,20 @@ class Validate {
 	}
 
 	/**
+	 * Validate a time string.
+	 *
+	 * @param string $time   The time string to validate.
+	 * @param string $format The expected time format (default: 'H:i').
+	 *
+	 * @return bool True if the time is valid, false otherwise.
+	 */
+	public static function is_time( string $time, string $format = 'H:i' ): bool {
+		$d = DateTime::createFromFormat( $format, $time );
+
+		return $d && $d->format( $format ) === $time;
+	}
+
+	/**
 	 * Validate a username.
 	 *
 	 * @param string $username The username to validate.
