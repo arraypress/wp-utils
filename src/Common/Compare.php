@@ -306,7 +306,8 @@ class Compare {
 			}
 		}
 
-		// Format array
+		// Format array and ensure uniqueness
+		$array = array_unique($array);
 		if ( $strip_spaces ) {
 			$array = Arr::remove_whitespace_values( $array );
 		}

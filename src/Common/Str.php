@@ -316,7 +316,7 @@ class Str {
 	 *
 	 * @return string The string in title case.
 	 */
-	public static function to_title_case( string $string ): string {
+	public static function title_case( string $string ): string {
 		return ucwords( strtolower( $string ) );
 	}
 
@@ -327,7 +327,7 @@ class Str {
 	 *
 	 * @return string The string in camelCase.
 	 */
-	public static function to_camel_case( string $string ): string {
+	public static function camel_case( string $string ): string {
 		$string = str_replace( [ '-', '_' ], ' ', $string );
 		$string = ucwords( $string );
 		$string = str_replace( ' ', '', $string );
@@ -342,7 +342,7 @@ class Str {
 	 *
 	 * @return string The string in snake_case.
 	 */
-	public static function to_snake_case( string $string ): string {
+	public static function snake_case( string $string ): string {
 		return sanitize_key( str_replace( ' ', '_', $string ) );
 	}
 
@@ -353,7 +353,7 @@ class Str {
 	 *
 	 * @return string The string in kebab-case.
 	 */
-	public static function to_kebab_case( string $string ): string {
+	public static function kebab_case( string $string ): string {
 		return sanitize_title( $string );
 	}
 
@@ -376,7 +376,7 @@ class Str {
 	 *
 	 * @return string The acronym.
 	 */
-	public static function to_acronym( string $string ): string {
+	public static function acronym( string $string ): string {
 		$words = preg_split( "/\s+/", $string );
 
 		return implode( '', array_map( function ( $word ) {
@@ -391,7 +391,7 @@ class Str {
 	 *
 	 * @return string The ASCII string.
 	 */
-	public static function to_ascii( string $string ): string {
+	public static function ascii( string $string ): string {
 		return remove_accents( $string );
 	}
 
@@ -402,7 +402,7 @@ class Str {
 	 *
 	 * @return string The converted string.
 	 */
-	public static function to_html_entities( string $string ): string {
+	public static function html_entities( string $string ): string {
 		return esc_html( $string );
 	}
 

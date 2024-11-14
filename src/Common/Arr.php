@@ -328,28 +328,19 @@ class Arr {
 	}
 
 	/**
-	 * Convert an array to a query string.
+	 * Convert an array to a query string using WordPress functions.
 	 *
-	 * @param array  $array      The input array.
-	 * @param string $prefix     The prefix to use for array keys.
-	 * @param bool   $url_encode Whether to URL-encode the values. Default is true.
+	 * @param array $array      The input array.
+	 * @param bool  $url_encode Whether to URL-encode the values. Default is true.
 	 *
 	 * @return string The resulting query string.
 	 */
-	public static function to_query_string( array $array, string $prefix = '', bool $url_encode = true ): string {
-		$result = [];
-		foreach ( $array as $key => $value ) {
-			$key = $prefix ? $prefix . '[' . $key . ']' : $key;
-
-			if ( is_array( $value ) ) {
-				$result[] = self::to_query_string( $value, $key, $url_encode );
-			} else {
-				$value    = $url_encode ? urlencode( $value ) : $value;
-				$result[] = $key . '=' . $value;
-			}
+	public static function to_query_string( array $array, bool $url_encode = true ): string {
+		if ( $url_encode ) {
+			return build_query( $array );
 		}
 
-		return implode( '&', $result );
+		return urldecode( build_query( $array ) );
 	}
 
 	/** Flattening and Filtering **************************************************/
@@ -416,7 +407,7 @@ class Arr {
 	 * Output:
 	 * ['apple', 'banana', 'red', 'blue', 'green']
 	 */
-	public static function flatten_array( array $array ): array {
+	public static function flatten( array $array ): array {
 		$flat_array = [];
 		array_walk_recursive( $array, function ( $item ) use ( &$flat_array ) {
 			$flat_array[] = $item;
@@ -440,7 +431,7 @@ class Arr {
 	 * ['a', 'b', 'c', 'd']
 	 */
 	public static function ensure_unique( $value ): array {
-		return array_unique( self::flatten_array( (array) $value ) );
+		return array_unique( self::flatten( (array) $value ) );
 	}
 
 	/**
@@ -516,7 +507,7 @@ class Arr {
 	 * Output:
 	 * 'red and blue'
 	 */
-	public static function implode_to_english( array $array, string $conjunction = 'and' ): string {
+	public static function to_english( array $array, string $conjunction = 'and' ): string {
 		if ( empty( $array ) ) {
 			return '';
 		}
@@ -587,8 +578,8 @@ class Arr {
 	 * Get a value from an array using "dot" notation.
 	 *
 	 * @param array  $array   The array to retrieve from.
-	 * @param string $key     The key to retrieve.
-	 * @param mixed  $default The default value to return if the key doesn't exist.
+	 * @param string $path    The path to retrieve using dot notation.
+	 * @param mixed  $default The default value to return if the path doesn't exist.
 	 *
 	 * @return mixed The retrieved value or default.
 	 *
@@ -601,17 +592,17 @@ class Arr {
 	 *         ]
 	 *     ]
 	 * ]
-	 * key: 'user.info.name'
+	 * path: 'user.info.name'
 	 *
 	 * Output:
 	 * 'John'
 	 */
-	public static function get( array $array, string $key, $default = null ) {
-		if ( isset( $array[ $key ] ) ) {
-			return $array[ $key ];
+	public static function get( array $array, string $path, $default = null ) {
+		if ( isset( $array[ $path ] ) ) {
+			return $array[ $path ];
 		}
 
-		foreach ( explode( '.', $key ) as $segment ) {
+		foreach ( explode( '.', $path ) as $segment ) {
 			if ( ! is_array( $array ) || ! array_key_exists( $segment, $array ) ) {
 				return $default;
 			}
@@ -734,6 +725,7 @@ class Arr {
 
 	/** Array Manipulation ********************************************************/
 
+
 	/**
 	 * Push an item onto the beginning of an array.
 	 *
@@ -742,6 +734,10 @@ class Arr {
 	 * @param mixed $key   The key to use.
 	 *
 	 * @return array The modified array.
+	 *
+	 * @example
+	 * Input: ['b' => 2, 'c' => 3], 1, 'a'
+	 * Output: ['a' => 1, 'b' => 2, 'c' => 3]
 	 */
 	public static function prepend( array $array, $value, $key = null ): array {
 		if ( is_null( $key ) ) {
@@ -754,12 +750,39 @@ class Arr {
 	}
 
 	/**
+	 * Push an item onto the end of an array.
+	 *
+	 * @param array $array The input array.
+	 * @param mixed $value The value to append.
+	 * @param mixed $key   The key to use.
+	 *
+	 * @return array The modified array.
+	 *
+	 * @example
+	 * Input: ['a' => 1, 'b' => 2], 3, 'c'
+	 * Output: ['a' => 1, 'b' => 2, 'c' => 3]
+	 */
+	public static function append( array $array, $value, $key = null ): array {
+		if ( is_null( $key ) ) {
+			$array[] = $value;
+		} else {
+			$array[ $key ] = $value;
+		}
+
+		return $array;
+	}
+
+	/**
 	 * Get a subset of the items from the given array.
 	 *
 	 * @param array $array The input array.
 	 * @param array $keys  The keys of the items to return.
 	 *
 	 * @return array An array containing only the specified items.
+	 *
+	 * @example
+	 * Input: ['a' => 1, 'b' => 2, 'c' => 3], ['a', 'c']
+	 * Output: ['a' => 1, 'c' => 3]
 	 */
 	public static function only( array $array, array $keys ): array {
 		return array_intersect_key( $array, array_flip( $keys ) );
@@ -775,7 +798,7 @@ class Arr {
 	 *
 	 * @return array The normalized array of strings.
 	 */
-	public static function normalize_array( array $values, array $options = [] ): array {
+	public static function normalize( array $values, array $options = [] ): array {
 		return array_map( function ( $value ) use ( $options ) {
 			return is_string( $value ) ? self::normalize_str( $value, $options ) : $value;
 		}, $values );
@@ -789,10 +812,10 @@ class Arr {
 	 *
 	 * @return array The recursively normalized array.
 	 */
-	public static function normalize_array_recursive( array $values, array $options = [] ): array {
+	public static function normalize_recursive( array $values, array $options = [] ): array {
 		foreach ( $values as $key => $value ) {
 			if ( is_array( $value ) ) {
-				$values[ $key ] = self::normalize_array_recursive( $value, $options );
+				$values[ $key ] = self::normalize_recursive( $value, $options );
 			} elseif ( is_string( $value ) ) {
 				$values[ $key ] = self::normalize_str( $value, $options );
 			}
@@ -800,7 +823,6 @@ class Arr {
 
 		return $values;
 	}
-
 
 	/**
 	 * Apply a callback function to the keys of an array.
@@ -1114,10 +1136,6 @@ class Arr {
 	 * Output: ['user' => ['profile' => ['name' => 'John']]]
 	 */
 	public static function set_nested( array $array, string $key, $value ): array {
-		if ( is_null( $key ) ) {
-			return $array;
-		}
-
 		$keys    = explode( '.', $key );
 		$current = &$array;
 
@@ -1234,9 +1252,111 @@ class Arr {
 	 * Input: ['Name' => 'John', 'CODE' => 'ABC123']
 	 * Output: ['Name' => 'john', 'CODE' => 'abc123']
 	 */
-	public static function lowercase_values( $array ): array {
+	public static function lowercase( $array ): array {
 		return array_map( function ( $value ) {
 			return is_string( $value ) ? strtolower( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Convert all string values in an array to uppercase.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to uppercase
+	 *
+	 * @example
+	 * Input: ['name' => 'John', 'code' => 'abc123']
+	 * Output: ['name' => 'JOHN', 'code' => 'ABC123']
+	 */
+	public static function uppercase( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? strtoupper( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Convert all string values in an array to title case.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to title case
+	 *
+	 * @example
+	 * Input: ['name' => 'john doe', 'title' => 'web developer']
+	 * Output: ['name' => 'John Doe', 'title' => 'Web Developer']
+	 */
+	public static function title_case( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? Str::title_case( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Convert all string values in an array to camel case.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to camel case
+	 *
+	 * @example
+	 * Input: ['name' => 'john_doe', 'title' => 'web-developer']
+	 * Output: ['name' => 'johnDoe', 'title' => 'webDeveloper']
+	 */
+	public static function camel_case( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? Str::camel_case( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Convert all string values in an array to snake case.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to snake case
+	 *
+	 * @example
+	 * Input: ['name' => 'John Doe', 'title' => 'Web Developer']
+	 * Output: ['name' => 'john_doe', 'title' => 'web_developer']
+	 */
+	public static function snake_case( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? Str::snake_case( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Convert all string values in an array to kebab case.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to kebab case
+	 *
+	 * @example
+	 * Input: ['name' => 'John Doe', 'title' => 'Web Developer']
+	 * Output: ['name' => 'john-doe', 'title' => 'web-developer']
+	 */
+	public static function kebab_case( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? Str::kebab_case( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Convert all string values in an array to ASCII.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to ASCII
+	 *
+	 * @example
+	 * Input: ['name' => 'José', 'text' => 'café']
+	 * Output: ['name' => 'Jose', 'text' => 'cafe']
+	 */
+	public static function ascii( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? Str::ascii( $value ) : $value;
 		}, (array) $array );
 	}
 
@@ -1251,9 +1371,43 @@ class Arr {
 	 * Input: ['code' => 'ABC 123', 'postal' => 'SW1 1AA']
 	 * Output: ['code' => 'ABC123', 'postal' => 'SW11AA']
 	 */
-	public static function remove_whitespace_values( $array ): array {
+	public static function remove_whitespace( $array ): array {
 		return array_map( function ( $value ) {
 			return is_string( $value ) ? Str::remove_whitespace( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Trim whitespace from all string values in an array.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with trimmed string values
+	 *
+	 * @example
+	 * Input: ['name' => '  John  ', 'code' => ' ABC123 ']
+	 * Output: ['name' => 'John', 'code' => 'ABC123']
+	 */
+	public static function trim( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? trim( $value ) : $value;
+		}, (array) $array );
+	}
+
+	/**
+	 * Convert all string values in an array to acronyms.
+	 *
+	 * @param array|mixed $array The array to process (will be cast to array)
+	 *
+	 * @return array The array with all string values converted to acronyms
+	 *
+	 * @example
+	 * Input: ['org' => 'World Health Organization', 'dept' => 'Research and Development']
+	 * Output: ['org' => 'WHO', 'dept' => 'RD']
+	 */
+	public static function acronym( $array ): array {
+		return array_map( function ( $value ) {
+			return is_string( $value ) ? Str::acronym( $value ) : $value;
 		}, (array) $array );
 	}
 
