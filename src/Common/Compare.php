@@ -236,10 +236,10 @@ class Compare {
 
 		// Format values
 		if ( $strip_spaces ) {
-			$values = Arr::remove_whitespace_values( $values );
+			$values = Arr::remove_whitespace( $values );
 		}
 		if ( ! $case_sensitive ) {
-			$values = Arr::lowercase_values( $values );
+			$values = Arr::lowercase( $values );
 		}
 
 		switch ( $operator ) {
@@ -307,12 +307,12 @@ class Compare {
 		}
 
 		// Format array and ensure uniqueness
-		$array = array_unique($array);
+		$array = array_unique( $array );
 		if ( $strip_spaces ) {
-			$array = Arr::remove_whitespace_values( $array );
+			$array = Arr::remove_whitespace( $array );
 		}
 		if ( ! $case_sensitive ) {
-			$array = Arr::lowercase_values( $array );
+			$array = Arr::lowercase( $array );
 		}
 
 		switch ( $operator ) {
@@ -357,12 +357,12 @@ class Compare {
 
 		// Format arrays
 		if ( $strip_spaces ) {
-			$value = Arr::remove_whitespace_values( $value );
-			$array = Arr::remove_whitespace_values( $array );
+			$value = Arr::remove_whitespace( $value );
+			$array = Arr::remove_whitespace( $array );
 		}
 		if ( ! $case_sensitive ) {
-			$value = Arr::lowercase_values( $value );
-			$array = Arr::lowercase_values( $array );
+			$value = Arr::lowercase( $value );
+			$array = Arr::lowercase( $array );
 		}
 
 		switch ( $operator ) {
