@@ -150,4 +150,28 @@ class Operators {
 		return apply_filters( 'arraypress_array_multi_operators', $operators, $context );
 	}
 
+	/**
+	 * Returns array of generic matching operators.
+	 *
+	 * @param string|null $context The context in which the operators are being used.
+	 *
+	 * @return array
+	 */
+	public static function get_matching( ?string $context = null ): array {
+		$operators = [
+			'contains'     => esc_html__( 'Matches Any', 'arraypress' ),
+			'not_contains' => esc_html__( 'Matches None', 'arraypress' ),
+		];
+
+		/**
+		 * Filters the array of matching operators.
+		 *
+		 * @param array       $operators The array of matching operators.
+		 * @param string|null $context   The context in which the operators are being used.
+		 *
+		 * @return array                 The filtered array of matching operators.
+		 */
+		return apply_filters( 'arraypress_matching_operators', $operators, $context );
+	}
+
 }

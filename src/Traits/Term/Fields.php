@@ -1,6 +1,6 @@
 <?php
 /**
- * Trait: Term Fields
+ * Trait: Term Base
  *
  * This trait provides methods for accessing and retrieving various term fields,
  * including names, slugs, and custom field data from WordPress terms.

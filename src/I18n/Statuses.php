@@ -341,7 +341,7 @@ class Statuses {
 				'partially-paid' => __( 'Partially Paid', 'arraypress' ),
 				'overdue'        => __( 'Overdue', 'arraypress' ),
 				'cancelled'      => __( 'Cancelled', 'arraypress' ),
-				'refunded'       => __( 'Refunded', 'arraypress' ),
+				'refunded'       => __( 'Refundable', 'arraypress' ),
 			],
 			'project'      => [
 				'planning'    => __( 'Planning', 'arraypress' ),
