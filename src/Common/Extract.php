@@ -516,4 +516,35 @@ class Extract {
 		return null;
 	}
 
+	/**
+	 * Extract numeric value and unit components from a combined string.
+	 *
+	 * @param string $value The combined value (e.g., "10percentage", "5.5px", "100flat")
+	 *
+	 * @return array{number: float|int, unit: string} Array with 'number' and 'unit' keys
+	 */
+	public static function unit_components( string $value ): array {
+		if ( empty( $value ) ) {
+			return [ 'number' => 0, 'unit' => '' ];
+		}
+
+		// Extract numeric part and identifier
+		preg_match( '/^(\d*\.?\d+)(.*)$/', $value, $matches );
+
+		if ( empty( $matches ) ) {
+			return [ 'number' => 0, 'unit' => '' ];
+		}
+
+		$number = $matches[1];
+		$unit   = strtolower( trim( $matches[2] ?? '' ) );
+
+		// Determine if it should be int or float based on decimal presence
+		$number = str_contains( $number, '.' ) ? (float) $number : (int) $number;
+
+		return [
+			'number' => $number,
+			'unit'   => $unit
+		];
+	}
+
 }
