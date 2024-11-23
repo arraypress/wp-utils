@@ -390,7 +390,8 @@ class Arr {
 	/**
 	 * Flatten a multidimensional array.
 	 *
-	 * @param array $array The multidimensional array.
+	 * @param array $array  The multidimensional array.
+	 * @param bool  $unique Whether to return unique values. Default false.
 	 *
 	 * @return array The flattened array.
 	 *
@@ -407,13 +408,13 @@ class Arr {
 	 * Output:
 	 * ['apple', 'banana', 'red', 'blue', 'green']
 	 */
-	public static function flatten( array $array ): array {
+	public static function flatten( array $array, bool $unique = false ): array {
 		$flat_array = [];
 		array_walk_recursive( $array, function ( $item ) use ( &$flat_array ) {
 			$flat_array[] = $item;
 		} );
 
-		return $flat_array;
+		return $unique ? array_unique( $flat_array ) : $flat_array;
 	}
 
 	/**

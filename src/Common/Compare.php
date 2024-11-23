@@ -307,7 +307,7 @@ class Compare {
 		}
 
 		// Format array and ensure uniqueness
-		$array = array_unique( $array );
+		$array = Arr::ensure_unique( $array );
 		if ( $strip_spaces ) {
 			$array = Arr::remove_whitespace( $array );
 		}
@@ -364,6 +364,10 @@ class Compare {
 			$value = Arr::lowercase( $value );
 			$array = Arr::lowercase( $array );
 		}
+
+		// Format array and ensure uniqueness
+		$value = Arr::ensure_unique( $value );
+		$array = Arr::ensure_unique( $array );
 
 		switch ( $operator ) {
 			case 'contains':
