@@ -191,6 +191,35 @@ class TimeUnits {
 		return apply_filters( 'arraypress_months_of_year', $months, $context );
 	}
 
+	/**
+	 * Get an array of weeks of the year with their values and labels.
+	 *
+	 * @param string|null $context Optional. The context in which the weeks are being retrieved.
+	 *
+	 * @return array An array of associative arrays containing 'value' and 'label' for each week of the year.
+	 */
+	public static function get_weeks_of_year( ?string $context = null ): array {
+		$weeks = [];
+
+		// Generate 52 weeks
+		for ( $i = 1; $i <= 52; $i ++ ) {
+			$weeks[] = [
+				'value' => (string) $i,
+				'label' => sprintf(
+					esc_html__( 'Week %d', 'arraypress' ),
+					$i
+				)
+			];
+		}
+
+		/**
+		 * Filters the weeks of the year.
+		 *
+		 * @param array       $weeks   The array of weeks with their values and labels.
+		 * @param string|null $context The context in which the weeks of the year are being retrieved.
+		 */
+		return apply_filters( 'arraypress_weeks_of_year', $weeks, $context );
+	}
 
 	/**
 	 * Get an array of quarters of the year with their values and labels.
