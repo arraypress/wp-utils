@@ -371,8 +371,10 @@ class Compare {
 
 		switch ( $operator ) {
 			case 'contains':
+			case '==':
 				return (bool) array_intersect( $value, $array );
 			case 'not_contains':
+			case '!=':
 				return ! array_intersect( $value, $array );
 			case 'contains_all':
 				return count( array_intersect( $value, $array ) ) === count( $value );
