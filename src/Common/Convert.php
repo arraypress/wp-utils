@@ -285,6 +285,58 @@ class Convert {
 		}
 	}
 
+	/**
+	 * Convert a time unit to seconds.
+	 *
+	 * @param string $unit    The unit (day, week, month, year, etc)
+	 * @param int    $number  The number of units
+	 * @param bool   $use_utc Whether to use UTC time (true) or local time (false)
+	 *
+	 * @return int Number of seconds
+	 */
+	public static function to_seconds( string $unit, int $number, bool $use_utc = false ): int {
+		$current_time = current_time( 'U', $use_utc );
+
+		switch ( $unit ) {
+			case 'second':
+				return $number;
+			case 'minute':
+				return $number * 60;
+			case 'hour':
+				return $number * 3600;
+			case 'week':
+				return $number * 604800;
+			case 'month':
+				$future = strtotime( "+{$number} months", $current_time );
+
+				return $future - $current_time;
+			case 'year':
+				$future = strtotime( "+{$number} years", $current_time );
+
+				return $future - $current_time;
+			default:
+				return $number * 86400; // default to days
+		}
+	}
+
+	/**
+	 * Convert a date to its age in seconds from current time.
+	 *
+	 * @param string|int|\DateTimeInterface $date    Date to calculate from
+	 * @param bool                          $use_utc Whether to use UTC. Default false
+	 *
+	 * @return int Age in seconds (negative if date is in future)
+	 */
+	public static function to_age_seconds( $date, bool $use_utc = false ): int {
+		$current = current_time( 'U', $use_utc );
+
+		if ( $date instanceof \DateTimeInterface ) {
+			return $current - $date->getTimestamp();
+		}
+
+		return $current - strtotime( $date );
+	}
+
 }
 
 // Add class alias
