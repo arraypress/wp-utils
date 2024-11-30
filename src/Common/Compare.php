@@ -384,23 +384,79 @@ class Compare {
 	}
 
 	/**
-	 * Compare IP addresses.
+	 * Compare IP addresses with support for both exact matches and CIDR/subnet matches.
 	 *
-	 * @param string $operator The comparison operator.
-	 * @param string $value    The IP address to compare against.
-	 * @param string $ip       The IP address to compare.
+	 * @param string $operator The comparison operator ('equals', 'not_equals')
+	 * @param string $value    The IP address or CIDR range to compare against
+	 * @param string $ip       The IP address to check
 	 *
-	 * @return bool
+	 * @return bool Whether the IP matches according to the operator
 	 */
 	public static function ip_address( string $operator, string $value, string $ip ): bool {
-		$value_long = ip2long( $value );
-		$ip_long    = ip2long( $ip );
-
-		if ( $value_long === false || $ip_long === false ) {
+		// Validate IP to check
+		if ( ! IP::is_valid( $ip ) ) {
 			return false;
 		}
 
-		return self::numeric( $operator, $value_long, $ip_long );
+		// Check if it's either an exact match or matches a CIDR range
+		$is_match = $value === $ip || ( IP::is_valid_range( $value ) && IP::is_in_range( $ip, $value ) );
+
+		return $operator === 'equals' ? $is_match : ! $is_match;
+	}
+
+	/**
+	 * Compare IP address against multiple IPs/ranges.
+	 * Supports both exact IP matches and CIDR ranges in the array.
+	 *
+	 * @param string   $operator The comparison operator ('contains', 'contains_all', 'not_contains')
+	 * @param string[] $values   Array of IPs/ranges to compare against
+	 * @param string   $ip       The IP address to check
+	 *
+	 * @return bool Whether the IP matches according to the operator
+	 */
+	public static function ip_address_multi( string $operator, array $values, string $ip ): bool {
+		// Validate input IP
+		if ( ! IP::is_valid( $ip ) ) {
+			return false;
+		}
+
+		// Ensure array values are unique and non-empty
+		$values = array_filter( array_unique( $values ) );
+		if ( empty( $values ) ) {
+			return false;
+		}
+
+		switch ( $operator ) {
+			case 'contains':
+				foreach ( $values as $value ) {
+					if ( self::ip_address( 'equals', $value, $ip ) ) {
+						return true;
+					}
+				}
+
+				return false;
+
+			case 'contains_all':
+				foreach ( $values as $value ) {
+					if ( ! self::ip_address( 'equals', $value, $ip ) ) {
+						return false;
+					}
+				}
+
+				return true;
+
+			case 'not_contains':
+				foreach ( $values as $value ) {
+					if ( self::ip_address( 'equals', $value, $ip ) ) {
+						return false;
+					}
+				}
+
+				return true;
+
+			default:
+				return false;
+		}
 	}
 
 	/**
@@ -446,45 +502,6 @@ class Compare {
 	 */
 	public static function fuzzy_string( string $value, string $string, int $max_distance = 3 ): bool {
 		return levenshtein( $value, $string ) <= $max_distance;
-	}
-
-	/**
-	 * Get comparison timestamps for a given value.
-	 *
-	 * @param string $value          The value in the format '7day', '8minutes', etc.
-	 * @param string $reference_date The reference date to compare against.
-	 *
-	 * @return array An array with 'reference_timestamp' and 'compare_timestamp'.
-	 */
-	public static function get_comparison_timestamps( string $value, string $reference_date ): array {
-		$unit_value = Split::unit_value( $value );
-		$number     = $unit_value['number'];
-		$period     = $unit_value['period'];
-
-		// Check if the number is valid
-		if ( $number === 0 ) {
-			return [
-				'reference_timestamp' => 0,
-				'compare_timestamp'   => 0,
-			];
-		}
-
-		// Build the strtotime-compatible string
-		$time_string = "+$number $period";
-
-		// Get the current time in the WordPress timezone
-		$current_time = current_time( 'timestamp' );
-
-		// Get the timestamp of the reference date
-		$reference_timestamp = strtotime( $reference_date );
-
-		// Get the timestamp of the comparison date
-		$compare_timestamp = strtotime( $time_string, $current_time );
-
-		return [
-			'reference_timestamp' => $reference_timestamp,
-			'compare_timestamp'   => $compare_timestamp,
-		];
 	}
 
 }

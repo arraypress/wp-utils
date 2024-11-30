@@ -19,7 +19,7 @@ declare( strict_types=1 );
 namespace ArrayPress\Utils\Transients;
 
 use ArrayPress\Utils\Common\Arr;
-use ArrayPress\Utils\Common\Convert;
+use ArrayPress\Utils\Common\Cast;
 
 /**
  * Class Transient
@@ -77,10 +77,10 @@ class Transient {
 		$value = self::get( $transient );
 
 		if ( $value === false && $default !== null ) {
-			return Convert::value( $default, $cast_type );
+			return Cast::value( $default, $cast_type );
 		}
 
-		return Convert::value( $value, $cast_type );
+		return Cast::value( $value, $cast_type );
 	}
 
 	/**

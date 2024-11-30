@@ -76,6 +76,77 @@ class TimeUnits {
 		return apply_filters( 'arraypress_time_units', $durations, $include_times, $context );
 	}
 
+	/**
+	 * Get the time range options.
+	 *
+	 * This method retrieves an array of time range options that can be used in various contexts
+	 * throughout the application. Each range is represented as an array with 'label' and 'value' keys.
+	 *
+	 * @param string|null $context Optional. The context in which the time ranges are being retrieved.
+	 *
+	 * @return array Array of time range options with label and value pairs.
+	 */
+	public static function get_time_ranges( ?string $context = null ): array {
+		$ranges = [
+			[
+				'label' => esc_html__( 'All Time', 'arraypress' ),
+				'value' => 'all_time'
+			],
+			[
+				'label' => esc_html__( 'Today', 'arraypress' ),
+				'value' => 'today'
+			],
+			[
+				'label' => esc_html__( 'Yesterday', 'arraypress' ),
+				'value' => 'yesterday'
+			],
+			[
+				'label' => esc_html__( 'This Week', 'arraypress' ),
+				'value' => 'this_week'
+			],
+			[
+				'label' => esc_html__( 'Last Week', 'arraypress' ),
+				'value' => 'last_week'
+			],
+			[
+				'label' => esc_html__( 'Last 30 Days', 'arraypress' ),
+				'value' => 'last_30_days'
+			],
+			[
+				'label' => esc_html__( 'This Month', 'arraypress' ),
+				'value' => 'this_month'
+			],
+			[
+				'label' => esc_html__( 'Last Month', 'arraypress' ),
+				'value' => 'last_month'
+			],
+			[
+				'label' => esc_html__( 'This Quarter', 'arraypress' ),
+				'value' => 'this_quarter'
+			],
+			[
+				'label' => esc_html__( 'Last Quarter', 'arraypress' ),
+				'value' => 'last_quarter'
+			],
+			[
+				'label' => esc_html__( 'This Year', 'arraypress' ),
+				'value' => 'this_year'
+			],
+			[
+				'label' => esc_html__( 'Last Year', 'arraypress' ),
+				'value' => 'last_year'
+			]
+		];
+
+		/**
+		 * Filters the array of time range options.
+		 *
+		 * @param array       $ranges  The array of time range options.
+		 * @param string|null $context The context in which the time ranges are being retrieved.
+		 */
+		return apply_filters( 'arraypress_time_ranges', $ranges, $context );
+	}
+
 
 	/**
 	 * Get an array of days of the week with their values and labels.

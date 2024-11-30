@@ -19,7 +19,7 @@ declare( strict_types=1 );
 namespace ArrayPress\Utils\Traits\Shared;
 
 use ArrayPress\Utils\Common\Compare;
-use ArrayPress\Utils\Common\Convert;
+use ArrayPress\Utils\Common\Cast;
 use ArrayPress\Utils\Common\Sanitize;
 use ArrayPress\Utils\Database\Generate;
 use ArrayPress\Utils\Database\Table;
@@ -128,10 +128,10 @@ trait Meta {
 		$value = get_metadata( static::get_meta_type(), $object_id, $meta_key, true );
 
 		if ( $value === '' && $default !== null ) {
-			return Convert::value( $default, $cast_type );
+			return Cast::value( $default, $cast_type );
 		}
 
-		return Convert::value( $value, $cast_type );
+		return Cast::value( $value, $cast_type );
 	}
 
 	/**
