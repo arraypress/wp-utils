@@ -9,7 +9,7 @@
  * @author        David Sherlock
  */
 
-declare(strict_types=1);
+declare( strict_types=1 );
 
 namespace ArrayPress\Utils\I18n;
 
@@ -22,15 +22,15 @@ class Common {
 	 *
 	 * @return array
 	 */
-	public static function get_login_statuses(?string $context = null): array {
+	public static function get_login_statuses( ?string $context = null ): array {
 		$statuses = [
 			[
 				'value' => 'logged_in',
-				'label' => esc_html__('Logged In', 'arraypress'),
+				'label' => esc_html__( 'Logged In', 'arraypress' ),
 			],
 			[
 				'value' => 'logged_out',
-				'label' => esc_html__('Logged Out', 'arraypress'),
+				'label' => esc_html__( 'Logged Out', 'arraypress' ),
 			],
 		];
 
@@ -42,7 +42,7 @@ class Common {
 		 *
 		 * @return array               The filtered array of login status options.
 		 */
-		return apply_filters('arraypress_login_statuses', $statuses, $context);
+		return apply_filters( 'arraypress_login_statuses', $statuses, $context );
 	}
 
 }

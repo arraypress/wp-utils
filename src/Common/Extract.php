@@ -519,24 +519,30 @@ class Extract {
 	/**
 	 * Extract numeric value and unit components from a combined string.
 	 *
-	 * @param string $value The combined value (e.g., "10percentage", "5.5px", "100flat")
+	 * @param string $value        The combined value (e.g., "10percentage", "5.5px", "100flat")
+	 * @param string $default_unit Default unit to use if none provided (default: '')
 	 *
 	 * @return array{number: float|int, unit: string} Array with 'number' and 'unit' keys
 	 */
-	public static function unit_components( string $value ): array {
+	public static function unit_components( string $value, string $default_unit = '' ): array {
 		if ( empty( $value ) ) {
-			return [ 'number' => 0, 'unit' => '' ];
+			return [ 'number' => 0, 'unit' => $default_unit ];
 		}
 
 		// Extract numeric part and identifier
 		preg_match( '/^(\d*\.?\d+)(.*)$/', $value, $matches );
 
 		if ( empty( $matches ) ) {
-			return [ 'number' => 0, 'unit' => '' ];
+			return [ 'number' => 0, 'unit' => $default_unit ];
 		}
 
 		$number = $matches[1];
 		$unit   = strtolower( trim( $matches[2] ?? '' ) );
+
+		// Use default unit if no unit provided
+		if ( empty( $unit ) ) {
+			$unit = $default_unit;
+		}
 
 		// Determine if it should be int or float based on decimal presence
 		$number = str_contains( $number, '.' ) ? (float) $number : (int) $number;
