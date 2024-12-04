@@ -17,6 +17,7 @@ declare( strict_types=1 );
 
 namespace ArrayPress\Utils\Common;
 
+use ArrayPress\Utils\I18n\TimeUnits;
 use DateTime;
 
 class Validate {
@@ -440,6 +441,68 @@ class Validate {
 		}
 
 		return in_array( $value, $allowed_values );
+	}
+
+	/**
+	 * Validate a value with unit components against allowed units.
+	 *
+	 * @param string $value         The value to validate (e.g., "10days", "5px", "100percentage")
+	 * @param array  $allowed_units Array of allowed unit values
+	 * @param bool   $require_unit  Whether to require a unit (default: false)
+	 * @param string $default_unit  Default unit to use if none provided (default: '')
+	 *
+	 * @return bool True if the value contains valid number and unit, false otherwise
+	 */
+	public static function is_valid_unit(
+		string $value,
+		array $allowed_units,
+		bool $require_unit = false,
+		string $default_unit = ''
+	): bool {
+		if ( empty( $value ) ) {
+			return false;
+		}
+
+		// Extract components using the existing utility
+		$components = Extract::unit_components( $value );
+
+		// If unit is required and none provided, return false
+		if ( $require_unit && empty( $components['unit'] ) ) {
+			return false;
+		}
+
+		// Use default unit if none specified
+		$unit = empty( $components['unit'] ) ? $default_unit : $components['unit'];
+
+		// If no unit is provided and no default, check if that's acceptable
+		if ( empty( $unit ) && ! $require_unit ) {
+			return true;
+		}
+
+		// Validate that the provided unit is valid
+		return in_array( $unit, $allowed_units, true );
+	}
+
+	/**
+	 * Validate a time unit value.
+	 *
+	 * Wrapper method that validates a string contains a number with an optional time unit.
+	 * Uses is_valid_unit() with time-specific configuration.
+	 *
+	 * @param string $value        The value to validate (e.g., "10days", "5months", "100")
+	 * @param bool   $require_unit Whether to require a unit (default: false)
+	 *
+	 * @return bool True if the value contains valid number and time unit, false otherwise
+	 */
+	public static function is_time_unit( string $value, bool $require_unit = false ): bool {
+		$allowed_units = array_keys( TimeUnits::get_time_ranges() );
+
+		return self::is_valid_unit(
+			$value,
+			$allowed_units,
+			$require_unit,
+			'all_time'
+		);
 	}
 
 	/**
