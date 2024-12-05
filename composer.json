@@ -40,7 +40,9 @@
       "src/Utils/Users.php",
       "src/Utils/Math.php",
       "src/Polyfills/Mdash.php",
-      "src/Polyfills/Misc.php"
+      "src/Polyfills/Misc.php",
+      "src/Polyfills/Time.php",
+      "src/Polyfills/Translate.php"
     ]
   },
   "config": {

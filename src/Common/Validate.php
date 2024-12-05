@@ -444,6 +444,28 @@ class Validate {
 	}
 
 	/**
+	 * Validate a time unit value.
+	 *
+	 * Wrapper method that validates a string contains a number with an optional time unit.
+	 * Uses is_valid_unit() with time-specific configuration.
+	 *
+	 * @param string $value        The value to validate (e.g., "10days", "5months", "100")
+	 * @param bool   $require_unit Whether to require a unit (default: false)
+	 *
+	 * @return bool True if the value contains valid number and time unit, false otherwise
+	 */
+	public static function is_time_unit( string $value, bool $require_unit = false ): bool {
+		$allowed_units = array_keys( TimeUnits::get_date_ranges() );
+
+		return self::is_valid_unit(
+			$value,
+			$allowed_units,
+			$require_unit,
+			'all_time'
+		);
+	}
+
+	/**
 	 * Validate a value with unit components against allowed units.
 	 *
 	 * @param string $value         The value to validate (e.g., "10days", "5px", "100percentage")
@@ -481,28 +503,6 @@ class Validate {
 
 		// Validate that the provided unit is valid
 		return in_array( $unit, $allowed_units, true );
-	}
-
-	/**
-	 * Validate a time unit value.
-	 *
-	 * Wrapper method that validates a string contains a number with an optional time unit.
-	 * Uses is_valid_unit() with time-specific configuration.
-	 *
-	 * @param string $value        The value to validate (e.g., "10days", "5months", "100")
-	 * @param bool   $require_unit Whether to require a unit (default: false)
-	 *
-	 * @return bool True if the value contains valid number and time unit, false otherwise
-	 */
-	public static function is_time_unit( string $value, bool $require_unit = false ): bool {
-		$allowed_units = array_keys( TimeUnits::get_date_ranges() );
-
-		return self::is_valid_unit(
-			$value,
-			$allowed_units,
-			$require_unit,
-			'all_time'
-		);
 	}
 
 	/**
