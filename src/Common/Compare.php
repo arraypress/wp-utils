@@ -386,7 +386,7 @@ class Compare {
 	/**
 	 * Compare IP addresses with support for both exact matches and CIDR/subnet matches.
 	 *
-	 * @param string $operator The comparison operator ('equals', 'not_equals')
+	 * @param string $operator The comparison operator ('==', '!=')
 	 * @param string $value    The IP address or CIDR range to compare against
 	 * @param string $ip       The IP address to check
 	 *
@@ -401,7 +401,16 @@ class Compare {
 		// Check if it's either an exact match or matches a CIDR range
 		$is_match = $value === $ip || ( IP::is_valid_range( $value ) && IP::is_in_range( $ip, $value ) );
 
-		return $operator === 'equals' ? $is_match : ! $is_match;
+		switch ( $operator ) {
+			case '==':
+			case '===':
+				return $is_match;
+			case '!=':
+			case '!==':
+				return ! $is_match;
+			default:
+				return false;
+		}
 	}
 
 	/**
@@ -429,7 +438,7 @@ class Compare {
 		switch ( $operator ) {
 			case 'contains':
 				foreach ( $values as $value ) {
-					if ( self::ip_address( 'equals', $value, $ip ) ) {
+					if ( self::ip_address( '==', $value, $ip ) ) {
 						return true;
 					}
 				}
@@ -438,7 +447,7 @@ class Compare {
 
 			case 'contains_all':
 				foreach ( $values as $value ) {
-					if ( ! self::ip_address( 'equals', $value, $ip ) ) {
+					if ( ! self::ip_address( '==', $value, $ip ) ) {
 						return false;
 					}
 				}
@@ -447,7 +456,7 @@ class Compare {
 
 			case 'not_contains':
 				foreach ( $values as $value ) {
-					if ( self::ip_address( 'equals', $value, $ip ) ) {
+					if ( self::ip_address( '==', $value, $ip ) ) {
 						return false;
 					}
 				}
