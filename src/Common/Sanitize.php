@@ -880,16 +880,31 @@ class Sanitize {
 	/**
 	 * Sanitize a time value.
 	 *
-	 * @param mixed $value The value to sanitize.
+	 * @param mixed  $value  The value to sanitize.
+	 * @param string $format The format to return (H:i or H:i:s). Default H:i.
 	 *
-	 * @return string|null The sanitized time value or null if invalid.
+	 * @return string Empty string if invalid, otherwise formatted time.
 	 */
-	public static function time( $value ): ?string {
-		if ( preg_match( '/^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/', $value ) ) {
+	public static function time( $value, string $format = 'H:i' ): string {
+		if ( empty( $value ) ) {
+			return '';
+		}
+
+		// If already in correct format, validate it
+		if ( $format === 'H:i' && preg_match( '/^(?:2[0-3]|[01][0-9]):[0-5][0-9]$/', $value ) ) {
+			return $value;
+		}
+		if ( $format === 'H:i:s' && preg_match( '/^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/', $value ) ) {
 			return $value;
 		}
 
-		return null;
+		// Try to convert the input to a timestamp
+		$timestamp = strtotime( $value );
+		if ( false === $timestamp ) {
+			return '';
+		}
+
+		return date( $format, $timestamp );
 	}
 
 	/**
