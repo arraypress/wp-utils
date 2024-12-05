@@ -495,7 +495,7 @@ class Validate {
 	 * @return bool True if the value contains valid number and time unit, false otherwise
 	 */
 	public static function is_time_unit( string $value, bool $require_unit = false ): bool {
-		$allowed_units = array_keys( TimeUnits::get_time_ranges() );
+		$allowed_units = array_keys( TimeUnits::get_date_ranges() );
 
 		return self::is_valid_unit(
 			$value,

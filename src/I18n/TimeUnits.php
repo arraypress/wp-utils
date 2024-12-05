@@ -29,7 +29,7 @@ class TimeUnits {
 	 *
 	 * @return array An array of available time units.
 	 */
-	public static function get_time_units( bool $include_times = false, ?string $context = null ): array {
+	public static function get_durations( bool $include_times = false, ?string $context = null ): array {
 		$durations = [
 			[
 				'value' => 'day',
@@ -73,7 +73,7 @@ class TimeUnits {
 		 * @param bool        $include_times Whether time-based durations are included.
 		 * @param string|null $context       The context in which the time units are being retrieved.
 		 */
-		return apply_filters( 'arraypress_time_units', $durations, $include_times, $context );
+		return apply_filters( 'arraypress_durations', $durations, $include_times, $context );
 	}
 
 	/**
@@ -86,7 +86,7 @@ class TimeUnits {
 	 *
 	 * @return array Array of time range options with label and value pairs.
 	 */
-	public static function get_time_ranges( ?string $context = null ): array {
+	public static function get_date_ranges( ?string $context = null ): array {
 		$ranges = [
 			[
 				'label' => esc_html__( 'All Time', 'arraypress' ),
@@ -144,7 +144,7 @@ class TimeUnits {
 		 * @param array       $ranges  The array of time range options.
 		 * @param string|null $context The context in which the time ranges are being retrieved.
 		 */
-		return apply_filters( 'arraypress_time_ranges', $ranges, $context );
+		return apply_filters( 'arraypress_date_ranges', $ranges, $context );
 	}
 
 
@@ -155,7 +155,7 @@ class TimeUnits {
 	 *
 	 * @return array An array of associative arrays containing 'value' and 'label' for each day of the week.
 	 */
-	public static function get_days_of_week( ?string $context = null ): array {
+	public static function get_weekdays( ?string $context = null ): array {
 		$days = [
 			[
 				'value' => '1',
@@ -193,7 +193,7 @@ class TimeUnits {
 		 * @param array       $days    The array of days with their values and labels.
 		 * @param string|null $context The context in which the days of the week are being retrieved.
 		 */
-		return apply_filters( 'arraypress_days_of_week', $days, $context );
+		return apply_filters( 'arraypress_weekdays', $days, $context );
 	}
 
 	/**
@@ -201,7 +201,7 @@ class TimeUnits {
 	 *
 	 * @return array An array of associative arrays containing 'value' and 'label' for each month of the year.
 	 */
-	public static function get_months_of_year( ?string $context = null ): array {
+	public static function get_months( ?string $context = null ): array {
 		$months = [
 			[
 				'value' => 'January',
@@ -269,7 +269,7 @@ class TimeUnits {
 	 *
 	 * @return array An array of associative arrays containing 'value' and 'label' for each week of the year.
 	 */
-	public static function get_weeks_of_year( ?string $context = null ): array {
+	public static function get_weeks( ?string $context = null ): array {
 		$weeks = [];
 
 		// Generate 52 weeks
@@ -299,7 +299,7 @@ class TimeUnits {
 	 *
 	 * @return array An array of associative arrays containing 'value' and 'label' for each quarter of the year.
 	 */
-	public static function get_quarters_of_year( ?string $context = null ): array {
+	public static function get_quarters( ?string $context = null ): array {
 		$quarters = [
 			[
 				'value' => 'Q1',
@@ -405,11 +405,11 @@ class TimeUnits {
 	}
 
 	/**
-	 * Get period labels for singular and plural forms.
+	 * Get duration labels for singular and plural forms.
 	 *
-	 * @return array An array of period labels.
+	 * @return array An array of duration labels.
 	 */
-	public static function get_period_labels(): array {
+	public static function get_duration_labels(): array {
 		$labels = [
 			'day'       => [
 				'singular' => _x( 'day', 'time period singular', 'arraypress' ),
@@ -450,11 +450,11 @@ class TimeUnits {
 		];
 
 		/**
-		 * Filters the period labels.
+		 * Filters the duration labels.
 		 *
-		 * @param array $labels The default period labels.
+		 * @param array $labels The default duration labels.
 		 */
-		return apply_filters( 'arraypress_period_labels', $labels );
+		return apply_filters( 'arraypress_duration_labels', $labels );
 	}
 
 	/**
@@ -465,9 +465,9 @@ class TimeUnits {
 	 *
 	 * @return string The localized time period label.
 	 */
-	public static function get_period_label( string $period, int $count = 1 ): string {
+	public static function get_duration_label( string $period, int $count = 1 ): string {
 		$period = strtolower( $period );
-		$labels = self::get_period_labels();
+		$labels = self::get_duration_labels();
 
 		if ( isset( $labels[ $period ] ) ) {
 			return $count === 1 ? $labels[ $period ]['singular'] : $labels[ $period ]['plural'];
@@ -485,8 +485,8 @@ class TimeUnits {
 	 *
 	 * @return string The formatted time period string.
 	 */
-	public static function format_period( string $period, int $count, ?string $context = null ): string {
-		$label = self::get_period_label( $period, $count );
+	public static function format_duration( string $period, int $count, ?string $context = null ): string {
+		$label = self::get_duration_label( $period, $count );
 
 		/**
 		 * Filters the formatted period string.
@@ -498,7 +498,7 @@ class TimeUnits {
 		 * @param string|null $context   The context in which the period is being formatted.
 		 */
 		return apply_filters(
-			'arraypress_formatted_period',
+			'arraypress_formatted_duration',
 			sprintf( _n( '%d %s', '%d %s', $count, 'arraypress' ), $count, $label ),
 			$period,
 			$count,
@@ -512,7 +512,7 @@ class TimeUnits {
 	 *
 	 * @return array An array of recurring periods with their labels.
 	 */
-	public static function get_recurring_periods( ?string $context = null ): array {
+	public static function get_recurring_intervals( ?string $context = null ): array {
 		$periods = [
 			'day'     => __( 'Per Day', 'arraypress' ),
 			'week'    => __( 'Per Week', 'arraypress' ),
@@ -527,7 +527,7 @@ class TimeUnits {
 		 * @param array       $periods The default recurring periods.
 		 * @param string|null $context The context in which the periods are being retrieved.
 		 */
-		return apply_filters( 'arraypress_recurring_periods', $periods, $context );
+		return apply_filters( 'arraypress_recurring_intervals', $periods, $context );
 	}
 
 	/**
@@ -537,8 +537,8 @@ class TimeUnits {
 	 *
 	 * @return string|null The label for the period, or null if not found.
 	 */
-	public static function get_recurring_period_label( string $period ): ?string {
-		$periods = self::get_recurring_periods();
+	public static function get_recurring_interval_label( string $period ): ?string {
+		$periods = self::get_recurring_intervals();
 
 		return $periods[ $period ] ?? null;
 	}

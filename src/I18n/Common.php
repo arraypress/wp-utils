@@ -45,4 +45,34 @@ class Common {
 		return apply_filters( 'arraypress_login_statuses', $statuses, $context );
 	}
 
+	/**
+	 * Returns array of adjustment type options.
+	 *
+	 * @param string|null $context The context in which the adjustment types are being used.
+	 *
+	 * @return array
+	 */
+	public static function get_adjustment_types( ?string $context = null ): array {
+		$types = [
+			[
+				'value' => 'percentage',
+				'label' => esc_html__( 'Percentage', 'arraypress' ),
+			],
+			[
+				'value' => 'flat',
+				'label' => esc_html__( 'Flat', 'arraypress' ),
+			],
+		];
+
+		/**
+		 * Filters the array of adjustment type options.
+		 *
+		 * @param array       $types   The array of adjustment type options.
+		 * @param string|null $context The context in which the adjustment types are being used.
+		 *
+		 * @return array The filtered array of adjustment type options.
+		 */
+		return apply_filters( 'arraypress_adjustment_types', $types, $context );
+	}
+
 }
